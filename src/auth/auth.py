@@ -112,11 +112,11 @@ class ActiveDirectoryAuthProvider(AuthProviderInterface):
                             groups.append(match.group(1))
                     user_info['groups'] = groups
                 elif attr_name in allowed_attrs:
-                    # Garante que o valor seja uma lista de strings ou string simples para o frontend
+                    # Garante que o valor seja SEMPRE uma lista de strings para o frontend
                     if isinstance(value, list):
                         user_info[allowed_attrs[attr_name]] = [str(v) for v in value]
                     else:
-                        user_info[allowed_attrs[attr_name]] = str(value)
+                        user_info[allowed_attrs[attr_name]] = [str(value)] if value is not None else []
 
             # Garante que groups sempre exista
             if 'groups' not in user_info:

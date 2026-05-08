@@ -1,25 +1,44 @@
 <template>
   <teleport to="body">
+    <!-- Overlay com Blur -->
     <transition name="fade">
-      <div v-if="show" class="fixed inset-0 bg-black bg-opacity-50 z-40" @click="close"></div>
+      <div 
+        v-if="show" 
+        class="fixed inset-0 bg-gray-900/60 backdrop-blur-sm z-40 transition-opacity" 
+        @click="close"
+      ></div>
     </transition>
-    <transition name="slide-up">
-      <div v-if="show" class="fixed bottom-0 inset-x-0 sm:inset-0 sm:flex sm:items-center sm:justify-center z-50">
-        <div class="bg-white rounded-t-lg sm:rounded-lg shadow-xl w-full max-w-lg m-4">
-          <div class="p-4 border-b flex justify-between items-center">
-            <h2 class="text-xl font-semibold">
-              <slot name="header">Modal Title</slot>
+
+    <!-- Container do Modal -->
+    <transition name="modal-scale">
+      <div 
+        v-if="show" 
+        class="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6"
+      >
+        <div 
+          class="bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden transform transition-all"
+          @click.stop
+        >
+          <!-- Header -->
+          <div class="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
+            <h2 class="text-xl font-bold text-gray-800">
+              <slot name="header">Título do Modal</slot>
             </h2>
-            <button @click="close" class="text-gray-500 hover:text-gray-700">
-              <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-              </svg>
+            <button 
+              @click="close" 
+              class="p-2 rounded-full text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors"
+            >
+              <XMarkIcon class="h-6 w-6" />
             </button>
           </div>
-          <div class="p-4">
+
+          <!-- Body -->
+          <div class="px-6 py-6 text-gray-600 leading-relaxed">
             <slot></slot>
           </div>
-          <div v-if="$slots.footer" class="p-4 border-t flex justify-end space-x-4">
+
+          <!-- Footer -->
+          <div v-if="$slots.footer" class="px-6 py-4 border-t border-gray-100 bg-gray-50/50 flex justify-end space-x-3">
             <slot name="footer"></slot>
           </div>
         </div>
@@ -29,66 +48,42 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, onUnmounted } from 'vue';
+import { onMounted, onUnmounted, watch } from 'vue';
+import { XMarkIcon } from '@heroicons/vue/24/outline';
 
 const props = defineProps({
-  show: {
-    type: Boolean,
-    default: false,
-  },
+  show: { type: Boolean, default: false },
 });
 
 const emit = defineEmits(['close']);
+const close = () => emit('close');
 
-const close = () => {
-  emit('close');
-};
-
-const handleEscape = (e: KeyboardEvent) => {
-  if (e.key === 'Escape' && props.show) {
-    close();
+// Bloqueia o scroll do corpo quando o modal abre
+watch(() => props.show, (newVal) => {
+  if (newVal) {
+    document.body.style.overflow = 'hidden';
+  } else {
+    document.body.style.overflow = '';
   }
-};
-
-onMounted(() => {
-  document.addEventListener('keydown', handleEscape);
 });
 
+const handleEscape = (e: KeyboardEvent) => {
+  if (e.key === 'Escape' && props.show) close();
+};
+
+onMounted(() => document.addEventListener('keydown', handleEscape));
 onUnmounted(() => {
   document.removeEventListener('keydown', handleEscape);
+  document.body.style.overflow = ''; // Garante limpeza no unmount
 });
 </script>
 
 <style scoped>
-.fade-enter-active,
-.fade-leave-active {
-  transition: opacity 0.3s ease;
-}
+.fade-enter-active, .fade-leave-active { transition: opacity 0.2s ease; }
+.fade-enter-from, .fade-leave-to { opacity: 0; }
 
-.fade-enter-from,
-.fade-leave-to {
-  opacity: 0;
-}
-
-.slide-up-enter-active,
-.slide-up-leave-active {
-  transition: transform 0.3s ease;
-}
-
-.slide-up-enter-from,
-.slide-up-leave-to {
-  transform: translateY(100%);
-}
-
-@media (min-width: 640px) {
-  .slide-up-enter-from,
-  .slide-up-leave-to {
-    transform: translateY(0) scale(0.95);
-    opacity: 0;
-  }
-  .slide-up-enter-active,
-  .slide-up-leave-active {
-    transition: all 0.3s ease;
-  }
-}
+.modal-scale-enter-active { transition: all 0.3s ease-out; }
+.modal-scale-leave-active { transition: all 0.2s ease-in; }
+.modal-scale-enter-from { opacity: 0; transform: scale(0.95) translateY(-10px); }
+.modal-scale-leave-to { opacity: 0; transform: scale(0.95) translateY(10px); }
 </style>
