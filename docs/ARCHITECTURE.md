@@ -1,50 +1,50 @@
 # Arquitetura do Projeto
 
-Este documento detalha a arquitetura em camadas e os padroes de projeto utilizados no framework, com foco em desacoplamento e flexibilidade.
+Este documento detalha a arquitetura em camadas e os padrões de projeto utilizados no framework, com foco em desacoplamento e flexibilidade.
 
 ## Arquitetura em Camadas
 
-O fluxo de uma requisicao na aplicacao segue um padrao claro e unidirecional, garantindo a separacao de responsabilidades.
+O fluxo de uma requisição na aplicação segue um padrão claro e unidirecional, garantindo a separação de responsabilidades.
 
 **Fluxo: `Roteador` -> `Controller` -> `Provedor`**
 
 1.  **Roteador (`src/routers/`)**
-    - **Responsabilidade:** Define os endpoints da API (`@router.get`, `@router.post`, etc.), valida os dados de entrada (usando Pydantic) e gerencia a injecao de dependencias.
-    - **Funcao:** E o ponto de entrada de uma requisicao HTTP. Ele utiliza o sistema `Depends` do FastAPI para solicitar as dependencias necessarias (como um provedor de dados) e, em seguida, chama a funcao apropriada no controller, passando a dependencia ja resolvida.
+    - **Responsabilidade:** Define os endpoints da API (`@router.get`, `@router.post`, etc.), valida os dados de entrada (usando Pydantic) e gerencia a injeção de dependências.
+    - **Função:** É o ponto de entrada de uma requisição HTTP. Ele utiliza o sistema `Depends` do FastAPI para solicitar as dependências necessárias (como um provedor de dados) e, em seguida, chama a função apropriada no controller, passando a dependência já resolvida.
 
 2.  **Controller (`src/controllers/`)**
-    - **Responsabilidade:** Contem a logica de negocio. Ele orquestra as operacoes, formata dados e toma decisoes.
-    - **Funcao:** Recebe as dependencias ja prontas do roteador. Ele nao sabe (e nao deve saber) qual implementacao concreta esta sendo usada (ex: se os dados vem de um banco ou de um CSV). Ele apenas utiliza os metodos definidos pela interface do provedor.
+    - **Responsabilidade:** Contém a lógica de negócio. Ele orquestra as operações, formata dados e toma decisões.
+    - **Função:** Recebe as dependências já prontas do roteador. Ele não sabe (e não deve saber) qual implementação concreta está sendo usada (ex: se os dados vêm de um banco ou de um CSV). Ele apenas utiliza os métodos definidos pela interface do provedor.
 
 3.  **Provedor (`src/providers/`)**
-    - **Responsabilidade:** Camada de acesso a dados. E a unica parte do sistema que sabe como obter ou persistir dados em uma fonte especifica (PostgreSQL, Oracle, CSV, API externa, etc.).
-    - **Funcao:** Implementa uma interface (contrato) definida em `src/providers/interfaces/`. Cada implementacao concreta (ex: `PacientePostgresProvider`, `PacienteCsvProvider`) contem a logica especifica para uma fonte de dados.
+    - **Responsabilidade:** Camada de acesso a dados. É a única parte do sistema que sabe como obter ou persistir dados em uma fonte específica (PostgreSQL, Oracle, CSV, API externa, etc.).
+    - **Função:** Implementa uma interface (contrato) definida em `src/providers/interfaces/`. Cada implementação concreta (ex: `PacientePostgresProvider`, `PacienteCsvProvider`) contém a lógica específica para uma fonte de dados.
 
-## Padrao de Provedor com Selecao de Estrategia
+## Padrão de Provedor com Seleção de Estratégia
 
-A principal caracteristica arquitetural do framework e a capacidade de trocar a fonte de dados de um dominio de forma limpa e explicita.
+A principal característica arquitetural do framework é a capacidade de trocar a fonte de dados de um domínio de forma limpa e explícita.
 
 ### Como Funciona
 
-1.  **Interfaces (`src/providers/interfaces/`)**: Para cada dominio (ex: `paciente`), existe um "contrato" (`PacienteProviderInterface`) que define os metodos que devem estar disponiveis (ex: `listar_pacientes`).
+1.  **Interfaces (`src/providers/interfaces/`)**: Para cada domínio (ex: `paciente`), existe um "contrato" (`PacienteProviderInterface`) que define os métodos que devem estar disponíveis (ex: `listar_pacientes`).
 
-2.  **Implementacoes (`src/providers/implementations/`)**: Para cada interface, podem existir varias implementacoes concretas. Por exemplo, `PacientePostgresProvider` e `PacienteCsvProvider` ambas implementam `PacienteProviderInterface`.
+2.  **Implementações (`src/providers/implementations/`)**: Para cada interface, podem existir várias implementações concretas. Por exemplo, `PacientePostgresProvider` e `PacienteCsvProvider` ambas implementam `PacienteProviderInterface`.
 
-3.  **Fabrica de Dependencias (`src/dependencies.py`)**: Este arquivo contem uma funcao fabrica (ex: `get_paciente_provider`) que recebe uma string de "estrategia" (`'postgres'` ou `'csv'`). Com base nessa string, a fabrica retorna a **funcao de dependencia correta** que o FastAPI deve usar para criar o provedor. Isso garante que a conexao com o banco de dados so seja tentada se a estrategia `'postgres'` for selecionada.
+3.  **Fábrica de Dependências (`src/dependencies.py`)**: Este arquivo contém uma função fábrica (ex: `get_paciente_provider`) que recebe uma string de "estratégia" (`'postgres'` ou `'csv'`). Com base nessa string, a fábrica retorna a **função de dependência correta** que o FastAPI deve usar para criar o provedor. Isso garante que a conexão com o banco de dados só seja tentada se a estratégia `'postgres'` for selecionada.
 
-4.  **Configuracao no Roteador (`src/routers/`)**: O arquivo do roteador e o local onde a estrategia e definida.
+4.  **Configuração no Roteador (`src/routers/`)**: O arquivo do roteador é o local onde a estratégia é definida.
 
     ```python
     # Em src/routers/paciente.py
 
-    # --- PONTO UNICO DE CONFIGURACAO PARA ESTE ROTEADOR ---
-    # Para usar o banco de dados em producao, altere esta linha para "postgres"
+    # --- PONTO ÚNICO DE CONFIGURAÇÃO PARA ESTE ROTEADOR ---
+    # Para usar o banco de dados em produção, altere esta linha para "postgres"
     STRATEGY = "csv"
     # ----------------------------------------------------
 
     @router.get("", ...)
     async def listar_pacientes(
-        # A fabrica e chamada com a estrategia, e o FastAPI injeta o provedor correto.
+        # A fábrica é chamada com a estratégia, e o FastAPI injeta o provedor correto.
         provider: PacienteProviderInterface = Depends(get_paciente_provider(STRATEGY))
     ):
         return await paciente_controller.listar_pacientes(provider)
@@ -52,7 +52,7 @@ A principal caracteristica arquitetural do framework e a capacidade de trocar a 
 
 ### Vantagens desta Abordagem
 
-- **Flexibilidade:** Permite usar fontes de dados diferentes em ambientes diferentes (ex: CSV em desenvolvimento, Postgres em producao).
-- **Desacoplamento Real:** A logica de negocio no controller nunca e afetada pela fonte de dados.
-- **Clareza:** Fica explicito no roteador qual fonte de dados esta sendo utilizada para aquele dominio.
-- **Eficiencia:** Recursos como pools de conexao com o banco de dados so sao inicializados se forem realmente necessarios para a estrategia selecionada.
+- **Flexibilidade:** Permite usar fontes de dados diferentes em ambientes diferentes (ex: CSV em desenvolvimento, Postgres em produção).
+- **Desacoplamento Real:** A lógica de negócio no controller nunca é afetada pela fonte de dados.
+- **Clareza:** Fica explícito no roteador qual fonte de dados está sendo utilizada para aquele domínio.
+- **Eficiência:** Recursos como pools de conexão com o banco de dados só são inicializados se forem realmente necessários para a estratégia selecionada.

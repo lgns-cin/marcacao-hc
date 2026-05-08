@@ -1,50 +1,50 @@
-# Esqueleto de Aplicacao Web Full-Stack (Python/FastAPI + Vue.js)
+# Esqueleto de Aplicação Web Full-Stack (Python/FastAPI + Vue.js)
 
-Este projeto e um framework robusto e flexivel para aplicacoes web modernas, construido com FastAPI no backend e Vue.js (Vite) no frontend. Ele foi projetado com uma arquitetura limpa e desacoplada, pronta para ser estendida e adaptada a diversas necessidades.
+Este projeto é um framework robusto e flexível para aplicações web modernas, construído com FastAPI no backend e Vue.js (Vite) no frontend. Ele foi projetado com uma arquitetura limpa e desacoplada, pronta para ser estendida e adaptada a diversas necessidades.
 
-## Principais Caracteristicas
+## Principais Características
 
-- **Backend Moderno:** Construido com FastAPI, oferecendo alta performance, codigo assincrono e documentacao de API automatica (Swagger/OpenAPI).
-- **Frontend Reativo:** Utiliza Vue 3 com Vite para uma experiencia de desenvolvimento rapida e uma interface de usuario reativa.
-- **Arquitetura de Provedores:** Design flexivel que permite trocar a fonte de dados de um dominio (ex: PostgreSQL, CSV) alterando uma unica variavel de configuracao no arquivo do roteador, sem modificar o codigo de negocio.
-- **Autenticacao Hibrida:** Suporte nativo para autenticacao via Active Directory (AD) em producao e um provedor "mock" para desenvolvimento offline (sem necessidade de credenciais de AD).
-- **Estrutura Escalavel:** Organizacao de projeto clara que separa responsabilidades (`routers`, `controllers`, `providers`), facilitando a manutencao e a adicao de novas funcionalidades.
+- **Backend Moderno:** Construído com FastAPI, oferecendo alta performance, código assíncrono e documentação de API automática (Swagger/OpenAPI).
+- **Frontend Reativo:** Utiliza Vue 3 com Vite para uma experiência de desenvolvimento rápida e uma interface de usuário reativa.
+- **Arquitetura de Provedores:** Design flexível que permite trocar a fonte de dados de um domínio (ex: PostgreSQL, CSV) alterando uma única variável de configuração no arquivo do roteador, sem modificar o código de negócio.
+- **Autenticação Híbrida:** Suporte nativo para autenticação via Active Directory (AD) em produção e um provedor "mock" para desenvolvimento offline (sem necessidade de credenciais de AD).
+- **Estrutura Escalável:** Organização de projeto clara que separa responsabilidades (`routers`, `controllers`, `providers`), facilitando a manutenção e a adição de novas funcionalidades.
 
 ## Estrutura do Projeto
 
-A estrutura do projeto e projetada para separar claramente as responsabilidades entre backend, frontend e documentacao.
+A estrutura do projeto é projetada para separar claramente as responsabilidades entre backend, frontend e documentação.
 
 ```
 .
-├── data/                 # Dados estaticos (ex: arquivos CSV)
-├── docs/                 # Documentacao detalhada do projeto
-│   ├── ARCHITECTURE.md   # Explicacao da arquitetura e padroes
-│   ├── AUTHENTICATION.md # Detalhes sobre o sistema de autenticacao
-│   └── SETUP.md          # Guia de instalacao e execucao
-├── frontend/             # Codigo-fonte da aplicacao Vue.js
-├── src/                  # Codigo-fonte do backend FastAPI
-│   ├── auth/             # Logica de autenticacao (AD, Mock, JWT)
-│   ├── controllers/      # Logica de negocio e orquestracao
-│   ├── dependencies.py   # Fabrica de injecao de dependencia
+├── data/                 # Dados estáticos (ex: arquivos CSV)
+├── docs/                 # Documentação detalhada do projeto
+│   ├── ARCHITECTURE.md   # Explicação da arquitetura e padrões
+│   ├── AUTHENTICATION.md # Detalhes sobre o sistema de autenticação
+│   └── SETUP.md          # Guia de instalação e execução
+├── frontend/             # Código-fonte da aplicação Vue.js
+├── src/                  # Código-fonte do backend FastAPI
+│   ├── auth/             # Lógica de autenticação (AD, Mock, JWT)
+│   ├── controllers/      # Lógica de negócio e orquestração
+│   ├── dependencies.py   # Fábrica de injeção de dependência
 │   ├── models/           # Modelos de dados (SQLAlchemy)
 │   ├── providers/        # Camada de acesso a dados (Postgres, CSV, etc.)
 │   │   ├── implementations/
 │   │   └── interfaces/
-│   ├── resources/        # Configuracao de recursos (ex: conexao com DB)
-│   └── routers/          # Definicao dos endpoints da API
-├── .env.example          # Arquivo de exemplo para variaveis de ambiente
-└── README.md             # Esta documentacao
+│   ├── resources/        # Configuração de recursos (ex: conexão com DB)
+│   └── routers/          # Definição dos endpoints da API
+├── .env.example          # Arquivo de exemplo para variáveis de ambiente
+└── README.md             # Esta documentação
 ```
 
 ## Primeiros Passos
 
-Para instalar e executar a aplicacao, siga o guia de configuracao detalhado:
+Para instalar e executar a aplicação, siga o guia de configuração detalhado:
 
-- **[Guia de Instalacao e Execucao (SETUP.md)](./docs/SETUP.md)**
+- **[Guia de Instalação e Execução (SETUP.md)](./docs/SETUP.md)**
 
-## Inicio Rapido (Quick Start)
+## Início Rápido (Quick Start)
 
-Se voce ja possui o `uv` instalado, pode subir o backend em segundos:
+Se você já possui o `uv` instalado, pode subir o backend em segundos:
 
 ```bash
 uv sync
@@ -52,11 +52,11 @@ cp .env.example .env
 ./start.sh
 ```
 
-O frontend (build de producao) sera servido automaticamente em `http://localhost:8000`.
+O frontend (build de produção) será servido automaticamente em `http://localhost:8000`.
 
 ## Aprofundamento
 
-Para entender a fundo os conceitos e padroes utilizados neste framework, consulte a documentacao especifica:
+Para entender a fundo os conceitos e padrões utilizados neste framework, consulte a documentação específica:
 
 - **[Arquitetura do Projeto (ARCHITECTURE.md)](./docs/ARCHITECTURE.md)**
-- **[Sistema de Autenticacao (AUTHENTICATION.md)](./docs/AUTHENTICATION.md)**
+- **[Sistema de Autenticação (AUTHENTICATION.md)](./docs/AUTHENTICATION.md)**
