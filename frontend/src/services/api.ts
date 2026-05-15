@@ -1,5 +1,6 @@
 import axios from 'axios';
 import { useAuthStore } from '../stores/auth';
+import router from '../router';
 
 const api = axios.create({
   baseURL: '/', // Adjust if your API is on a different host
@@ -73,7 +74,6 @@ api.interceptors.response.use(
       } catch (refreshError) {
         processQueue(refreshError, null);
         console.error('Unable to refresh token. Logging out.', refreshError);
-        const router = (await import('../router')).default;
         authStore.logout(router); // If refresh fails, logout the user
         return Promise.reject(refreshError);
       } finally {

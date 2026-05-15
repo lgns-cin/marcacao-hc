@@ -46,25 +46,25 @@
     padding-left: 15px;
   }
 
-  @screen sm {
+  @media (width >= 640px) {
     .container {
       max-width: 540px;
     }
   }
 
-  @screen md {
+  @media (width >= 768px) {
     .container {
       max-width: 720px;
     }
   }
 
-  @screen lg {
+  @media (width >= 1024px) {
     .container {
       max-width: 960px;
     }
   }
 
-  @screen xl {
+  @media (width >= 1280px) {
     .container {
       max-width: 1140px;
     }
