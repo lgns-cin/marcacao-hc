@@ -5,6 +5,11 @@ import api from '../services/api';
 interface User {
   username: string;
   groups: string[];
+  givenName?: string[];
+  userPrincipalName?: string[];
+  title?: string[];
+  department?: string[];
+  employeeNumber?: string[];
 }
 
 export const useAuthStore = defineStore('auth', () => {

@@ -8,7 +8,7 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
 // https://vitejs.dev/config/
 export default defineConfig({
-  base: '/static/dist/',
+  base: '/',
   plugins: [vue(), tailwindcss()],
   build: {
     outDir: path.resolve(__dirname, '../src/static/dist'),
