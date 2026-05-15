@@ -48,45 +48,48 @@ npm run dev
 
 ## 3. Executando a Aplicação
 
-### Servidor de Backend
+O projeto oferece dois modos principais de execução através de scripts automatizados na raiz:
 
-Você pode iniciar o servidor de três formas:
+### A. Modo de Desenvolvimento (`./dev.sh`) - RECOMENDADO
+Inicia o Backend (FastAPI) e o Frontend (Vite) em paralelo.
+- **Vantagem:** Hot Module Replacement (HMR). Alterações no frontend aparecem instantaneamente.
+- **Porta Frontend:** `http://localhost:5173`
+- **Porta Backend:** `http://localhost:8000`
 
-**A. Usando o script automatizado (Recomendado):**
 ```bash
+chmod +x dev.sh
+./dev.sh
+```
+
+### B. Modo Produção Local (`./start.sh`)
+Realiza o build completo do frontend e serve tudo através do FastAPI.
+- **Vantagem:** Simula exatamente o comportamento de produção.
+- **Porta Única:** `http://localhost:8000`
+
+```bash
+chmod +x start.sh
 ./start.sh
 ```
 
-**B. Usando o uv run (Desenvolvimento):**
+---
+
+## 4. Comandos Manuais (Troubleshooting)
+
+Caso precise executar partes isoladas ou depurar:
+
+**Backend isolado:**
 ```bash
 uv run uvicorn src.main:app --reload
 ```
 
-**C. Executando como módulo:**
+**Frontend isolado:**
 ```bash
-uv run python -m src.main
-```
-
-- O backend estará disponível em `http://127.0.0.1:8000`.
-- O Swagger UI estará em `http://127.0.0.1:8000/docs`.
-
-### Servidor de Frontend
-
-Na pasta `frontend/`, execute o servidor de desenvolvimento do Vite.
-
-```bash
+cd frontend
 npm run dev
 ```
 
-- O frontend estará disponível em `http://127.0.0.1:5173` (ou outra porta indicada pelo Vite). O servidor de desenvolvimento do Vite já vem configurado com um proxy para o backend, então todas as chamadas de API para `/api` serão redirecionadas automaticamente para `http://127.0.0.1:8000`.
-
-## 4. Build de Produção do Frontend
-
-Para gerar a versão de produção do frontend, que é servida diretamente pelo FastAPI:
-
+**Gerar Build Manual:**
 ```bash
-# Na pasta frontend/
+cd frontend
 npm run build
 ```
-
-Os arquivos gerados em `frontend/dist/` serão servidos pela aplicação FastAPI quando ela não estiver em modo de desenvolvimento, na rota raiz (`/`).

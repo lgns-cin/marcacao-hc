@@ -212,7 +212,17 @@ Registre a nova tela em `frontend/src/router/index.ts` e adicione o link no menu
 
 ---
 
-## 4. Regras de Ouro
+## 4. Ambiente de Desenvolvimento
+
+Para implementar novas funcionalidades, utilize sempre o script `./dev.sh` na raiz do projeto.
+
+- **Vite Dev Server:** Oferece Hot Module Replacement (HMR). Você não precisa recarregar a página ou fazer build para ver as mudanças no frontend.
+- **FastAPI Reload:** O backend reinicia automaticamente ao detectar mudanças nos arquivos Python.
+- **Proxy de API:** O frontend (porta 5173) está configurado para redirecionar chamadas `/api` para o backend (porta 8000).
+
+---
+
+## 5. Regras de Ouro
 1.  **Não pule camadas:** O Router nunca deve conter lógica de banco.
 2.  **SQL Nativo:** Para o banco do hospital (AGHU), use sempre arquivos `.sql` brutos.
 3.  **ORM:** Utilize o SQLAlchemy apenas para o banco local de lógica da aplicação (SQLite).

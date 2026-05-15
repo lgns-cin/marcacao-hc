@@ -44,15 +44,26 @@ Para instalar e executar a aplicação, siga o guia de configuração detalhado:
 
 ## Início Rápido (Quick Start)
 
-Se você já possui o `uv` instalado, pode subir o backend em segundos:
+Este projeto utiliza scripts automatizados para facilitar o ambiente:
 
-```bash
-uv sync
-cp .env.example .env
-./start.sh
-```
+1. **Configuração Inicial:**
+   ```bash
+   cp .env.example .env
+   ```
 
-O frontend (build de produção) será servido automaticamente em `http://localhost:8000`.
+2. **Modo Produção Local (Build & Run):**
+   Gera o build do frontend e sobe o servidor FastAPI consolidado.
+   ```bash
+   ./start.sh
+   ```
+
+3. **Modo Desenvolvimento (Hot Reload):**
+   Sobe o Backend e o Frontend (Vite) em paralelo com atualização instantânea.
+   ```bash
+   ./dev.sh
+   ```
+
+A aplicação estará disponível em `http://localhost:8000` (via start.sh) ou `http://localhost:5173` (via dev.sh).
 
 ## Aprofundamento
 
