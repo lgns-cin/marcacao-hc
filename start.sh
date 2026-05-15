@@ -11,6 +11,10 @@ echo -e "${BLUE}==================================================${NC}"
 echo -e "${BLUE}   🚀 Iniciando Aplicação                         ${NC}"
 echo -e "${BLUE}==================================================${NC}"
 
+# 0. Limpeza de processos anteriores
+echo -e "${YELLOW}🧹 Limpando processos anteriores...${NC}"
+pkill -f "uvicorn src.main:app" || true
+
 # 1. Verificação das ferramentas necessárias
 echo -e "\n${YELLOW}[1/6] Verificando ferramentas do sistema...${NC}"
 tools=("node" "python3" "pip" "uv" "npm")
