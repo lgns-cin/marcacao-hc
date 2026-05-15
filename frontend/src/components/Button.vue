@@ -5,7 +5,7 @@
     class="flex items-center justify-center font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline transition duration-300 ease-in-out"
   >
 
-    <span v-else-if="$slots.icon" class="mr-2">
+    <span v-if="$slots.icon" class="mr-2">
       <slot name="icon"></slot>
     </span>
     <slot></slot>
@@ -50,10 +50,5 @@ const buttonClass = computed(() => {
   }
 });
 
-const textColorClass = computed(() => {
-  if (props.disabled || props.loading) {
-    return 'text-gray-500';
-  }
-  return 'text-white';
-});
+
 </script>
