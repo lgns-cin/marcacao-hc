@@ -10,13 +10,13 @@ Este documento é a ÚNICA fonte de verdade para a orquestração do desenvolvim
 
 ## 2. Contexto do Projeto (Documentação Imutável)
 As definições detalhadas estão distribuídas nos seguintes documentos:
-- [Visão](01-visao.md)
+- [Visão](01-visão.md)
 - [Requisitos](02-requisitos.md)
-- [Casos de Uso](03-casos-uso.md)
-- [Modelo de Dados](04-modelo-dados.md)
+- [Casos de Uso](03-casos-de-uso.md)
+- [Modelo de Dados](04-modelo-de-dados.md)
 - [Interfaces](05-interfaces.md)
 - [Arquitetura](06-arquitetura.md)
-- [Glossário](07-glossario.md)
+- [Glossário](07-glossário.md)
 
 ## 3. Limites de Escopo e Guardrails (Anti-Patterns)
 **A IA DEVE:**
