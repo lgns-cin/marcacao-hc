@@ -14,14 +14,14 @@
 ### 2. ÁREA DO FUNCIONÁRIO
 | ID | Título | Descrição | Prioridade |
 | :--- | :--- | :--- | :--- |
-| RF203 | Assumir solicitação | O funcionário deve conseguir assumir uma solicitação da fila geral. | Alta |
-| RF204 | Devolver solicitação | O funcionário deve conseguir devolver uma solicitação para a fila geral. | Alta |
-| RF205 | Área individual | O funcionário deve possuir uma área individual no sistema. | Média |
-| RF206 | Visualizar fila | Mostrar fila ordenada de cartões com informações das solicitações. | Essencial |
-| RF207 | Filtrar solicitações | O funcionário deve conseguir filtrar solicitações. | Essencial |
-| RF208 | Pesquisar solicitações | Pesquisar por nome do paciente, prontuário ou tipo de exame. | Essencial |
-| RF209 | Cards resumo | Visualizar informações resumidas das solicitações através de cards. | Essencial |
-| RF210 | Alterar status | Alterar o status de uma solicitação. | Essencial |
+| RF201 | Assumir solicitação | O funcionário deve conseguir assumir uma solicitação da fila geral. | Alta |
+| RF202 | Devolver solicitação | O funcionário deve conseguir devolver uma solicitação para a fila geral. | Alta |
+| RF203 | Área individual | O funcionário deve possuir uma área individual no sistema. | Média |
+| RF204 | Visualizar fila | Mostrar fila ordenada de cartões com informações das solicitações. | Essencial |
+| RF205 | Filtrar solicitações | O funcionário deve conseguir filtrar solicitações. | Essencial |
+| RF206 | Pesquisar solicitações | Pesquisar por nome do paciente, prontuário ou tipo de exame. | Essencial |
+| RF207 | Cards resumo | Visualizar informações resumidas das solicitações através de cards. | Essencial |
+| RF208 | Alterar status | Alterar o status de uma solicitação. | Essencial |
 
 ### 3. ÁREA DO ADMINISTRADOR
 | ID | Título | Descrição | Prioridade |
