@@ -10,7 +10,9 @@
 | RF103 | Checagem disponibilidade | Sistema verifica individualmente disponibilidade de cada exame por solicitação. | Essencial |
 | RF104 | Resultado por exame | Deixar claro quais exames puderam ser marcados e quais não (relatório por solicitação). | Essencial |
 | RF105 | Resposta a erros | Resposta imediata em casos de formulários preenchidos incorretamente. | Essencial |
-
+| RF106 | Definição de vagas | Define automaticamente a quantidade de entradas por exame com base nas vagas disponíveis. | Essencial |
+| RF107 | Fechamento automático | Impede novas entradas se não há vagas disponíveis para o(s) exame(s) solicitado(s). | Essencial |
+ 
 ### 2. ÁREA DO FUNCIONÁRIO
 | ID | Título | Descrição | Prioridade |
 | :--- | :--- | :--- | :--- |
@@ -22,18 +24,18 @@
 | RF206 | Pesquisar solicitações | Pesquisar por nome do paciente, prontuário ou tipo de exame. | Essencial |
 | RF207 | Cards resumo | Visualizar informações resumidas das solicitações através de cards. | Essencial |
 | RF208 | Alterar status | Alterar o status de uma solicitação. | Essencial |
+| RF209 | Notificações automáticas | Receber notificação para verificar a resposta do paciente após 24 horas. | Essencial |
 
 ### 3. ÁREA DO ADMINISTRADOR
 | ID | Título | Descrição | Prioridade |
 | :--- | :--- | :--- | :--- |
-| RF301 | Definir vagas | Definir a quantidade de vagas disponíveis para agendamento. | Alta |
-| RF302 | Configurar filtros rápidos | Definir quais filtros rápidos serão exibidos na fila principal. | Média |
-| RF303 | Visualizar agendamentos | Visualizar exames agendados e o funcionário responsável. | Alta |
-| RF304 | Filtrar agendamentos | Filtrar exames agendados por critérios (data, funcionário, tipo). | Média |
-| RF305 | Liberar solicitações | Permitir que o administrador libere solicitações que ficaram bloqueadas (assumidas por um funcionário por tempo excessivo) | Alta |
-| RF306 | Reatribuir solicitações | Reatribuir solicitações entre funcionários. | Alta |
-| RF307 | Métricas operacionais | Visualizar métricas operacionais da fila. | Média |
-| RF308 | Solicitações paradas | Visualizar solicitações paradas por muito tempo. | Média |
+| RF301 | Configurar filtros rápidos | Definir quais filtros rápidos serão exibidos na fila principal. | Média |
+| RF302 | Visualizar marcações | Visualizar exames a serem marcados e o funcionário responsável. | Alta |
+| RF303 | Filtrar marcações | Filtrar exames marcados por critérios (data, funcionário, tipo). | Média |
+| RF304 | Liberar solicitações | Permitir que o administrador libere solicitações que ficaram bloqueadas (assumidas por um funcionário por tempo excessivo) | Alta |
+| RF305 | Reatribuir solicitações | Reatribuir solicitações entre funcionários. | Alta |
+| RF306 | Métricas operacionais | Visualizar métricas operacionais da fila (marcações por funcionário, total marcado, tempo de espera por paciente). | Média |
+| RF307 | Solicitações paradas | Visualizar solicitações paradas por muito tempo. | Média |
 
 ## Requisitos Não Funcionais (RNF)
 
