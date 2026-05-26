@@ -1,19 +1,7 @@
 # Interfaces e Integrações
 
 ## 1. Protótipos
-* Links para Figma ou diretório /assets.
+* [Protótipo do formulário](https://drag-jolly-81502598.figma.site);
 
-## 2. Hardware
-* Impressoras térmicas e leitores de código de barras.
-
-## 3. Software
+## 2. Software
 * Integração com AGHU. 
-
-### [SCHEMA] Interface de Integração (TypeScript)
-```typescript
-interface IHospitalApi {
-  getPatientData(id: string): Promise<PatientRecord>;
-  syncProntuario(data: ProntuarioUpdate): Promise<SyncResponse>;
-  checkLdapAuth(credentials: AuthInfo): Promise<AuthStatus>;
-}
-```
