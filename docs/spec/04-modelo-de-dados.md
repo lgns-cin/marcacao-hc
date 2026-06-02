@@ -3,22 +3,42 @@
 ## 1. Modelo Entidade-Relacionamento
 ```mermaid
 erDiagram
-    PACIENTE ||--o{ PRONTUARIO : possui
-    PACIENTE {
-        string nome
-        string cpf
-        string cns
-        date data_nascimento
-    }
-    PRONTUARIO ||--|{ EVOLUCAO : contem
-    PRONTUARIO {
-        int id
-        datetime data_criacao
-    }
-    EVOLUCAO {
-        string descricao
-        string responsavel_crm
-    }
+	direction TB
+	Paciente {
+		number prontuário PK
+		number telefone 
+		string cidade  
+		string estado  
+	}
+
+	Solicitação {
+		number código PK
+		date data_retorno
+		string unidade_solicitante
+	}
+
+	Exame {
+		number código PK
+		string nome
+	}
+
+	Funcionário {
+		number id PK
+	}
+
+	ExameSolicitado {
+		number solicitação FK
+		number exame FK
+        number paciente_solicitante FK
+        number funcionário_atribuído FK
+        string status_atribuição
+        date data_atribuição
+	}
+
+	Solicitação }|--|{ ExameSolicitado : "tem"
+	Exame }|--|{ ExameSolicitado : "tem"
+	Paciente ||--o{ ExameSolicitado : "envia"
+    Funcionário |o--o{ ExameSolicitado : "atribui"
 ```
 
 ## 2. Dicionário de Dados
