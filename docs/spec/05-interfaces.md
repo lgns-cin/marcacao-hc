@@ -1,19 +1,7 @@
 # Interfaces e Integrações
 
 ## 1. Protótipos
-* Links para Figma ou diretório /assets.
+* [Protótipo](https://www.figma.com/proto/pmu7k2d4AnpjAgnjaUUhJy/Marca%C3%A7%C3%A3o-de-Exames-HC-UFPE?node-id=64-174&t=OxxXd73EYJxFODHY-1);
 
-## 2. Hardware
-* Impressoras térmicas e leitores de código de barras.
-
-## 3. Software
+## 2. Software
 * Integração com AGHU. 
-
-### [SCHEMA] Interface de Integração (TypeScript)
-```typescript
-interface IHospitalApi {
-  getPatientData(id: string): Promise<PatientRecord>;
-  syncProntuario(data: ProntuarioUpdate): Promise<SyncResponse>;
-  checkLdapAuth(credentials: AuthInfo): Promise<AuthStatus>;
-}
-```
