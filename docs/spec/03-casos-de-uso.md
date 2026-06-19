@@ -3,11 +3,13 @@
 ## 1. Diagrama de Casos de Uso
 ```mermaid
 flowchart LR
-
     F((Funcionário))
     A((Administrador))
+    P((Paciente))
 
     A -->|é um| F
+
+    PUC([Preencher formulário])
 
     UC1([Visualizar Fila])
     UC2([Assumir Solicitação])
@@ -22,8 +24,19 @@ flowchart LR
 
     A --- UC4
     A --- UC5
+
+    P --- PUC
 ```
-## 2. Especificação (Exemplo)
+
+```mermaid
+flowchart LR
+    
+    
+    %% Relacionamentos
+    P --- PUC
+```
+
+## 2. Especificação
 
 # UC001 - Visualizar Fila de Solicitações
 
@@ -189,3 +202,13 @@ flowchart LR
 **Fluxo Alternativo:**
 3. o Administrador escolhe um novo responsável.
 4. Sistema atualiza a atribuição.
+
+### UC011 - Preencher formulário
+* **Ator**: Paciente
+* **Fluxo**:
+    1. Inserir número de prontuário
+    2. Inserir número de solicitação
+    3. Inserir número de telefone
+    4. Selecionar estado e cidade de moradia
+    5. Verificar exames disponíveis
+    6. Confirmar pedido de marcação
