@@ -18,7 +18,7 @@ erDiagram
 	}
 
 	Exame {
-		number código PK
+		string código PK
 		string nome
 	}
 
@@ -42,21 +42,80 @@ erDiagram
 ```
 
 ## 2. Dicionário de Dados
-* Tabela PACIENTES, PRONTUARIOS, etc.
 
-### [SCHEMA] Esquema JSON - Paciente
+### Tabela Paciente
 ```json
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "Paciente",
   "type": "object",
   "properties": {
-    "nome": { "type": "string", "minLength": 3 },
-    "cpf": { "type": "string", "pattern": "^[0-9]{11}$" },
-    "cns": { "type": "string", "pattern": "^[0-9]{15}$" },
-    "data_nascimento": { "type": "string", "format": "date" }
+    "prontuario": { "type": "number" },
+    "telefone": { "type": "number", "minLength": 10, "maxLength": 11 },
+    "cidade": { "type": "string" },
+    "estado": { "type": "string" }
   },
-  "required": ["nome", "cpf", "data_nascimento"]
+  "required": ["prontuario", "telefone", "cidade", "estado"]
+}
+```
+
+### Tabela Solicitação
+```json
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Solicitacao",
+  "type": "object",
+  "properties": {
+    "codigo": { "type": "number" },
+    "data_retorno": { "type": "string", "format": "date" },
+    "unidade_solicitante": { "type": "string" }
+  },
+  "required": ["codigo", "data_retorno", "unidade_solicitante"]
+}
+```
+
+### Tabela Exame
+```json
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Exame",
+  "type": "object",
+  "properties": {
+    "codigo": { "type": "string" },
+    "nome": { "type": "string" }
+  },
+  "required": ["codigo", "nome"]
+}
+```
+
+### Tabela Funcionário
+```json
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Funcionario",
+  "type": "object",
+  "properties": {
+    "id": { "type": "number" }
+  },
+  "required": ["id"]
+}
+```
+
+### Tabela ExameSolicitado
+```jsonc
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "ExameSolicitado",
+  "type": "object",
+  "properties": {
+    "solicitacao": { "type": "number" },
+    "exame": { "type": "string" }, 
+    "paciente_solicitante": { "type": "number" },
+    "funcionário_atribuído": { "type": "number" },
+    "status_atribuicao": { "type": "string" },
+    "data_atribuicao": { "type": "string", "format": "date" }
+  },
+  "required": ["solicitacao", "exame", "paciente_solicitante"]
 }
 ```
 
