@@ -80,12 +80,11 @@ import {
   UsersIcon,
   ShieldCheckIcon,
   CubeTransparentIcon,
-  Bars3Icon,
-  ArrowRightOnRectangleIcon,
+  Bars3Icon
 } from '@heroicons/vue/24/outline';
 import ProfileDropdown from '../components/ProfileDropdown.vue';
 import Button from '../components/Button.vue';
-import { useAuthStore } from '../stores/auth';
+import { useAuthStore } from '../../stores/auth';
 
 const sidebarOpen = ref(false);
 const route = useRoute();

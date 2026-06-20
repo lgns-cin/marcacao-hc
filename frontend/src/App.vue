@@ -6,16 +6,12 @@
 
 <script setup lang="ts">
 import { useRoute } from 'vue-router';
+import { computed, onMounted } from 'vue';
+import { useAuthStore } from './stores/auth';
+
 const route = useRoute();
 
-import { onMounted, computed } from 'vue';
-import { useAuthStore } from './stores/auth';
-import DefaultLayout from './layouts/DefaultLayout.vue';
-import LoginLayout from './layouts/LoginLayout.vue';
-
-const layout = computed(() => {
-  return route.meta.layout === 'LoginLayout' ? LoginLayout : DefaultLayout;
-});
+const layout = computed(() => route.meta.layout);
 
 const authStore = useAuthStore();
 onMounted(async () => {
