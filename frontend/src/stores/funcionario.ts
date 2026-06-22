@@ -2,51 +2,7 @@ import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
 import api from '../services/api';
 import type { AgendamentoItem, FiltrosFila, MinhaAreaItem, ResultadoFinalizacao } from '../funcionario/types';
-
-const FILTROS_VAZIOS: FiltrosFila = {
-  busca: '',
-  regioes: [],
-  tiposExame: [],
-  municipio: '',
-  faixaEtaria: 'Todas',
-};
-
-function filtrarAgendamentos<T extends AgendamentoItem>(lista: T[], filtros: FiltrosFila): T[] {
-  const busca = filtros.busca.trim().toLowerCase();
-  const municipio = filtros.municipio.trim().toLowerCase();
-
-  return lista.filter((item) => {
-    const correspondeBusca =
-      !busca ||
-      item.nome.toLowerCase().includes(busca) ||
-      item.prontuario.includes(busca);
-
-    const correspondeRegiao =
-      filtros.regioes.length === 0 ||
-      filtros.regioes.includes(item.regiao);
-
-    const correspondeExame =
-      filtros.tiposExame.length === 0 ||
-      item.exames.some((exame) => filtros.tiposExame.includes(exame));
-
-    const correspondeMunicipio =
-      !municipio || item.localizacao.toLowerCase().includes(municipio);
-
-    const correspondeFaixaEtaria =
-      filtros.faixaEtaria === 'Todas' ||
-      (filtros.faixaEtaria === '0-17' && item.idade <= 17) ||
-      (filtros.faixaEtaria === '18-59' && item.idade >= 18 && item.idade <= 59) ||
-      (filtros.faixaEtaria === '60+' && item.idade >= 60);
-
-    return (
-      correspondeBusca &&
-      correspondeRegiao &&
-      correspondeExame &&
-      correspondeMunicipio &&
-      correspondeFaixaEtaria
-    );
-  });
-}
+import { filtrarAgendamentos, FILTROS_VAZIOS } from '../shared/utils/filtrarAgendamentos';
 
 export const useFuncionarioStore = defineStore('funcionario', () => {
   // state - fila de agendamento
