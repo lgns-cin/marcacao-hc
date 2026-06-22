@@ -1,18 +1,17 @@
 import { createRouter, createWebHistory, NavigationGuardNext, RouteRecordRaw } from 'vue-router';
 import { useAuthStore } from '../stores/auth';
+import FormLayout from '../shared/layouts/FormLayout.vue';
+import FormInicio from '../form/FormInicio.vue';
 
 const routes: RouteRecordRaw[] = [
-  /*
-  Exemplo:
   {
-    path: "/caminho",
-    name: "nome da rota",
-    component: Componente,
+    path: '/',
+    name: 'FormInicio',
+    component: FormInicio,
     meta: {
-      layout: ComponenteDeLayout
+      layout: FormLayout
     }
   }
-  */
 ];
 
 const router = createRouter({
