@@ -8,6 +8,8 @@ from .providers.implementations.paciente_postgres_provider import PacientePostgr
 from .providers.implementations.paciente_csv_provider import PacienteCsvProvider
 from .providers.interfaces.funcionario_provider_interface import FuncionarioProviderInterface
 from .providers.implementations.mock_funcionario_provider import MockFuncionarioProvider
+from .providers.interfaces.admin_provider_interface import AdminProviderInterface
+from .providers.implementations.mock_admin_provider import MockAdminProvider
 from .resources.database import get_aghu_db_session
 
 # 1. Funções "getter" simples e independentes (privadas por convenção)
@@ -22,6 +24,9 @@ def _get_paciente_csv_provider() -> PacienteProviderInterface:
 
 def _get_funcionario_mock_provider() -> FuncionarioProviderInterface:
     return MockFuncionarioProvider()
+
+def _get_admin_mock_provider() -> AdminProviderInterface:
+    return MockAdminProvider()
 
 # 2. A FÁBRICA: A única função que o roteador vai conhecer.
 def get_paciente_provider(strategy: str) -> Callable[..., PacienteProviderInterface]:
@@ -44,4 +49,13 @@ def get_funcionario_provider(strategy: str) -> Callable[..., FuncionarioProvider
         return _get_funcionario_mock_provider
     else:
         raise ValueError(f"Estratégia de provedor de funcionário desconhecida: {strategy}")
+
+def get_admin_provider(strategy: str) -> Callable[..., AdminProviderInterface]:
+    """
+    Fábrica para provedores do módulo administrativo.
+    """
+    if strategy.upper() == "MOCK":
+        return _get_admin_mock_provider
+    else:
+        raise ValueError(f"Estratégia de provedor de admin desconhecida: {strategy}")
 
