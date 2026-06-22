@@ -37,7 +37,12 @@ function handlePuxar() {
             <ClockIcon class="h-4 w-4" />
             há {{ agendamento.diasNaFila }}d na fila
           </span>
-          <span class="rounded-full bg-govbr-error-bg px-2.5 py-0.5 text-xs font-bold text-govbr-error">
+          <span :class="[
+            'rounded-full px-2.5 py-0.5 text-xs font-bold',
+            agendamento.status === 'ALTA' ? 'bg-govbr-error-bg text-govbr-error' :
+            agendamento.status === 'MÉDIA' ? 'bg-amber-100 text-amber-800' :
+            'bg-green-100 text-green-800'
+          ]">
             {{ agendamento.status }}
           </span>
         </div>

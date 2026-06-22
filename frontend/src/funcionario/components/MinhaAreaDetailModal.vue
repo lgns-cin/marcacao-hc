@@ -111,7 +111,12 @@ function handleFinalizar(resultado: ResultadoFinalizacao) {
             <ClockIcon class="h-4 w-4" />
             há {{ item.diasNaFila }}d
           </span>
-          <span class="rounded-full bg-govbr-error-bg px-2.5 py-0.5 text-xs font-bold text-govbr-error">
+          <span :class="[
+            'rounded-full px-2.5 py-0.5 text-xs font-bold',
+            item.status === 'ALTA' ? 'bg-govbr-error-bg text-govbr-error' :
+            item.status === 'MÉDIA' ? 'bg-amber-100 text-amber-800' :
+            'bg-green-100 text-green-800'
+          ]">
             {{ item.status }}
           </span>
         </div>
