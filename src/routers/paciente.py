@@ -1,11 +1,13 @@
 from fastapi import APIRouter, Depends
 from typing import List
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from ..controllers import paciente_controller
 from ..dependencies import get_paciente_provider, get_aghu_provider
 from ..models.exame import ExameDisponibilidadeResponse, SolicitacaoExamesResponse
 from ..providers.interfaces.paciente_provider_interface import PacienteProviderInterface
 from ..providers.interfaces.aghu_provider_interface import AghuProviderInterface
+from ..resources.postgres import get_postgres_session
 
 from ..auth.auth import auth_handler
 
@@ -52,11 +54,13 @@ async def validar_prontuario(
 async def consultar_exames_solicitacao(
     numero_prontuario: int,
     numero_solicitacao: int,
+    db: AsyncSession = Depends(get_postgres_session),
     provider: AghuProviderInterface = Depends(get_aghu_provider("csv"))
 ):
     """Consulta exames de imagem de uma solicitação vinculada a um prontuário AGHU mock."""
     return await paciente_controller.consultar_exames_solicitacao(
         numero_prontuario,
         numero_solicitacao,
+        db,
         provider
     )
