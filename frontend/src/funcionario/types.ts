@@ -1,4 +1,4 @@
-export type StatusPaciente = 'ALTA';
+export type StatusPaciente = 'ALTA' | 'MÉDIA' | 'BAIXA';
 
 export type AgendamentoItem = {
   id: number;

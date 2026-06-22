@@ -6,6 +6,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from .providers.interfaces.paciente_provider_interface import PacienteProviderInterface
 from .providers.implementations.paciente_postgres_provider import PacientePostgresProvider
 from .providers.implementations.paciente_csv_provider import PacienteCsvProvider
+from .providers.interfaces.funcionario_provider_interface import FuncionarioProviderInterface
+from .providers.implementations.mock_funcionario_provider import MockFuncionarioProvider
 from .resources.database import get_aghu_db_session
 
 # 1. Funções "getter" simples e independentes (privadas por convenção)
@@ -17,6 +19,9 @@ def _get_paciente_postgres_provider(
 def _get_paciente_csv_provider() -> PacienteProviderInterface:
     csv_path = os.getenv("PACIENTE_CSV_PATH", "data/pacientes.csv")
     return PacienteCsvProvider(csv_path=csv_path)
+
+def _get_funcionario_mock_provider() -> FuncionarioProviderInterface:
+    return MockFuncionarioProvider()
 
 # 2. A FÁBRICA: A única função que o roteador vai conhecer.
 def get_paciente_provider(strategy: str) -> Callable[..., PacienteProviderInterface]:
@@ -30,3 +35,13 @@ def get_paciente_provider(strategy: str) -> Callable[..., PacienteProviderInterf
         return _get_paciente_csv_provider
     else:
         raise ValueError(f"Estratégia de provedor desconhecida: {strategy}")
+
+def get_funcionario_provider(strategy: str) -> Callable[..., FuncionarioProviderInterface]:
+    """
+    Fábrica para provedores de funcionário.
+    """
+    if strategy.upper() == "MOCK":
+        return _get_funcionario_mock_provider
+    else:
+        raise ValueError(f"Estratégia de provedor de funcionário desconhecida: {strategy}")
+
