@@ -23,7 +23,7 @@ withDefaults(
     :disabled="disabled"
     :class="[
       // Classes Base
-      'flex gap-[0.8rem] items-center justify-center transition duration-150 ease-in-out font-bold focus:outline-none cursor-pointer disabled:cursor-not-allowed',
+      'flex gap-[0.8rem] items-center justify-center text-[16.8px] transition duration-150 ease-in-out font-bold focus:outline-none cursor-pointer disabled:cursor-not-allowed',
       
       // Classes por Variante
       variant === 'primary' && [
@@ -46,7 +46,10 @@ withDefaults(
       variant === 'tertiary' && [
         'text-sm',
         'text-govbr-primary',
-        'hover:underline'
+        'hover:underline',
+        'px-4 py-2',
+        'rounded',          
+        'hover:bg-gray-100'   // efeito sombreado
       ]
     ]"
   >

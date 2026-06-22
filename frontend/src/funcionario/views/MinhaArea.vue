@@ -106,16 +106,16 @@ onUnmounted(() => {
     <h1 class="text-3xl font-bold text-govbr-text">Minha Área</h1>
     <p class="mt-1 text-govbr-text-secondary">Realize o filtro por tipo de exame e localização</p>
 
-    <div class="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center">
+    <div class="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
       <div class="relative flex-1">
         <input
           :value="funcionarioStore.filtrosMinhaArea.busca"
           type="text"
           placeholder="Busque por nome ou n° do prontuário"
-          class="w-full rounded border border-govbr-border bg-white px-4 py-3 pr-10 text-sm placeholder-govbr-text-secondary focus:outline-none focus:ring-1 focus:ring-govbr-primary"
+          class="w-full rounded bg-[#F8F8F8] px-4 py-3 pr-10 text-sm placeholder-govbr-text-secondary focus:outline-none focus:ring-1 focus:ring-govbr-primary"
           @input="funcionarioStore.setBuscaMinhaArea(($event.target as HTMLInputElement).value)"
         />
-        <MagnifyingGlassIcon class="absolute right-3 top-1/2 h-5 w-5 -translate-y-1/2 text-govbr-primary" />
+        <MagnifyingGlassIcon class="absolute right-3 top-1/2 h-5 w-5 -translate-y-1/2 stroke-2 text-govbr-primary" />
       </div>
 
       <button
@@ -158,7 +158,7 @@ onUnmounted(() => {
           <MinhaAreaCard
             v-for="item in funcionarioStore.itensEmAndamento"
             :key="item.id"
-            :item="item"
+            :meuItem="item"
             @ver-mais="abrirDetalhes"
             @devolver-a-fila="abrirDevolverAFila"
           />
@@ -185,7 +185,7 @@ onUnmounted(() => {
           <MinhaAreaCard
             v-for="item in funcionarioStore.itensAguardandoConfirmacao"
             :key="item.id"
-            :item="item"
+            :meuItem="item"
             @ver-mais="abrirDetalhes"
             @devolver-a-fila="abrirDevolverAFila"
           />
@@ -206,7 +206,7 @@ onUnmounted(() => {
           <MinhaAreaCard
             v-for="item in funcionarioStore.itensFinalizados"
             :key="item.id"
-            :item="item"
+            :meuItem="item"
             @ver-mais="abrirDetalhes"
             @devolver-a-fila="abrirDevolverAFila"
           />
@@ -215,6 +215,7 @@ onUnmounted(() => {
     </div>
 
     <MinhaAreaDetailModal
+      v-if="itemSelecionado" 
       :show="modalAberto"
       :item="itemSelecionado"
       :visao-inicial="visaoInicialModal"
