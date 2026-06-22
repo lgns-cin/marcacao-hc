@@ -15,8 +15,8 @@
         v-if="show" 
         class="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6"
       >
-        <div 
-          class="bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden transform transition-all"
+        <div
+          class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl overflow-hidden transform transition-all"
           @click.stop
         >
           <!-- Header -->
