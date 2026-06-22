@@ -21,7 +21,7 @@
         >
           <!-- Header -->
           <div class="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
-            <h2 class="text-xl font-bold text-gray-800">
+            <h2 class="flex-1 min-w-0 text-xl font-bold text-gray-800">
               <slot name="header">Título do Modal</slot>
             </h2>
             <button 
