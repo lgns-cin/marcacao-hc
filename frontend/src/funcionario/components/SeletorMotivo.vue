@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from 'vue';
+import { ref, watch, onBeforeUnmount } from 'vue';
 import { MagnifyingGlassIcon, ChevronDownIcon } from '@heroicons/vue/24/outline';
 
 const props = defineProps<{
@@ -13,15 +13,32 @@ const emit = defineEmits<{
 }>();
 
 const aberto = ref(false);
+const raiz = ref<HTMLElement | null>(null);
+
+function fecharSeClicarFora(event: MouseEvent) {
+  if (raiz.value && !raiz.value.contains(event.target as Node)) {
+    aberto.value = false;
+  }
+}
+
+watch(aberto, (estaAberto) => {
+  if (estaAberto) {
+    document.addEventListener('click', fecharSeClicarFora);
+  } else {
+    document.removeEventListener('click', fecharSeClicarFora);
+  }
+});
 
 function selecionar(opcao: string) {
   emit('update:modelValue', opcao);
   aberto.value = false;
 }
+
+onBeforeUnmount(() => document.removeEventListener('click', fecharSeClicarFora));
 </script>
 
 <template>
-  <div class="relative">
+  <div ref="raiz">
     <button
       type="button"
       class="flex w-full items-center justify-between gap-2 rounded border border-govbr-border px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-govbr-primary"
@@ -36,11 +53,9 @@ function selecionar(opcao: string) {
       <ChevronDownIcon class="h-4 w-4 shrink-0 text-govbr-primary" />
     </button>
 
-    <div v-if="aberto" class="fixed inset-0 z-10" @click="aberto = false" />
-
     <ul
       v-if="aberto"
-      class="absolute z-20 mt-1 w-full overflow-hidden rounded border border-govbr-border bg-white shadow-lg"
+      class="mt-1 overflow-hidden rounded border border-govbr-border bg-white shadow-sm"
     >
       <li
         v-for="opcao in props.opcoes"
