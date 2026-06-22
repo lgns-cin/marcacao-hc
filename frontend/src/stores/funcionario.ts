@@ -92,6 +92,7 @@ export const useFuncionarioStore = defineStore('funcionario', () => {
 
   async function puxarAgendamento(id: number) {
     await api.post(`/api/funcionario/agendamentos/${id}/puxar`);
+    agendamentos.value = agendamentos.value.filter((i) => i.id !== id);
   }
 
   function setBusca(busca: string) {
