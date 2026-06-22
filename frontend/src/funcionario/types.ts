@@ -22,3 +22,25 @@ export type FiltrosFila = {
   municipio: string;
   faixaEtaria: string;
 };
+
+export type EstadoMinhaArea = 'EM_ANDAMENTO' | 'AGUARDANDO_CONFIRMACAO' | 'FINALIZADO';
+
+export type ResultadoFinalizacao = 'CONFIRMADO' | 'CANCELADO';
+
+export type MinhaAreaItem = AgendamentoItem & {
+  estado: EstadoMinhaArea;
+  resultado?: ResultadoFinalizacao;
+};
+
+export const MOTIVOS_DEVOLUCAO = [
+  'Exame selecionado por engano.',
+  'Solicitação atribuída incorretamente pela administração.',
+  'Outro',
+];
+
+export const MOTIVOS_PROBLEMA = [
+  'Dados inconsistentes',
+  'Duplicidade',
+  'Erro cadastral',
+  'Outro',
+];
