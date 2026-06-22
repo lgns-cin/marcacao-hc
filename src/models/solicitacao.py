@@ -21,4 +21,4 @@ class FormularioPacienteRequest(BaseModel):
     telefone: str
     estado: str
     cidade: str
-    exames: List[str]
+    exames: List[int]

@@ -14,6 +14,7 @@ class Exame(Base):
 
 
 class ExameDisponibilidadeResponse(BaseModel):
+    codigo_exame: int
     nome_exame: str
     tem_vagas: bool
 
