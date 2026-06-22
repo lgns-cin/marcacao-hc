@@ -3,6 +3,7 @@ import { useAuthStore } from '../stores/auth';
 import FormLayout from '../shared/layouts/FormLayout.vue';
 import FormInicio from '../form/FormInicio.vue';
 import FormProntuario from '../form/FormProntuario.vue';
+import FormSolicitacao from '../form/FormSolicitacao.vue';
 
 const routes: RouteRecordRaw[] = [
   {
@@ -17,6 +18,14 @@ const routes: RouteRecordRaw[] = [
     path: '/prontuario',
     name: 'FormProntuario',
     component: FormProntuario,
+    meta: {
+      layout: FormLayout
+    }
+  },
+  {
+    path: '/solicitacao',
+    name: 'FormSolicitacao',
+    component: FormSolicitacao,
     meta: {
       layout: FormLayout
     }
