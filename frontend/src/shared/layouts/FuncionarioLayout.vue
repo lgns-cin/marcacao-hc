@@ -132,6 +132,15 @@ watch(() => route.path, () => {
             {{ item.label }}
             <ChevronRightIcon class="h-5 w-5" />
           </router-link>
+
+          <router-link
+            v-if="authStore.isAdmin"
+            :to="{ name: 'AdminVisaoGeral' }"
+            class="flex items-center justify-between border-t border-govbr-border px-6 py-4 text-base font-medium text-govbr-primary transition-colors hover:bg-govbr-bg"
+          >
+            Central Administrativa
+            <ChevronRightIcon class="h-5 w-5" />
+          </router-link>
         </nav>
       </aside>
     </transition>
