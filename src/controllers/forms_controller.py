@@ -70,22 +70,19 @@ async def processar_formulario_paciente(
     # Persistir paciente e solicitação antes de criar vínculos
     await db.flush()
 
-    # Buscar exames no banco local para cada exame informado pelo usuário
+    # Buscar exames no banco local pelos códigos
     exames_confirmados: List[Exame] = []
-    for exame_nome in payload.exames:
-        exame_nome_limpo = exame_nome.strip()
-        if not exame_nome_limpo:
-            continue
+    if payload.exames:
+        stmt_exames = select(Exame).where(Exame.codigo.in_(payload.exames))
+        result_exames = await db.execute(stmt_exames)
+        exames_confirmados = result_exames.scalars().all()
 
-        stmt_exame = select(Exame).where(func.lower(Exame.nome) == exame_nome_limpo.lower())
-        result_exame = await db.execute(stmt_exame)
-        exame_obj = result_exame.scalar_one_or_none()
-        if exame_obj is None:
+        codigo_unicos = set(payload.exames)
+        if len(exames_confirmados) != len(codigo_unicos):
             raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail=f"Exame '{exame_nome_limpo}' não encontrado no banco local"
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Código de exame inválido encontrado"
             )
-        exames_confirmados.append(exame_obj)
 
     # Evitar inserções duplicadas para o mesmo par solicitacao/exame
     stmt_existentes = select(ExameSolicitado.exame_codigo).where(
