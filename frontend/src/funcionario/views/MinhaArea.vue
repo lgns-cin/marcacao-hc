@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, onUnmounted } from 'vue';
 import { useToast } from 'vue-toastification';
 import { MagnifyingGlassIcon, FunnelIcon, ClockIcon, CheckCircleIcon, InboxIcon } from '@heroicons/vue/24/outline';
 import { useFuncionarioStore } from '../../stores/funcionario';
@@ -79,8 +79,25 @@ async function carregarMinhaArea() {
   }
 }
 
+const INTERVALO_ATUALIZACAO_MS = 10000;
+let intervaloAtualizacao: ReturnType<typeof setInterval> | undefined;
+
+async function atualizarEmSegundoPlano() {
+  if (modalAberto.value) return;
+  try {
+    await funcionarioStore.fetchMinhaArea({ silencioso: true });
+  } catch (error) {
+    // Falha silenciosa: a próxima rodada de polling tenta novamente.
+  }
+}
+
 onMounted(() => {
   carregarMinhaArea();
+  intervaloAtualizacao = setInterval(atualizarEmSegundoPlano, INTERVALO_ATUALIZACAO_MS);
+});
+
+onUnmounted(() => {
+  clearInterval(intervaloAtualizacao);
 });
 </script>
 
