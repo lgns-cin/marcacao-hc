@@ -2,12 +2,21 @@ import { createRouter, createWebHistory, NavigationGuardNext, RouteRecordRaw } f
 import { useAuthStore } from '../stores/auth';
 import FormLayout from '../shared/layouts/FormLayout.vue';
 import FormInicio from '../form/FormInicio.vue';
+import FormProntuario from '../form/FormProntuario.vue';
 
 const routes: RouteRecordRaw[] = [
   {
     path: '/',
     name: 'FormInicio',
     component: FormInicio,
+    meta: {
+      layout: FormLayout
+    }
+  },
+  {
+    path: '/prontuario',
+    name: 'FormProntuario',
+    component: FormProntuario,
     meta: {
       layout: FormLayout
     }
