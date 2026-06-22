@@ -1,12 +1,20 @@
 @import 'tailwindcss';
 
 @theme {
-  --font-family-sans: 'Nunito', sans-serif;
+  --font-family-sans: 'Raleway', sans-serif;
 
+  /* CORES: FORMULÁRIO */
+  --color-light-blue: #0171B9;
+  --color-dark-blue: #040820;
+  --color-dark-blue-transparent: rgba(4, 8, 32, 0.5);
+  --color-light-red: #E52207;
+  --color-light-green: #48FF5A;
+
+  /* CORES DO TEMPLATE */
   --color-paper-bg: #f4f3ef;
   --color-paper-text: #66615b;
   --color-paper-sidebar: #424242;
-  --color-paper-active-link: #5a5a5a; /* Light Gray for active link */
+  --color-paper-active-link: #5a5a5a; /* Light Gray for active link  */
 
   /* Default */
   --color-paper-default: #66615b;
@@ -32,7 +40,7 @@
   --color-paper-danger: #eb5e28;
   --color-paper-danger-hover: #d95524;
 
-  --color-paper-disabled: #E0E0E0; /* Light Gray */
+  --color-paper-disabled: #E0E0E0; /* Light Gray  */
 
   --shadow-paper: 0 2px 2px 0 rgba(204, 197, 185, 0.5);
 }
