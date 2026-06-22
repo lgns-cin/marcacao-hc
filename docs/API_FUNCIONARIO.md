@@ -4,9 +4,9 @@ Este documento mapeia **todos** os endpoints HTTP consumidos pelas telas do mód
 
 Fontes de verdade usadas para este mapeamento:
 - Frontend: `frontend/src/stores/auth.ts`, `frontend/src/stores/funcionario.ts`, `frontend/src/services/api.ts`.
-- Backend: `src/routers/auth.py` (único roteador relacionado já implementado).
+- Backend: `src/routers/auth.py`, `src/routers/funcionario.py`, `src/controllers/funcionario_controller.py`.
 
-> **Importante:** o backend atual (`src/routers/`) só possui roteadores para `auth`, `pacientes`, `admin`, `aih`, `bpa` e `material`. **Não existe** um roteador `funcionario`/`agendamento` em `src/main.py`. Os endpoints da seção 2 são o **contrato que o frontend já assume e está pronto para consumir**, validado durante o desenvolvimento desta feature contra um mock backend descartável (Node, fora do repositório). Eles precisam ser implementados no backend antes de ir para produção — ver seção 5 para recomendações de implementação.
+> Todos os endpoints da seção 2 estão **implementados** em `src/routers/funcionario.py`, seguindo a estratégia de provedores (`FUNCIONARIO_STRATEGY`, default `MOCK`) descrita em `src/dependencies.py`. A implementação `MOCK` opera sobre o dataset compartilhado em `src/providers/implementations/_mock_agendamentos_data.py` (o mesmo consumido pelo módulo `admin` — ver `docs/TESTANDO_MOCKS_FUNCIONARIO.md`).
 
 ---
 
@@ -128,7 +128,7 @@ Retorna os dados do usuário autenticado, extraídos diretamente do payload do J
 
 ---
 
-## 2. Fila de Agendamento e Minha Área (⚠️ contrato do frontend — **a implementar no backend**)
+## 2. Fila de Agendamento e Minha Área (✅ implementado — `src/routers/funcionario.py`)
 
 Todos os endpoints abaixo são prefixados por `/api/funcionario` e exigem `Authorization: Bearer <access_token>`. Definidos e consumidos por `stores/funcionario.ts`.
 
@@ -215,6 +215,26 @@ Finaliza o atendimento de um item `AGUARDANDO_CONFIRMACAO`, registrando o result
 
 ---
 
+## 2.1 Central Administrativa (✅ implementado — `src/routers/admin_dashboard.py`)
+
+Endpoints prefixados por `/api/admin`, consumidos por `frontend/src/stores/admin.ts`. Todas as rotas exigem `Authorization: Bearer <access_token>` **e** que o claim `groups` do JWT contenha o grupo `GLO-SEC-HCPE-SETISD` (verificado por `verify_admin_group`, em `src/routers/admin.py`); usuários autenticados sem esse grupo recebem `403`.
+
+| Método | Rota | Descrição | Consumido por |
+| :--- | :--- | :--- | :--- |
+| GET | `/api/admin/visao-geral` | KPIs e dados dos gráficos da tela Visão Geral | `adminStore.fetchVisaoGeral` |
+| GET | `/api/admin/pendencias` | Agendamentos que exigem intervenção (bloqueados ou parados) | `adminStore.fetchPendencias` |
+| POST | `/api/admin/pendencias/{id}/resolver` | Marca uma pendência como resolvida | `adminStore.resolverPendencia` |
+| GET | `/api/admin/agendamentos?estado=em_andamento\|concluido` | Lista agendamentos para a tela de Gerenciamento, filtrados por estado | `adminStore.fetchAgendamentosGerenciamento` |
+| POST | `/api/admin/agendamentos/{id}/reatribuir` | Reatribui o agendamento a outro funcionário (corpo: `{ "funcionario": string }`, username) | `adminStore.reatribuirAgendamento` |
+| POST | `/api/admin/agendamentos/{id}/devolver` | Devolve o agendamento à fila geral em nome da administração (corpo: `{ "motivo": string }`) | `adminStore.devolverAFilaAdmin` |
+| GET | `/api/admin/funcionarios` | Lista `{ username, nome }[]` para o seletor de reatribuição | `adminStore.fetchFuncionarios` |
+
+A tela **Fila de Agendamentos** do admin (somente leitura) não tem endpoint próprio — reutiliza `GET /api/funcionario/agendamentos` diretamente (ver seção 2), já que o conteúdo é idêntico ao da fila do funcionário.
+
+A implementação `MOCK` (`MockAdminProvider`) opera sobre o mesmo dataset em memória usado pelo `MockFuncionarioProvider` (`_mock_agendamentos_data.py`), então ações em uma tela (ex.: devolver à fila pelo admin) refletem imediatamente na outra (ex.: o item reaparece em `GET /api/funcionario/agendamentos`).
+
+---
+
 ## 3. Modelos de dados compartilhados
 
 Definidos em `frontend/src/funcionario/types.ts` — refletem o shape que o frontend espera receber/enviar; ainda não existe um `response_model` Pydantic equivalente no backend.
@@ -291,10 +311,17 @@ Se `RETURNING` não trouxer nenhuma linha, o backend deve responder `409 Conflic
 | POST | `/api/token/refresh` | Cookie | ✅ | `auth.ts → initializeAuth`, interceptor de `api.ts` |
 | POST | `/api/logout` | Cookie (opcional) | ✅ | `auth.ts → logout` |
 | GET | `/api/users/me` | Bearer | ✅ | `auth.ts → fetchUser` |
-| GET | `/api/funcionario/agendamentos` | Bearer | ⚠️ Não | `funcionario.ts → fetchAgendamentos` |
-| POST | `/api/funcionario/agendamentos/{id}/puxar` | Bearer | ⚠️ Não | `funcionario.ts → puxarAgendamento` |
-| GET | `/api/funcionario/minha-area` | Bearer | ⚠️ Não | `funcionario.ts → fetchMinhaArea` |
-| POST | `/api/funcionario/minha-area/{id}/aguardar-confirmacao` | Bearer | ⚠️ Não | `funcionario.ts → aguardarConfirmacao` |
-| POST | `/api/funcionario/minha-area/{id}/devolver` | Bearer | ⚠️ Não | `funcionario.ts → devolverAFila` |
-| POST | `/api/funcionario/minha-area/{id}/reportar-problema` | Bearer | ⚠️ Não | `funcionario.ts → reportarProblema` |
-| POST | `/api/funcionario/minha-area/{id}/finalizar` | Bearer | ⚠️ Não | `funcionario.ts → finalizarAgendamento` |
+| GET | `/api/funcionario/agendamentos` | Bearer | ✅ | `funcionario.ts → fetchAgendamentos` |
+| POST | `/api/funcionario/agendamentos/{id}/puxar` | Bearer | ✅ | `funcionario.ts → puxarAgendamento` |
+| GET | `/api/funcionario/minha-area` | Bearer | ✅ | `funcionario.ts → fetchMinhaArea` |
+| POST | `/api/funcionario/minha-area/{id}/aguardar-confirmacao` | Bearer | ✅ | `funcionario.ts → aguardarConfirmacao` |
+| POST | `/api/funcionario/minha-area/{id}/devolver` | Bearer | ✅ | `funcionario.ts → devolverAFila` |
+| POST | `/api/funcionario/minha-area/{id}/reportar-problema` | Bearer | ✅ | `funcionario.ts → reportarProblema` |
+| POST | `/api/funcionario/minha-area/{id}/finalizar` | Bearer | ✅ | `funcionario.ts → finalizarAgendamento` |
+| GET | `/api/admin/visao-geral` | Bearer + grupo admin | ✅ | `admin.ts → fetchVisaoGeral` |
+| GET | `/api/admin/pendencias` | Bearer + grupo admin | ✅ | `admin.ts → fetchPendencias` |
+| POST | `/api/admin/pendencias/{id}/resolver` | Bearer + grupo admin | ✅ | `admin.ts → resolverPendencia` |
+| GET | `/api/admin/agendamentos` | Bearer + grupo admin | ✅ | `admin.ts → fetchAgendamentosGerenciamento` |
+| POST | `/api/admin/agendamentos/{id}/reatribuir` | Bearer + grupo admin | ✅ | `admin.ts → reatribuirAgendamento` |
+| POST | `/api/admin/agendamentos/{id}/devolver` | Bearer + grupo admin | ✅ | `admin.ts → devolverAFilaAdmin` |
+| GET | `/api/admin/funcionarios` | Bearer + grupo admin | ✅ | `admin.ts → fetchFuncionarios` |

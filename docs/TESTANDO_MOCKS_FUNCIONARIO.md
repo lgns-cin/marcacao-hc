@@ -91,3 +91,42 @@ A fila exibe 6 pacientes variados que cobrem diferentes cenários de teste:
 1. Puxe **Juliana Santos Lima** e coloque-a em estado **Aguardando Confirmação** (seguindo os passos dos Testes B e C).
 2. Na seção *Aguardando Confirmação*, clique no card dela e selecione **Confirmado** ou **Cancelado**.
 3. O paciente deve se mover para a seção **Finalizados**, exibindo o resultado selecionado na badge de status.
+
+---
+
+## 🛠️ 6. Testando a Central Administrativa (Mock)
+
+A Central Administrativa (`/admin/*`) reutiliza o **mesmo dataset em memória** descrito acima — `_mock_agendamentos_data.py` — acrescido de 4 registros adicionais (ids 7–10) já em estados que disparam os fluxos de intervenção administrativa:
+
+| ID | Nome do Paciente | Estado | Situação | Cenário coberto |
+|---|---|---|---|---|
+| **7** | Roberto Almeida Castro | `EM_ANDAMENTO` | **Bloqueado** (`problema_motivo` preenchido: "Dados Inconsistentes") | Card de pendência com problema reportado — modal somente leitura ("Fechar"/"Resolvido") |
+| **8** | Camila Ferreira Dias | `EM_ANDAMENTO`, há 20 dias na fila | **Parado** (sem problema, mas `diasNaFila > 15`) | Card de pendência por estagnação — aceita Devolver à fila / Reatribuir |
+| **9** | Beatriz Souza Martins | `FINALIZADO` | — | Aba "Concluído" do Gerenciamento de Agendamentos |
+| **10** | Thiago Ramos Pereira | `FINALIZADO` | — | Aba "Concluído" do Gerenciamento de Agendamentos |
+
+### Login como administrador
+
+As credenciais mock são as mesmas do módulo funcionário (`admin` / `admin`) — o usuário mock já pertence ao grupo `GLO-SEC-HCPE-SETISD`, que é o que libera o acesso às rotas `/admin/*` (ver `verify_admin_group` em `src/routers/admin.py` e `authStore.isAdmin` no frontend). Após login, acesse "Central Administrativa" pelo menu lateral da Área do Funcionário, ou navegue direto para `/admin`.
+
+### Teste G: Gestão de Pendências
+1. Acesse `/admin/pendencias`. Os cards de **Roberto Almeida Castro** (badge "Bloqueado") e **Camila Ferreira Dias** (badge "Parado") devem aparecer.
+2. Em **Roberto**, clique em "Ver mais" — o modal deve abrir em modo somente leitura, exibindo o motivo/detalhes do problema e os botões "Fechar"/"Resolvido".
+3. Em **Camila**, clique em "Ver mais" — o modal deve permitir "Devolver à fila" e "Reatribuir" (ela não tem problema reportado).
+
+### Teste H: Devolver à fila (admin)
+1. Em `/admin/agendamentos`, aba "Em andamento", clique em "Devolver à fila" no card de **Camila Ferreira Dias**.
+2. O modal abre com o painel de motivo já expandido. Selecione um motivo e confirme (botão de check verde).
+3. Camila deve sair da lista de "Em andamento" e reaparecer em `GET /api/funcionario/agendamentos` (visível tanto na Fila do funcionário quanto na Fila do admin).
+
+### Teste I: Reatribuir (admin)
+1. Em `/admin/agendamentos`, abra os detalhes de um item sem problema reportado e clique em "Reatribuir".
+2. Selecione um funcionário diferente no seletor e confirme.
+3. O campo "Responsável" do card deve refletir o novo funcionário imediatamente.
+
+### Teste J: Personalizar Indicadores (Visão Geral)
+1. Em `/admin`, clique em "Personalizar Indicadores".
+2. Desmarque um KPI ou gráfico e clique em "Aplicar" — o item deve desaparecer da tela e a grade deve se reorganizar.
+3. Recarregue a página: a seleção deve persistir (gravada em `localStorage`, chave `admin-visao-geral-preferencias`).
+
+> ⚠️ O provedor mock mantém o estado em memória do processo Python — qualquer mutação feita durante os testes (devolver, reatribuir, resolver pendência) persiste até o servidor `uvicorn` ser reiniciado.
