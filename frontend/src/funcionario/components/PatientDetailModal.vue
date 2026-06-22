@@ -2,6 +2,7 @@
 import { UserGroupIcon, ClockIcon, ArrowDownTrayIcon } from '@heroicons/vue/24/outline';
 import Modal from '../../shared/components/Modal.vue';
 import type { AgendamentoItem } from '../types';
+import GovButton from './GovButton.vue';
 
 const props = defineProps<{
   show: boolean;
@@ -78,19 +79,13 @@ function handlePuxar() {
     </div>
 
     <template #footer>
-      <button
-        class="rounded-full border border-govbr-primary px-5 py-2 text-sm font-bold text-govbr-primary hover:bg-govbr-bg"
-        @click="emit('close')"
-      >
+      <GovButton variant="tertiary" @click="emit('close')">
         Fechar
-      </button>
-      <button
-        class="flex items-center gap-2 rounded-full bg-govbr-primary px-5 py-2 text-sm font-bold text-white hover:bg-govbr-primary-hover"
-        @click="handlePuxar"
-      >
-        <ArrowDownTrayIcon class="h-5 w-5" />
+      </GovButton>
+      <GovButton variant="primary" @click="handlePuxar">
+        <ArrowDownTrayIcon class="h-5 w-5 stroke-2" />
         Puxar
-      </button>
+      </GovButton>
     </template>
   </Modal>
 </template>

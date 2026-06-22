@@ -11,6 +11,7 @@ import Modal from '../../shared/components/Modal.vue';
 import SeletorMotivo from './SeletorMotivo.vue';
 import { MOTIVOS_DEVOLUCAO, MOTIVOS_PROBLEMA } from '../types';
 import type { MinhaAreaItem, ResultadoFinalizacao } from '../types';
+import GovButton from './GovButton.vue';
 
 type Visao = 'detalhes' | 'reportarProblema' | 'devolverAFila';
 
@@ -82,22 +83,18 @@ function handleFinalizar(resultado: ResultadoFinalizacao) {
           {{ item.nome }}
         </span>
 
-        <button
+        <GovButton
           v-if="visao === 'detalhes' && item.estado === 'AGUARDANDO_CONFIRMACAO'"
-          class="flex shrink-0 items-center gap-2 rounded-full border border-govbr-primary px-4 py-1.5 text-sm font-bold text-govbr-primary hover:bg-govbr-bg"
+          variant="tertiary"
           @click="visao = 'reportarProblema'"
         >
-          <ExclamationCircleIcon class="h-5 w-5" />
           Reportar Problema
-        </button>
+        </GovButton>
 
-        <button
-          v-else-if="visao !== 'detalhes'"
-          class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-govbr-primary text-white hover:bg-govbr-primary-hover"
-          @click="voltarParaDetalhes"
-        >
+        <GovButton v-else-if="visao !== 'detalhes'" variant="primary" @click="voltarParaDetalhes">
           <ArrowLeftIcon class="h-5 w-5" />
-        </button>
+          Voltar
+        </GovButton>
       </div>
     </template>
 
@@ -153,21 +150,15 @@ function handleFinalizar(resultado: ResultadoFinalizacao) {
           <dd class="inline text-govbr-text-secondary"> {{ item.idade }} anos</dd>
         </div>
 
-        <div v-if="item.estado === 'AGUARDANDO_CONFIRMACAO'" class="!mt-6 space-y-2">
+        <div v-if="item.estado === 'AGUARDANDO_CONFIRMACAO'" class="mt-6 space-y-2">
           <p class="font-semibold text-govbr-text">Finalizar Agendamento, o exame foi:</p>
           <div class="flex items-center gap-3">
-            <button
-              class="rounded-full border border-govbr-primary px-5 py-2 text-sm font-bold text-govbr-primary hover:bg-govbr-bg"
-              @click="handleFinalizar('CONFIRMADO')"
-            >
+            <GovButton variant="tertiary" @click="handleFinalizar('CONFIRMADO')">
               Confirmado
-            </button>
-            <button
-              class="rounded-full border border-govbr-primary px-5 py-2 text-sm font-bold text-govbr-primary hover:bg-govbr-bg"
-              @click="handleFinalizar('CANCELADO')"
-            >
+            </GovButton>
+            <GovButton variant="tertiary" @click="handleFinalizar('CANCELADO')">
               Cancelado
-            </button>
+            </GovButton>
           </div>
         </div>
       </dl>
@@ -200,56 +191,59 @@ function handleFinalizar(resultado: ResultadoFinalizacao) {
 
     <template #footer>
       <template v-if="visao === 'detalhes'">
-        <button
+        <GovButton
           v-if="item?.estado === 'EM_ANDAMENTO'"
-          class="mr-auto text-sm font-bold text-govbr-primary hover:underline"
+          variant="tertiary"
           @click="visao = 'reportarProblema'"
         >
           Reportar Problema
-        </button>
-        <button
-          class="rounded-full border border-govbr-primary px-5 py-2 text-sm font-bold text-govbr-primary hover:bg-govbr-bg"
+        </GovButton>
+        <GovButton
+          variant="secondary"
           @click="fechar"
         >
           Fechar
-        </button>
-        <button
+        </GovButton>
+        <GovButton
           v-if="item?.estado === 'EM_ANDAMENTO'"
-          class="flex items-center gap-2 rounded-full bg-govbr-primary px-5 py-2 text-sm font-bold text-white hover:bg-govbr-primary-hover"
+          variant="primary"
           @click="handleAguardarConfirmacao"
         >
           <ClockIcon class="h-5 w-5" />
           Aguardar confirmação do Paciente
-        </button>
+        </GovButton>
       </template>
 
       <template v-else-if="visao === 'reportarProblema'">
-        <button class="mr-auto text-sm font-bold text-govbr-primary hover:underline" @click="voltarParaDetalhes">
+        <GovButton
+          variant="tertiary"
+          @click="voltarParaDetalhes"
+        >
           Cancelar
-        </button>
-        <button
-          class="rounded-full bg-govbr-primary px-5 py-2 text-sm font-bold text-white hover:bg-govbr-primary-hover disabled:cursor-not-allowed disabled:bg-govbr-secondary/50"
+        </GovButton>
+        <GovButton
+          variant="primary"
           :disabled="!motivoProblema"
           @click="handleEnviarProblema"
         >
           Enviar
-        </button>
+        </GovButton>
       </template>
 
       <template v-else-if="visao === 'devolverAFila'">
-        <button
-          class="rounded-full border border-govbr-primary px-5 py-2 text-sm font-bold text-govbr-primary hover:bg-govbr-bg disabled:cursor-not-allowed disabled:opacity-50"
+        <GovButton
+          variant="secondary"
           :disabled="!motivoDevolucao"
           @click="handleConfirmarDevolucao"
         >
           Confirmar devolução
-        </button>
-        <button
-          class="rounded-full bg-govbr-primary px-5 py-2 text-sm font-bold text-white hover:bg-govbr-primary-hover"
+        </GovButton>
+        <GovButton
+          variant="primary"
           @click="fechar"
         >
           Fechar
-        </button>
+        </GovButton>
       </template>
     </template>
   </Modal>

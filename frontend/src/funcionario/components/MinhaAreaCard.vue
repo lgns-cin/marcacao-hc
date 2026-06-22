@@ -2,6 +2,7 @@
 import { computed } from 'vue';
 import { UserGroupIcon, ClockIcon } from '@heroicons/vue/24/outline';
 import type { MinhaAreaItem } from '../types';
+import GovButton from './GovButton.vue';
 
 const props = defineProps<{
   item: MinhaAreaItem;
@@ -59,20 +60,13 @@ function handleDevolverAFila() {
     </div>
 
     <div class="mt-4 flex items-center gap-6">
-      <button
-        v-if="!finalizado"
-        class="flex items-center gap-1 text-sm font-bold text-govbr-primary hover:underline"
-        @click="handleDevolverAFila"
-      >
-        <ClockIcon class="h-4 w-4" />
+      <GovButton v-if="!finalizado" variant="tertiary" @click="handleDevolverAFila">
         Devolver à fila
-      </button>
-      <button
-        class="rounded-full bg-govbr-primary px-5 py-2 text-sm font-bold text-white hover:bg-govbr-primary-hover"
-        @click="handleVerMais"
-      >
+      </GovButton>
+
+      <GovButton variant="primary" @click="handleVerMais">
         Ver mais
-      </button>
+      </GovButton>
     </div>
   </div>
 </template>

@@ -2,6 +2,7 @@
 import { ref } from 'vue';
 import { MagnifyingGlassIcon } from '@heroicons/vue/24/outline';
 import type { FiltrosFila } from '../types';
+import GovButton from './GovButton.vue';
 
 const REGIOES = ['Região Metropolitana', 'Agreste', 'Mata Sul', 'Mata Norte', 'Sertão'];
 const TIPOS_EXAME = ['Tomografia', 'Ressonância', 'Mamografia', 'Endoscopia', 'Colonoscopia', 'Ultrassonografia', 'Espirometria'];
@@ -90,15 +91,13 @@ function limpar() {
     </div>
 
     <div class="flex items-center gap-6 sm:col-span-2">
-      <button
-        class="rounded-full bg-govbr-primary px-6 py-2 text-sm font-bold text-white hover:bg-govbr-primary-hover"
-        @click="aplicar"
-      >
+      <GovButton variant="primary" @click="aplicar">
         Aplicar Filtros
-      </button>
-      <button class="text-sm font-bold text-govbr-primary hover:underline" @click="limpar">
-        Limpar Filtros
-      </button>
+      </GovButton>
+
+      <GovButton variant="tertiary" @click="limpar">
+        Limpar
+      </GovButton>
     </div>
   </div>
 </template>

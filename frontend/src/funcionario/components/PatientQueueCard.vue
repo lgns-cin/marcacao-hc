@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { UserGroupIcon, ClockIcon, ArrowDownTrayIcon } from '@heroicons/vue/24/outline';
 import type { AgendamentoItem } from '../types';
+import GovButton from './GovButton.vue';
 
 const props = defineProps<{
   agendamento: AgendamentoItem;
@@ -51,16 +52,13 @@ function handleVerMais() {
     </div>
 
     <div class="mt-4 flex items-center gap-6">
-      <button
-        class="flex items-center gap-2 rounded-full bg-govbr-primary px-5 py-2 text-sm font-bold text-white hover:bg-govbr-primary-hover"
-        @click="handlePuxar"
-      >
-        <ArrowDownTrayIcon class="h-5 w-5" />
+      <GovButton variant="primary" @click="handlePuxar">
+        <ArrowDownTrayIcon class="h-5 w-5 stroke-2" />
         Puxar
-      </button>
-      <button class="text-sm font-bold text-govbr-primary hover:underline" @click="handleVerMais">
+      </GovButton>
+      <GovButton variant="tertiary" @click="handleVerMais">
         Ver mais
-      </button>
+      </GovButton>
     </div>
   </div>
 </template>
