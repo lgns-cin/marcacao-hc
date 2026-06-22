@@ -80,13 +80,13 @@ export const useFuncionarioStore = defineStore('funcionario', () => {
   );
 
   // actions - fila de agendamento
-  async function fetchAgendamentos() {
-    isLoading.value = true;
+  async function fetchAgendamentos(opcoes: { silencioso?: boolean } = {}) {
+    if (!opcoes.silencioso) isLoading.value = true;
     try {
       const { data } = await api.get('/api/funcionario/agendamentos');
       agendamentos.value = data;
     } finally {
-      isLoading.value = false;
+      if (!opcoes.silencioso) isLoading.value = false;
     }
   }
 
@@ -109,13 +109,13 @@ export const useFuncionarioStore = defineStore('funcionario', () => {
   }
 
   // actions - minha área
-  async function fetchMinhaArea() {
-    isLoadingMinhaArea.value = true;
+  async function fetchMinhaArea(opcoes: { silencioso?: boolean } = {}) {
+    if (!opcoes.silencioso) isLoadingMinhaArea.value = true;
     try {
       const { data } = await api.get('/api/funcionario/minha-area');
       minhaArea.value = data;
     } finally {
-      isLoadingMinhaArea.value = false;
+      if (!opcoes.silencioso) isLoadingMinhaArea.value = false;
     }
   }
 

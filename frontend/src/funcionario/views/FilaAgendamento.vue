@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, onUnmounted } from 'vue';
 import { useToast } from 'vue-toastification';
 import { MagnifyingGlassIcon, FunnelIcon } from '@heroicons/vue/24/outline';
 import { useFuncionarioStore } from '../../stores/funcionario';
@@ -29,8 +29,14 @@ async function puxarAgendamento(id: number) {
     await funcionarioStore.puxarAgendamento(id);
     toast.success('Paciente puxado para agendamento com sucesso.');
     modalAberto.value = false;
-  } catch (error) {
-    toast.error('Não foi possível puxar este agendamento.');
+  } catch (error: any) {
+    if (error?.response?.status === 409) {
+      toast.error('Este paciente já foi atribuído a outro atendente.');
+      modalAberto.value = false;
+      await carregarAgendamentos();
+    } else {
+      toast.error('Não foi possível puxar este agendamento.');
+    }
   }
 }
 
@@ -42,8 +48,25 @@ async function carregarAgendamentos() {
   }
 }
 
+const INTERVALO_ATUALIZACAO_MS = 10000;
+let intervaloAtualizacao: ReturnType<typeof setInterval> | undefined;
+
+async function atualizarEmSegundoPlano() {
+  if (modalAberto.value) return;
+  try {
+    await funcionarioStore.fetchAgendamentos({ silencioso: true });
+  } catch (error) {
+    // Falha silenciosa: a próxima rodada de polling tenta novamente.
+  }
+}
+
 onMounted(() => {
   carregarAgendamentos();
+  intervaloAtualizacao = setInterval(atualizarEmSegundoPlano, INTERVALO_ATUALIZACAO_MS);
+});
+
+onUnmounted(() => {
+  clearInterval(intervaloAtualizacao);
 });
 </script>
 
