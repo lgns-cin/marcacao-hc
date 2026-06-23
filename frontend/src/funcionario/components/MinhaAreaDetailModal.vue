@@ -1,12 +1,12 @@
 <script setup lang="ts">
 import { ref, watch } from 'vue';
 import {
-  UserGroupIcon,
   ClockIcon,
   ArrowLeftIcon,
   ExclamationCircleIcon,
   InformationCircleIcon,
 } from '@heroicons/vue/24/outline';
+import { UserGroupIcon } from '@heroicons/vue/20/solid';
 import Modal from '../../shared/components/Modal.vue';
 import SeletorMotivo from './SeletorMotivo.vue';
 import { MOTIVOS_DEVOLUCAO, MOTIVOS_PROBLEMA } from '../types';
@@ -100,11 +100,11 @@ function handleFinalizar(resultado: ResultadoFinalizacao) {
 
     <div v-if="item" class="space-y-4">
       <div class="flex flex-wrap items-center justify-between gap-2">
-        <p class="text-sm text-govbr-text-secondary">
+        <p class="text-[16px] text-govbr-text-secondary">
           N° do Prontuário: <span class="text-govbr-text">{{ item.prontuario }}</span>
         </p>
         <div v-if="item.estado !== 'FINALIZADO'" class="flex items-center gap-2">
-          <span class="flex items-center gap-1 text-sm text-govbr-text-secondary">
+          <span class="flex items-center gap-1 text-[16px] text-govbr-text-secondary">
             <ClockIcon class="h-4 w-4" />
             há {{ item.diasNaFila }}d
           </span>
@@ -133,25 +133,25 @@ function handleFinalizar(resultado: ResultadoFinalizacao) {
       </div>
 
       <!-- Detalhes do agendamento -->
-      <dl v-if="visao === 'detalhes'" class="space-y-3 text-sm">
+      <dl v-if="visao === 'detalhes'" class="space-y-3 text-[16px]">
         <div>
-          <dt class="inline font-semibold text-govbr-text">Unidade Executora:</dt>
+          <dt class="inline font-semibold text-govbr-text">Unidade Executora: </dt>
           <dd class="inline text-govbr-text-secondary"> {{ item.unidadeExecutora }}</dd>
         </div>
         <div>
-          <dt class="inline font-semibold text-govbr-text">Unidade Solicitante:</dt>
+          <dt class="inline font-semibold text-govbr-text">Unidade Solicitante: </dt>
           <dd class="inline text-govbr-text-secondary"> {{ item.unidadeSolicitante }}</dd>
         </div>
         <div>
-          <dt class="inline font-semibold text-govbr-text">Data de retorno:</dt>
+          <dt class="inline font-semibold text-govbr-text">Data de retorno: </dt>
           <dd class="inline text-govbr-text-secondary"> {{ item.dataRetorno }}</dd>
         </div>
         <div>
-          <dt class="inline font-semibold text-govbr-text">Localização:</dt>
+          <dt class="inline font-semibold text-govbr-text">Localização: </dt>
           <dd class="inline text-govbr-text-secondary"> {{ item.localizacao }}</dd>
         </div>
         <div>
-          <dt class="inline font-semibold text-govbr-text">Idade:</dt>
+          <dt class="inline font-semibold text-govbr-text">Idade: </dt>
           <dd class="inline text-govbr-text-secondary"> {{ item.idade }} anos</dd>
         </div>
 

@@ -1,12 +1,15 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted } from 'vue';
 import { useToast } from 'vue-toastification';
-import { MagnifyingGlassIcon, FunnelIcon, ClockIcon, CheckCircleIcon, InboxIcon } from '@heroicons/vue/24/outline';
+import { MagnifyingGlassIcon, ClockIcon, CheckCircleIcon, InboxIcon } from '@heroicons/vue/24/outline';
+import { FunnelIcon } from '@heroicons/vue/20/solid';
 import { useFuncionarioStore } from '../../stores/funcionario';
 import MinhaAreaCard from '../components/MinhaAreaCard.vue';
 import MinhaAreaDetailModal from '../components/MinhaAreaDetailModal.vue';
 import FilaFiltros from '../components/FilaFiltros.vue';
 import type { MinhaAreaItem, ResultadoFinalizacao } from '../types';
+
+import GovButton from '../components/GovButton.vue';
 
 const funcionarioStore = useFuncionarioStore();
 const toast = useToast();
@@ -103,11 +106,11 @@ onUnmounted(() => {
 
 <template>
   <div>
-    <h1 class="text-3xl font-bold text-govbr-text">Minha Área</h1>
-    <p class="mt-1 text-govbr-text-secondary">Realize o filtro por tipo de exame e localização</p>
+    <h1 class="text-[2.4rem] text-govbr-text">Minha Área</h1>
+    <p class="text-[1.6rem] text-govbr-text-secondary">Realize o filtro por tipo de exame e localização</p>
 
     <div class="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-      <div class="relative flex-1">
+      <div class="relative w-2/3">
         <input
           :value="funcionarioStore.filtrosMinhaArea.busca"
           type="text"
@@ -118,13 +121,10 @@ onUnmounted(() => {
         <MagnifyingGlassIcon class="absolute right-3 top-1/2 h-5 w-5 -translate-y-1/2 stroke-2 text-govbr-primary" />
       </div>
 
-      <button
-        class="flex items-center justify-center gap-2 rounded-full bg-govbr-primary px-6 py-3 text-sm font-bold text-white hover:bg-govbr-primary-hover"
-        @click="filtrosExpandidos = !filtrosExpandidos"
-      >
+      <GovButton variant="primary" @click="filtrosExpandidos = !filtrosExpandidos">
         <FunnelIcon class="h-5 w-5" />
         {{ filtrosExpandidos ? 'Ocultar Filtros' : 'Expandir Filtros' }}
-      </button>
+      </GovButton>
     </div>
 
     <FilaFiltros
