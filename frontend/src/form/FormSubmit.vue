@@ -12,14 +12,14 @@ const uiStore = useUiStore();
 
 const router = useRouter();
 const toStart = async () => await router.push("/");
-const toPrev = async () => await router.push("/solicitacao");
+const toPrev = async () => await router.push("/contato");
 
 const state = ref<"DISPONÍVEL" | "INDISPONÍVEL" | "DUPLICATA" | "SUBMETIDO">("DISPONÍVEL");
 
 onMounted(async () => {
-    // Se o paciente não preencheu a solicitação ou prontuário,
+    // Se o paciente não preencheu nada anteriormente,
     // mande ele pro passo anterior
-    if (!formStore.solicitacao || !formStore.prontuario) await toPrev();
+    if (!formStore.solicitacao || !formStore.prontuario || !formStore.local) await toPrev();
 
     uiStore.setLoading(true);
 
