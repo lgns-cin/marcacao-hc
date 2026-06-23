@@ -4,6 +4,7 @@ import FormLayout from '../shared/layouts/FormLayout.vue';
 import FormInicio from '../form/FormInicio.vue';
 import FormProntuario from '../form/FormProntuario.vue';
 import FormSolicitacao from '../form/FormSolicitacao.vue';
+import FormContato from '../form/FormContato.vue';
 
 const routes: RouteRecordRaw[] = [
   {
@@ -26,6 +27,14 @@ const routes: RouteRecordRaw[] = [
     path: '/solicitacao',
     name: 'FormSolicitacao',
     component: FormSolicitacao,
+    meta: {
+      layout: FormLayout
+    }
+  },
+  {
+    path: '/contato',
+    name: 'FormContato',
+    component: FormContato,
     meta: {
       layout: FormLayout
     }
