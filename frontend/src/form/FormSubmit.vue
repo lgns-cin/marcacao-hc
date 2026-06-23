@@ -92,8 +92,8 @@ const onSubmit = async () => {
                 <template v-for="exame in exames">
                     <div class="flex flex-row gap-2" v-if="exame.flag != 'DUPLICATA'">
                         <template v-if="exame.flag == 'DISPONÍVEL'">
-                            <CheckCircleIcon #icon class="w-8 h-8 stroke-light-green" />
-                            <p class="text-light-green">{{ exame.name }}</p>
+                            <CheckCircleIcon #icon class="w-8 h-8 stroke-dark-green" />
+                            <p class="text-dark-green">{{ exame.name }}</p>
                         </template>
                         <template v-else>
                             <XCircleIcon #icon class="w-8 h-8 stroke-light-red" />
@@ -103,7 +103,7 @@ const onSubmit = async () => {
                 </template>
 
                 <p>Devido à falta de vagas, alguns exames estão <span class="text-light-red underline">indisponíveis</span>.</p>
-                <p>Deseja enviar o pedido de marcação apenas para os exames <span class="text-light-green underline">disponíveis</span>?</p>
+                <p>Deseja enviar o pedido de marcação apenas para os exames <span class="text-dark-green underline">disponíveis</span>?</p>
 
             </template>
 

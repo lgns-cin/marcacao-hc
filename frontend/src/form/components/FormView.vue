@@ -52,8 +52,15 @@ const invalidValuesPresent = (errors: Partial<Record<string, string | undefined>
                             class="
                                 grid grid-cols-none grid-flow-col auto-cols-auto
                                 gap-2 px-3 py-2 
-                                outline-2 outline-dark-blue rounded-xl bg-dark-blue-transparent
+                                outline-2 rounded-xl bg-dark-blue-transparent
                             "
+                            :class="[
+                                item.name in getErrors()
+                                    ? 'outline-light-red' 
+                                    : values[props.items.indexOf(item)] != undefined 
+                                        ? 'outline-light-green' 
+                                        : 'outline-dark-blue'
+                            ]"
                         >
                             <Field
                                 :name="item.name"
