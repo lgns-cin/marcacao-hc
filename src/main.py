@@ -10,6 +10,9 @@ load_dotenv()
 
 from .resources.database import DatabaseManager, Base
 
+# IMPORTAÇÃO DO MÓDULO DE INGESTÃO AUTOMÁTICA
+from .settlement.ingestao import ingerir_dados_se_vazio
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Startup
@@ -30,65 +33,55 @@ async def lifespan(app: FastAPI):
     app.state.app_db = DatabaseManager(app_dsn)
     print("App SQLite connection pool initialized.")
 
-    # Create tables for App DB (if they don't exist) - for development only, Alembic handles this in production
+    # Create tables for App DB (if they don't exist)
     async with app.state.app_db.engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
     print("App SQLite tables checked/created.")
 
-    yield
+    # GATILHO DE INGESTÃO DE DADOS (Executado apenas em dev)
+    env = os.getenv("ENV")
+    if env == "development" and app_dsn:
+        project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        await ingerir_dados_se_vazio(app_dsn, project_root)
 
+    yield
+    
     # Shutdown
     print("Shutting down...")
-    if hasattr(app.state, 'aghu_db') and app.state.aghu_db:
+    if hasattr(app.state, "aghu_db"):
         await app.state.aghu_db.close_connection()
-        print("AGHU PostgreSQL connection pool closed.")
-    if hasattr(app.state, 'app_db') and app.state.app_db:
+    if hasattr(app.state, "app_db"):
         await app.state.app_db.close_connection()
-        print("App SQLite connection pool closed.")
 
-app = FastAPI(
-    title="Esqueleto de Aplicação Web Full-Stack",
-    description="Aplicação Backend monolítica (API REST) em Python/FastAPI, com foco em acesso e agregação de dados heterogêneos.",
-    version="1.0.0",
-    lifespan=lifespan,
-)
+app = FastAPI(lifespan=lifespan)
 
-# Serve o frontend Vue 3 empacotado
-app.mount("/assets", StaticFiles(directory="src/static/dist/assets"), name="assets")
-# Outros arquivos estáticos na raiz do dist (como favicon.ico)
-app.mount("/static", StaticFiles(directory="src/static/dist"), name="static")
+# Verifica se os diretórios do frontend construído existem antes de montá-los
+frontend_dist = os.path.join("src", "static", "dist")
+frontend_assets = os.path.join(frontend_dist, "assets")
+
+if os.path.exists(frontend_assets):
+    app.mount("/assets", StaticFiles(directory=frontend_assets), name="assets")
+    
+if os.path.exists(frontend_dist):
+    app.mount("/static", StaticFiles(directory=frontend_dist), name="static")
+else:
+    print("Aviso: Diretórios de build do frontend não encontrados. (Normal em ambiente de desenvolvimento)")
 
 # Placeholder para incluir os roteadores da API
-from .routers import paciente, auth, admin, aih, bpa, material, forms
+from .routers import paciente, auth, admin, aih, bpa, material
 app.include_router(paciente.router)
 app.include_router(auth.router)
 app.include_router(admin.router)
 app.include_router(aih.router)
 app.include_router(bpa.router)
 app.include_router(material.router)
-app.include_router(forms.router)
 
 @app.get("/{full_path:path}")
 async def serve_frontend(full_path: str):
-    """
-    Serve o arquivo index.html para todas as rotas que não são da API ou arquivos estáticos.
-    Isso é necessário para que o roteamento do Vue (SPA) funcione.
-    """
-    # Se a rota começa com 'api', deixa o roteador do FastAPI lidar
     if full_path.startswith("api"):
         raise HTTPException(status_code=404, detail="API route not found")
     
     index_path = os.path.join("src", "static", "dist", "index.html")
     if os.path.exists(index_path):
         return FileResponse(index_path)
-    return {"error": "Frontend build not found"}
-
-# Exemplo:
-# from .routers import aih, bpa, material
-# app.include_router(aih.router)
-# app.include_router(bpa.router)
-# app.include_router(material.router)
-
-if __name__ == "__main__":
-    import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    raise HTTPException(status_code=404, detail="Frontend not built. Run 'npm run build' in frontend directory.")
