@@ -5,6 +5,7 @@ import FormInicio from '../form/FormInicio.vue';
 import FormProntuario from '../form/FormProntuario.vue';
 import FormSolicitacao from '../form/FormSolicitacao.vue';
 import FormContato from '../form/FormContato.vue';
+import FormSubmit from '../form/FormSubmit.vue';
 
 const routes: RouteRecordRaw[] = [
   {
@@ -35,6 +36,14 @@ const routes: RouteRecordRaw[] = [
     path: '/contato',
     name: 'FormContato',
     component: FormContato,
+    meta: {
+      layout: FormLayout
+    }
+  },
+  {
+    path: '/submit',
+    name: 'FormSubmit',
+    component: FormSubmit,
     meta: {
       layout: FormLayout
     }
