@@ -8,7 +8,7 @@ class ExameSolicitado(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     solicitacao = Column(Integer, ForeignKey("solicitacoes.codigo"), nullable=False)
-    exame = Column(Integer, ForeignKey("exames.codigo"), nullable=False)
+    exame = Column(String, ForeignKey("exames.codigo"), nullable=False)
     paciente_solicitante = Column(Integer, ForeignKey("pacientes.prontuario"), nullable=False)
     funcionario_atribuido = Column(Integer, ForeignKey("funcionarios.id"), nullable=True)
     status_atribuicao = Column(String)

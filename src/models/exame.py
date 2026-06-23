@@ -9,7 +9,7 @@ from ..resources.database import Base
 class Exame(Base):
     __tablename__ = "exames"
 
-    codigo = Column(Integer, primary_key=True, index=True)
+    codigo = Column(String, primary_key=True, index=True)
     nome = Column(String, nullable=False)
     deleted_at = Column(DateTime, nullable=True)
     
