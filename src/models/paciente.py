@@ -1,4 +1,5 @@
 from sqlalchemy import Column, Integer, String, DateTime
+from sqlalchemy.orm import relationship
 from ..resources.database import Base
 
 
@@ -10,3 +11,7 @@ class Paciente(Base):
     cidade = Column(String)
     estado = Column(String)
     deleted_at = Column(DateTime, nullable=True)
+
+    exames_solicitados = relationship(
+        "ExameSolicitado", back_populates="paciente"
+    )

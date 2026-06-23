@@ -9,13 +9,12 @@ Contrato de entrada esperado pelo controller:
 
     paciente = {
         "cidade": str,           # ex: "Petrolina"
-        "data_nascimento": str,  # ex: "1950-03-15" (ISO 8601)
     }
 
     solicitacao = {
         "data_retorno": str,          # ex: "2026-07-10" (ISO 8601)
         "unidade_solicitante": str,   # ex: "UTI ADULTO"
-        "data_entrada_fila": str,     # ex: "2026-06-01" (ISO 8601)
+        "data_solicitacao": str,     # ex: "2026-06-01" (ISO 8601)
     }
 """
 
@@ -26,11 +25,10 @@ from datetime import date, datetime
 # ---------------------------------------------------------------------------
 
 PESO_DATA_RETORNO      = 40
-PESO_URGENCIA          = 30
+PESO_URGENCIA          = 40
 PESO_LOCALIDADE        = 20
-PESO_IDADE             = 10
-
 BONUS_MAXIMO_ESPERA    = 20   # pontos extras máximos por tempo de espera
+
 DIAS_ESPERA_MAXIMO     = 60   # dias para atingir o bônus máximo
 
 
@@ -140,24 +138,7 @@ def score_localidade(cidade: str) -> float:
     return SCORE_INTERIOR_PROXIMO
 
 
-def score_idade(data_nascimento_str: str, hoje: date | None = None) -> float:
-    """
-    Fator auxiliar de baixo peso. Pacientes mais velhos recebem leve
-    incremento. Score proporcional até 90 anos (1.0 a partir daí).
-    """
-    if hoje is None:
-        hoje = date.today()
-
-    try:
-        nascimento = _parse_date(data_nascimento_str)
-    except (ValueError, TypeError):
-        return 0.0
-
-    idade = (hoje - nascimento).days // 365
-    return min(1.0, idade / 90)
-
-
-def bonus_tempo_espera(data_entrada_fila_str: str, hoje: date | None = None) -> float:
+def bonus_tempo_espera(data_solicitacao: str, hoje: date | None = None) -> float:
     """
     Bônus adicional (não normalizado) que cresce com o tempo de espera.
     Evita que um paciente fique indefinidamente despriorizado.
@@ -168,7 +149,7 @@ def bonus_tempo_espera(data_entrada_fila_str: str, hoje: date | None = None) -> 
         hoje = date.today()
 
     try:
-        data_entrada = _parse_date(data_entrada_fila_str)
+        data_entrada = _parse_date(data_solicitacao)
     except (ValueError, TypeError):
         return 0.0
 
@@ -189,9 +170,9 @@ def calcular_pontuacao(paciente: dict, solicitacao: dict) -> float:
     Pontuação base: 0-100. Bônus de tempo de espera pode ultrapassar 100.
 
     Args:
-        paciente:    dict com "cidade" e "data_nascimento"
+        paciente:    dict com "cidade"
         solicitacao: dict com "data_retorno", "unidade_solicitante",
-                     "data_entrada_fila"
+                    "data_solicitacao"
 
     Returns:
         float com a pontuação final.
@@ -201,11 +182,10 @@ def calcular_pontuacao(paciente: dict, solicitacao: dict) -> float:
     score_base = (
         score_data_retorno(solicitacao.get("data_retorno", ""), hoje)   * PESO_DATA_RETORNO +
         score_urgencia(solicitacao.get("unidade_solicitante", ""))      * PESO_URGENCIA +
-        score_localidade(paciente.get("cidade", ""))                    * PESO_LOCALIDADE +
-        score_idade(paciente.get("data_nascimento", ""), hoje)          * PESO_IDADE
+        score_localidade(paciente.get("cidade", ""))                    * PESO_LOCALIDADE
     )
 
-    bonus = bonus_tempo_espera(solicitacao.get("data_entrada_fila", ""), hoje)
+    bonus = bonus_tempo_espera(solicitacao.get("data_solicitacao", ""), hoje)
 
     return round(score_base + bonus, 2)
 
@@ -229,10 +209,9 @@ def ordenar_fila(solicitacoes: list[dict]) -> list[dict]:
             "id": 42,
             "data_retorno": "2026-07-10",
             "unidade_solicitante": "UTI ADULTO",
-            "data_entrada_fila": "2026-06-01",
+            "data_solicitacao": "2026-06-01",
             "paciente": {
-                "cidade": "Petrolina",
-                "data_nascimento": "1950-03-15",
+                "cidade": "Petrolina"
             }
         }
     """
