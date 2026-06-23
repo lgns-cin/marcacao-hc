@@ -8,8 +8,8 @@ import { useRouter } from 'vue-router';
 const greeting = computed(() => {
     const hours = new Date().getHours();
     
-    if (hours >= 6 && hours <= 13) return "Bom dia!"
-    else if (hours <= 18) return "Boa tarde!"
+    if (hours >= 5 && hours < 12) return "Bom dia!"
+    else if (hours >= 12 && hours < 18) return "Boa tarde!"
     else return "Boa noite!"
 });
 
