@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, watch, onBeforeUnmount } from 'vue';
 import { MagnifyingGlassIcon, ChevronDownIcon } from '@heroicons/vue/24/outline';
+import GovButton from './GovButton.vue';
 
 const props = defineProps<{
   modelValue: string;
@@ -39,11 +40,7 @@ onBeforeUnmount(() => document.removeEventListener('click', fecharSeClicarFora))
 
 <template>
   <div ref="raiz">
-    <button
-      type="button"
-      class="flex w-full items-center justify-between gap-2 rounded border border-govbr-border px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-govbr-primary"
-      @click="aberto = !aberto"
-    >
+    <GovButton variant="tertiary" class="border border-govbr-border" @click="aberto = !aberto">
       <span class="flex items-center gap-2 truncate">
         <MagnifyingGlassIcon class="h-4 w-4 shrink-0 text-govbr-text-secondary" />
         <span :class="modelValue ? 'text-govbr-text' : 'italic text-govbr-text-secondary'">
@@ -51,7 +48,7 @@ onBeforeUnmount(() => document.removeEventListener('click', fecharSeClicarFora))
         </span>
       </span>
       <ChevronDownIcon class="h-4 w-4 shrink-0 text-govbr-primary" />
-    </button>
+    </GovButton>
 
     <ul
       v-if="aberto"

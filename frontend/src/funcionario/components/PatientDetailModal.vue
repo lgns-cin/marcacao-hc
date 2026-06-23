@@ -1,7 +1,9 @@
 <script setup lang="ts">
-import { UserGroupIcon, ClockIcon, ArrowDownTrayIcon } from '@heroicons/vue/24/outline';
+import { ClockIcon, ArrowDownTrayIcon } from '@heroicons/vue/24/outline';
+import { UserGroupIcon } from '@heroicons/vue/24/solid';
 import Modal from '../../shared/components/Modal.vue';
 import type { AgendamentoItem } from '../types';
+import GovButton from './GovButton.vue';
 
 const props = defineProps<{
   show: boolean;
@@ -29,7 +31,7 @@ function handlePuxar() {
 
     <div v-if="agendamento" class="space-y-4">
       <div class="flex flex-wrap items-center justify-between gap-2">
-        <p class="text-sm text-govbr-text-secondary">
+        <p class="text-[16px] text-govbr-text-secondary">
           N° do Prontuário: <span class="text-govbr-text">{{ agendamento.prontuario }}</span>
         </p>
         <div class="flex items-center gap-2">
@@ -58,44 +60,38 @@ function handlePuxar() {
         </span>
       </div>
 
-      <dl class="space-y-3 text-sm">
+      <dl class="space-y-3 text-[16px]">
         <div>
-          <dt class="inline font-semibold text-govbr-text">Unidade Executora:</dt>
+          <dt class="inline font-semibold text-govbr-text">Unidade Executora: </dt>
           <dd class="inline text-govbr-text-secondary"> {{ agendamento.unidadeExecutora }}</dd>
         </div>
         <div>
-          <dt class="inline font-semibold text-govbr-text">Unidade Solicitante:</dt>
+          <dt class="inline font-semibold text-govbr-text">Unidade Solicitante: </dt>
           <dd class="inline text-govbr-text-secondary"> {{ agendamento.unidadeSolicitante }}</dd>
         </div>
         <div>
-          <dt class="inline font-semibold text-govbr-text">Data de retorno:</dt>
+          <dt class="inline font-semibold text-govbr-text">Data de retorno: </dt>
           <dd class="inline text-govbr-text-secondary"> {{ agendamento.dataRetorno }}</dd>
         </div>
         <div>
-          <dt class="inline font-semibold text-govbr-text">Localização:</dt>
+          <dt class="inline font-semibold text-govbr-text">Localização: </dt>
           <dd class="inline text-govbr-text-secondary"> {{ agendamento.localizacao }}</dd>
         </div>
         <div>
-          <dt class="inline font-semibold text-govbr-text">Idade:</dt>
+          <dt class="inline font-semibold text-govbr-text">Idade: </dt>
           <dd class="inline text-govbr-text-secondary"> {{ agendamento.idade }} anos</dd>
         </div>
       </dl>
     </div>
 
     <template #footer>
-      <button
-        class="rounded-full border border-govbr-primary px-5 py-2 text-sm font-bold text-govbr-primary hover:bg-govbr-bg"
-        @click="emit('close')"
-      >
+      <GovButton variant="tertiary" @click="emit('close')">
         Fechar
-      </button>
-      <button
-        class="flex items-center gap-2 rounded-full bg-govbr-primary px-5 py-2 text-sm font-bold text-white hover:bg-govbr-primary-hover"
-        @click="handlePuxar"
-      >
-        <ArrowDownTrayIcon class="h-5 w-5" />
+      </GovButton>
+      <GovButton variant="primary" @click="handlePuxar">
+        <ArrowDownTrayIcon class="h-5 w-5 stroke-2" />
         Puxar
-      </button>
+      </GovButton>
     </template>
   </Modal>
 </template>

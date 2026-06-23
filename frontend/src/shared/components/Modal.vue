@@ -33,7 +33,7 @@
           </div>
 
           <!-- Body -->
-          <div class="px-6 py-6 text-gray-600 leading-relaxed">
+          <div class="px-6 pt-0 pb-6 text-gray-600 leading-relaxed">
             <slot></slot>
           </div>
 

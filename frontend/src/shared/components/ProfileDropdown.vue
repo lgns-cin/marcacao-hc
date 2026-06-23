@@ -9,12 +9,12 @@
     <div v-if="isOpen" class="absolute right-0 mt-2 w-80 bg-white rounded-xl shadow-2xl z-20 border border-gray-100 overflow-hidden transform origin-top-right transition-all">
       <div class="p-5">
         <div class="flex items-center space-x-4">
-          <div class="flex-shrink-0">
+          <div class="shrink-0">
             <div class="h-14 w-14 rounded-full bg-gray-100 flex items-center justify-center border border-gray-200">
               <UserCircleIcon class="h-10 w-10 text-gray-400" />
             </div>
           </div>
-          <div class="flex-1 min-w-0">
+          <div class="grow min-w-0">
             <p class="text-lg font-bold text-gray-900 leading-tight break-words">
               {{ authStore.user?.givenName?.[0] || authStore.user?.username || 'Usuário' }}
             </p>

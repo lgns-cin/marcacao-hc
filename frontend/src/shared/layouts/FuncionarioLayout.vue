@@ -44,7 +44,7 @@ watch(() => route.path, () => {
 </script>
 
 <template>
-  <div class="min-h-screen bg-govbr-bg">
+  <div class="min-h-screen bg-white">
     <!-- Header -->
     <header class="sticky top-0 z-30 flex items-center justify-between bg-white border-b border-govbr-border px-6 py-4">
       <div class="flex items-center gap-4">
@@ -54,7 +54,7 @@ watch(() => route.path, () => {
         >
           <Bars3Icon class="h-7 w-7" />
         </button>
-        <h1 class="text-2xl font-bold text-govbr-text">Hospital das Clínicas - UFPE</h1>
+        <h1 class="text-2xl text-govbr-text">Hospital das Clínicas - UFPE</h1>
       </div>
 
       <div class="flex items-center gap-4">
@@ -105,6 +105,7 @@ watch(() => route.path, () => {
       />
     </transition>
 
+    <!-- Menu lateral -->
     <transition name="slide">
       <aside v-if="drawerOpen" class="fixed inset-y-0 left-0 z-50 w-full max-w-sm bg-white shadow-xl">
         <div class="flex items-center justify-between border-b border-govbr-border px-6 py-5">
@@ -146,7 +147,7 @@ watch(() => route.path, () => {
     </transition>
 
     <!-- Content -->
-    <main class="px-6 py-6 md:px-10 md:py-10">
+    <main class="mx-auto max-w-[1400px] bg-white px-8 py-8 md:px-10 md:py-10">
       <router-view />
     </main>
   </div>

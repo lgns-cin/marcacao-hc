@@ -22,7 +22,7 @@ Fontes de verdade usadas para este mapeamento:
 
 ---
 
-## 1. Autenticação — `src/routers/auth.py` (✅ implementado)
+## 1. Autenticação — `src/routers/auth.py`
 
 ### `POST /api/login`
 Autentica o usuário e retorna um token de acesso (JWT).
@@ -128,14 +128,12 @@ Retorna os dados do usuário autenticado, extraídos diretamente do payload do J
 
 ---
 
-## 2. Fila de Agendamento e Minha Área (✅ implementado — `src/routers/funcionario.py`)
+## 2. Fila de Agendamento e Minha Área
 
 Todos os endpoints abaixo são prefixados por `/api/funcionario` e exigem `Authorization: Bearer <access_token>`. Definidos e consumidos por `stores/funcionario.ts`.
 
 ### `GET /api/funcionario/agendamentos`
 Lista os pacientes disponíveis na fila de agendamento (ainda não atribuídos a nenhum atendente).
-
-- **Consumido por:** `fetchAgendamentos()`, chamado no `onMounted` de `FilaAgendamento.vue` e em polling silencioso a cada 10s (`{ silencioso: true }`, ver seção 4).
 - **Resposta `200`:** `AgendamentoItem[]` (schema completo na seção 3).
 
 ### `POST /api/funcionario/agendamentos/{id}/puxar`
@@ -151,8 +149,6 @@ Atribui (reivindica) um paciente da fila ao atendente autenticado, movendo-o par
 
 ### `GET /api/funcionario/minha-area`
 Lista todos os pacientes atribuídos ao atendente autenticado, em qualquer estado (`EM_ANDAMENTO`, `AGUARDANDO_CONFIRMACAO`, `FINALIZADO`).
-
-- **Consumido por:** `fetchMinhaArea()`, chamado no `onMounted` de `MinhaArea.vue` e em polling silencioso a cada 10s.
 - **Resposta `200`:** `MinhaAreaItem[]` (schema completo na seção 3).
 
 ### `POST /api/funcionario/minha-area/{id}/aguardar-confirmacao`
@@ -182,7 +178,7 @@ Devolve o item à fila geral de agendamento (remove de "Minha Área", reaparece 
 - **Resposta `200`:** corpo vazio. O frontend remove o item de `minhaArea` localmente após sucesso.
 
 ### `POST /api/funcionario/minha-area/{id}/reportar-problema`
-Registra um problema relatado pelo atendente sobre o item, sem alterar seu estado.
+Registra um problema relatado pelo atendente sobre o item, alternado seu estado para `PROBLEMA_RELATADO`.
 
 | Path param | Tipo |
 | :--- | :--- |
@@ -208,7 +204,7 @@ Finaliza o atendimento de um item `AGUARDANDO_CONFIRMACAO`, registrando o result
 
 | Campo | Tipo | Obrigatório | Valores |
 | :--- | :--- | :--- | :--- |
-| `resultado` | string (enum) | Sim | `"CONFIRMADO"` \| `"CANCELADO"` |
+| `resultado` | string (enum) | Sim | `"CONFIRMADO"` \| `"CANCELADO"` | `PROBLEMA_RELATADO` |
 
 - **Consumido por:** `finalizarAgendamento(id, resultado)`, botões "Confirmado"/"Cancelado" em `MinhaAreaDetailModal.vue`.
 - **Resposta `200`:** corpo vazio. O frontend atualiza `estado` para `"FINALIZADO"` e grava `resultado` localmente após sucesso.
@@ -256,7 +252,7 @@ Definidos em `frontend/src/funcionario/types.ts` — refletem o shape que o fron
 | `regiao` | string | Região de saúde (usado no filtro client-side) |
 | `idade` | number | Idade do paciente em anos |
 
-> ⚠️ **Inconsistência de tipos conhecida:** `StatusPaciente` está declarado em `types.ts` como `'ALTA'` apenas (um único literal), mas os dados reais já usam `'MÉDIA'` e `'BAIXA'` também. O tipo deveria ser `'ALTA' | 'MÉDIA' | 'BAIXA'` — não corrigido nesta PR para não ampliar o escopo, mas deve ser ajustado antes de o backend real definir um enum equivalente.
+> **Inconsistência de tipos que percebemos:** `StatusPaciente` está declarado em `types.ts` como `'ALTA'` apenas (um único literal), mas os dados reais já usam `'MÉDIA'` e `'BAIXA'` também. O tipo deveria ser `'ALTA' | 'MÉDIA' | 'BAIXA'` — não corrigido nesta PR para não ampliar o escopo, mas deve ser ajustado antes de o backend real definir um enum equivalente.
 
 ### `MinhaAreaItem`
 `AgendamentoItem` **+**:
@@ -264,7 +260,7 @@ Definidos em `frontend/src/funcionario/types.ts` — refletem o shape que o fron
 | Campo | Tipo | Descrição |
 | :--- | :--- | :--- |
 | `estado` | `'EM_ANDAMENTO' \| 'AGUARDANDO_CONFIRMACAO' \| 'FINALIZADO'` | Estado do item dentro de "Minha Área" |
-| `resultado` | `'CONFIRMADO' \| 'CANCELADO'` (opcional) | Preenchido apenas quando `estado === 'FINALIZADO'` |
+| `resultado` | `'CONFIRMADO' \| 'CANCELADO' \| 'PROBLEMA_RELATADO'` (opcional) | Preenchido apenas quando `estado === 'FINALIZADO'` |
 
 ### Motivos sugeridos (texto livre, não um enum de backend)
 
@@ -283,27 +279,7 @@ Isso é aceitável para os volumes de teste atuais, mas não escala: à medida q
 
 ---
 
-## 5. Concorrência multiusuário (até 15 atendentes simultâneos)
-
-Como não há biblioteca de tempo real (WebSocket/SSE) no stack aprovado, a sincronização entre atendentes simultâneos é feita por **polling**:
-
-- `FilaAgendamento.vue` e `MinhaArea.vue` repetem `fetchAgendamentos`/`fetchMinhaArea` a cada **10 segundos**, em segundo plano (`{ silencioso: true }`, sem acionar o estado de carregamento) e **pausado enquanto um modal estiver aberto**, para não alterar a lista sob a tela do atendente em pleno preenchimento de um formulário.
-- O endpoint `POST /api/funcionario/agendamentos/{id}/puxar` é o ponto de disputa real: dois atendentes podem ver o mesmo paciente na fila entre dois ciclos de polling e tentar puxá-lo ao mesmo tempo.
-
-**Recomendação para a implementação real do backend:** o mock usado para testes faz um `find` seguido de `filter` (check-then-act), o que **não é atômico** e ainda permite uma janela de corrida sob carga real. A implementação definitiva deve usar uma operação atômica no banco, por exemplo:
-
-```sql
-UPDATE agendamentos
-SET status = 'EM_ANDAMENTO', atendente_id = :atendente_id
-WHERE id = :id AND status = 'NA_FILA'
-RETURNING *;
-```
-
-Se `RETURNING` não trouxer nenhuma linha, o backend deve responder `409 Conflict` — exatamente o contrato que o frontend já trata hoje.
-
----
-
-## 6. Índice de endpoints
+## 5. Índice de endpoints
 
 | Método | Rota | Auth | Implementado? | Store/Função |
 | :--- | :--- | :--- | :--- | :--- |
