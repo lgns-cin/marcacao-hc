@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { DocumentDuplicateIcon, IdentificationIcon } from '@heroicons/vue/24/outline';
+import { DocumentDuplicateIcon } from '@heroicons/vue/24/outline';
 import TextWithIcon from './components/TextWithIcon.vue';
 import { useRouter } from 'vue-router';
 import * as zod from 'zod';
