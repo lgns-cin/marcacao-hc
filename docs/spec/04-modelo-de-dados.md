@@ -6,7 +6,7 @@ erDiagram
 	direction TB
 	Paciente {
 		number prontuário PK
-		number telefone 
+		string telefone 
 		string cidade  
 		string estado  
 	}
@@ -51,7 +51,7 @@ erDiagram
   "type": "object",
   "properties": {
     "prontuario": { "type": "number" },
-    "telefone": { "type": "number", "minLength": 10, "maxLength": 11 },
+    "telefone": { "type": "string" },
     "cidade": { "type": "string" },
     "estado": { "type": "string" }
   },
