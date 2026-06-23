@@ -38,7 +38,7 @@ onMounted(async () => {
         {
             name: "Teste 2",
             code: "T2",
-            flag: "DISPONÍVEL"
+            flag: "INDISPONÍVEL"
         },
         {
             name: "Teste 3",
@@ -48,8 +48,9 @@ onMounted(async () => {
     ];
 
 
-    if (exames.value.every(v => v.flag == "DISPONÍVEL")) {
+    if (exames.value.every(v => v.flag == "DISPONÍVEL" || v.flag == "DUPLICATA")) {
         // Se tudo já está disponível, faça o onSubmit automaticamente
+        // ! As duplicatas NÃO importam aqui.
         await onSubmit();
     }
     else if (exames.value.every(v => v.flag != "DISPONÍVEL")) {
@@ -57,7 +58,7 @@ onMounted(async () => {
     }
     else if (exames.value.every(v => v.flag == "DUPLICATA")) {
         state.value = "DUPLICATA";
-    } 
+    }
 
     uiStore.setLoading(false);
 });
