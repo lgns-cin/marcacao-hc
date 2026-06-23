@@ -1,4 +1,5 @@
 from sqlalchemy import Column, Integer, String, Date, DateTime, ForeignKey
+from sqlalchemy.orm import relationship
 from ..resources.database import Base
 
 
@@ -12,4 +13,10 @@ class ExameSolicitado(Base):
     funcionario_atribuido = Column(Integer, ForeignKey("funcionarios.id"), nullable=True)
     status_atribuicao = Column(String)
     data_atribuicao = Column(Date)
+    data_solicitacao = Column(Date, nullable=False)
     deleted_at = Column(DateTime, nullable=True)
+
+    paciente = relationship("Paciente", back_populates="exames_solicitados")
+    solicitacao_rel = relationship("Solicitacao", back_populates="exames_solicitados")
+    exame_rel = relationship("Exame", back_populates="exames_solicitados")
+    funcionario = relationship("Funcionario", back_populates="exames_solicitados")
