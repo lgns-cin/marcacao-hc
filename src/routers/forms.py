@@ -10,10 +10,6 @@ from ..auth.auth import auth_handler
 
 router = APIRouter(
     prefix="/forms",
-    tags=["Forms"],
-    dependencies=[Depends(auth_handler.decode_token)]
-router = APIRouter(
-    prefix="/forms",
     tags=["Forms"]
 )
 
