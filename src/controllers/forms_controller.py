@@ -12,6 +12,13 @@ from ..models.exame import Exame
 from ..models.exame_solicitado import ExameSolicitado
 from ..providers.interfaces.aghu_provider_interface import AghuProviderInterface
 
+EXAMES_IMAGEM = {
+    "CLN", "EDA", "ECO", "RXMM1", 
+    "RXAB6", "RXPAP", "RXTX1", "RXTX4", "ERGO",
+    "USABT", "USTDO", "USIDA", "USIDV", "USIEA", "USIEV", "USGOD",
+    "TCABI", "TCABC", "TCAVT", "TCTX1", "ESPB",
+}
+
 
 def _normalize_name(value: str) -> str:
     normalized = unicodedata.normalize("NFKD", value or "")
@@ -63,7 +70,7 @@ async def consultar_exames_solicitacao(
     exames_imagem = [
         exame
         for exame in exames
-        if str(exame.get("tipo_exame", "")).strip().lower() == "imagem"
+        if str(exame.get("codigo_exame", "")).strip().upper() in EXAMES_IMAGEM
     ]
 
     if not exames_imagem:
@@ -190,14 +197,7 @@ async def processar_formulario_paciente(
         data_retorno = date.today() + timedelta(days=30)
 
     if not unidade_solicitante:
-        unidade_solicitante = (
-            "IMAGEM"
-            if any(
-                str(item.get("tipo_exame", "")).strip().lower() == "imagem"
-                for item in exames_aghu
-            )
-            else "GERAL"
-        )
+        unidade_solicitante = "NÃO INFORMADO"
 
     stmt_solicitacao = select(Solicitacao).where(Solicitacao.codigo == payload.numero_solicitacao)
     result_solicitacao = await db.execute(stmt_solicitacao)
