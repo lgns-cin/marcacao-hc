@@ -6,6 +6,7 @@ import { useRouter } from 'vue-router';
 import { useFormStore } from '../stores/form';
 import { useUiStore } from '../stores/ui.js';
 import ButtonWithIcon from './components/ButtonWithIcon.vue';
+import api from '../services/api';
 
 const formStore = useFormStore();
 const uiStore = useUiStore();
@@ -14,7 +15,7 @@ const router = useRouter();
 const toStart = async () => await router.push("/");
 const toPrev = async () => await router.push("/contato");
 
-const state = ref<"DISPONÍVEL" | "INDISPONÍVEL" | "DUPLICATA" | "SUBMETIDO">("DISPONÍVEL");
+const state = ref<"DISPONÍVEL" | "INDISPONÍVEL" | "DUPLICADO" | "SUBMETIDO" | "ERRO">("DISPONÍVEL");
 
 onMounted(async () => {
     // Se o paciente não preencheu nada anteriormente,
@@ -22,42 +23,39 @@ onMounted(async () => {
     if (!formStore.solicitacao || !formStore.prontuario || !formStore.local) await toPrev();
 
     uiStore.setLoading(true);
-
-    // TODO: Fazer requisição à API
-    // Resgata o nome e o código dos exames associados à solicitação no AGHU.
-    // Retorna uma flag para cada exame indicando se ele tem ou não vaga no AGHU,
-    // ou se o paciente já tem esse exame na fila.
     
-    // hardcoded até finalizarem a API..
+    exames.value = formStore.exames;
+    /* valores hardcoded para testes!
     exames.value = [
         {
-            name: "Teste 1",
-            code: "T1",
-            flag: "DISPONÍVEL"
+            codigo_exame: "T1",
+            nome_exame: "Teste 1",
+            status_vaga: "DISPONÍVEL"
         },
         {
-            name: "Teste 2",
-            code: "T2",
-            flag: "INDISPONÍVEL"
-        },
+            codigo_exame: "T2",
+            nome_exame: "Teste 3",
+            status_vaga: "INDISPONÍVEL"
+        }
         {
-            name: "Teste 3",
-            code: "T3",
-            flag: "DUPLICATA"
+            codigo_exame: "T3",
+            nome_exame: "Teste 3",
+            status_vaga: "DUPLICADO"
         }
     ];
+    */
 
-
-    if (exames.value.every(v => v.flag == "DISPONÍVEL" || v.flag == "DUPLICATA")) {
-        // Se tudo já está disponível, faça o onSubmit automaticamente
-        // ! As duplicatas NÃO importam aqui.
+    if (exames.value.every(v => v.status_vaga == "DUPLICADO") || exames.value.length == 0) {
+        // tudo já tá na fila OU não tem nenhum exame novo.
+        state.value = "DUPLICADO";
+    }
+    else if (exames.value.every(v => v.status_vaga != "INDISPONÍVEL")) {
+        // tudo já está disponível (ou duplicado com pelo menos um disponível),
+        // faça o onSubmit automaticamente (dos que estão disponíveis)
         await onSubmit();
     }
-    else if (exames.value.every(v => v.flag != "DISPONÍVEL")) {
+    else if (exames.value.every(v => v.status_vaga != "DISPONÍVEL")) {
         state.value = "INDISPONÍVEL";
-    }
-    else if (exames.value.every(v => v.flag == "DUPLICATA")) {
-        state.value = "DUPLICATA";
     }
 
     uiStore.setLoading(false);
@@ -66,12 +64,25 @@ onMounted(async () => {
 const exames = ref<any[]>([]);
 
 const onSubmit = async () => {
-    const examesToDo = exames.value.filter(v => v.flag == "DISPONÍVEL").map(v => { v.name, v.code });
+    const examesToDo = exames.value.filter(v => v.status_vaga == "DISPONÍVEL")
 
-    // TODO: Fazer POST à API
-    // Envia prontuário, solicitação, telefone, estado, cidade, e os exames a serem inseridos na fila
+    try {
+        const response = await api.post(
+            "forms/enviar",
+            {
+                numero_prontuario: formStore.prontuario,
+                numero_solicitacao: formStore.solicitacao,
+                telefone: formStore.telefone,
+                estado: formStore.local?.estado,
+                cidade: formStore.local?.cidade,
+                exames: examesToDo.map(v => v.codigo_exame)
+            }
+        );
 
-    state.value = "SUBMETIDO";
+        state.value = response.status == 200 && response.data.status == "sucesso" ? "SUBMETIDO" : "ERRO";
+    } catch {
+        state.value = "ERRO";
+    }
 }
 
 </script>
@@ -91,14 +102,14 @@ const onSubmit = async () => {
                 <p>Sua <span class="underline">solicitação</span> se refere aos seguintes <span class="underline">exames</span>:</p>
                 
                 <template v-for="exame in exames">
-                    <div class="flex flex-row gap-2" v-if="exame.flag != 'DUPLICATA'">
-                        <template v-if="exame.flag == 'DISPONÍVEL'">
+                    <div class="flex flex-row gap-2" v-if="exame.status_vaga != 'DUPLICADO'">
+                        <template v-if="exame.status_vaga == 'DISPONÍVEL'">
                             <CheckCircleIcon #icon class="w-8 h-8 stroke-dark-green" />
-                            <p class="text-dark-green">{{ exame.name }}</p>
+                            <p class="text-dark-green">{{ exame.nome_exame }}</p>
                         </template>
                         <template v-else>
                             <XCircleIcon #icon class="w-8 h-8 stroke-light-red" />
-                            <p class="text-light-red">{{ exame.name }}</p>
+                            <p class="text-light-red">{{ exame.nome_exame }}</p>
                         </template>
                     </div>
                 </template>
@@ -117,13 +128,13 @@ const onSubmit = async () => {
                 <p class="text-center">Por favor, aguarde a liberação de vagas.</p>
             </template>
 
-            <template v-else-if="state == 'DUPLICATA'">
+            <template v-else-if="state == 'DUPLICADO'">
                 <div class="flex justify-center items-center">
                     <XMarkIcon #icon class="stroke-dark-blue w-32 h-32"/>
                 </div>
                 <h1 class="font-bold text-3xl text-center">Solicitação inválida.</h1>
-                <p class="text-center">Essa solicitação já teve seus exames <span class="underline">marcados</span>.</p>
-                <p class="text-center">Por favor, aguarde a liberação de vagas.</p>
+                <p class="text-center">Nenhum <span class="underline">exame de imagem</span> foi solicitado ou seus exames já estão <span class="underline">marcados</span>.</p>
+                <p class="text-center">Se você já preencheu este formulário, por favor, aguarde contato via <span class="underline">WhatsApp</span>.</p>
             </template>
 
             <template v-else-if="state == 'SUBMETIDO'">
@@ -131,20 +142,29 @@ const onSubmit = async () => {
                     <CheckIcon #icon class="stroke-dark-blue w-32 h-32"/>
                 </div>
                 <h1 class="font-bold text-3xl text-center">Solicitação enviada!</h1>
-                <template v-if="exames.filter(v => v.flag == 'DISPONÍVEL').length == exames.filter(v => v.flag != 'DUPLICATA').length">
+                <template v-if="exames.filter(v => v.status_vaga == 'DISPONÍVEL').length == exames.filter(v => v.status_vaga != 'DUPLICADO').length">
                     <p class="text-center">Todos os exames relacionados à sua solicitação já foram enviados para marcação!</p>
                 </template>
                 <div class="text-center" v-else>
                     <p>Exames enviados:</p>
                     <ul>
                         <template v-for="exame in exames">
-                            <p v-if="exame.flag == 'DISPONÍVEL'" class="font-semibold">
-                                {{ exame.name }}
+                            <p v-if="exame.status_vaga == 'DISPONÍVEL'" class="font-semibold">
+                                {{ exame.nome_exame }}
                             </p>
                         </template>
                     </ul>
                 </div>
                 <p class="text-center">Aguarde contato via <span class="underline">WhatsApp</span>.</p>
+            </template>
+
+            <template v-else-if="state == 'ERRO'">
+                <div class="flex justify-center items-center">
+                    <XMarkIcon #icon class="stroke-dark-blue w-32 h-32"/>
+                </div>
+                <h1 class="font-bold text-3xl text-center">Um erro ocorreu.</h1>
+                <p class="text-center">Não conseguimos enviar sua solicitação no momento.</p>
+                <p class="text-center">Por favor, tente novamente mais tarde.</p>
             </template>
         </template>
 

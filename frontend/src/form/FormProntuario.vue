@@ -6,6 +6,7 @@ import * as zod from 'zod';
 import { toTypedSchema } from '@vee-validate/zod';
 import { useFormStore } from '../stores/form';
 import FormView from './components/FormView.vue';
+import api from '../services/api';
 
 const formStore = useFormStore();
 
@@ -28,8 +29,13 @@ const onSubmit = async (values: any, actions: any) => {
     const prontuario = values.prontuario;
 
     let exists = true;
-    // TODO: Fazer requisição à API
-    // Verifica se `prontuario` existe no AGHU
+    try {
+        const response = await api.get<boolean>(`forms/validar_paciente/${prontuario}`);
+        exists = response.status == 200 && response.data === true;
+    } catch {
+        actions.setErrors({ prontuario: "Ocorreu uma falha na validação interna." });
+        return;
+    }
 
     if (!exists) {
         actions.setErrors({ prontuario: "Número não encontrado." });
