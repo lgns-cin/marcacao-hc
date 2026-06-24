@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import BaseCard from './BaseCard.vue';
-import GovButton from './GovButton.vue';
+import BaseCard from '../../shared/components/BaseCard.vue';
+import Button from '../../shared/components/Button.vue';
 import type { MinhaAreaItem } from '../types';
 
 //  Recebe o objeto específico desta tela através da prop meuItem
@@ -18,20 +18,20 @@ const emit = defineEmits<{
 <template>
   <BaseCard :item="meuItem" v-slot="slotProps">
     
-    <GovButton 
+    <Button 
       v-if="!slotProps.isFinalizado" 
       variant="tertiary" 
       @click="emit('devolverAFila', meuItem)"
     >
       Devolver à fila
-    </GovButton>
+    </Button>
 
-    <GovButton 
+    <Button 
       variant="primary" 
       @click="emit('verMais', meuItem)"
     >
       Ver mais
-    </GovButton>
+    </Button>
     
   </BaseCard>
 </template>

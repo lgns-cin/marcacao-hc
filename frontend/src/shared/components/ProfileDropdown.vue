@@ -1,6 +1,6 @@
 <template>
   <div class="relative">
-    <button @click="isOpen = !isOpen" class="relative z-10 block h-10 w-10 rounded-full overflow-hidden border-2 border-gray-600 focus:outline-none focus:border-white transition-transform active:scale-95">
+    <button @click="isOpen = !isOpen" class="relative z-10 block h-10 w-10 rounded-full overflow-hidden border-2 border-gray-600 focus:outline-none focus:border-white transition-transform active:scale-95 cursor-pointer">
       <UserCircleIcon class="h-full w-full text-gray-600" />
     </button>
 

@@ -2,7 +2,7 @@
 import { ref } from 'vue';
 import { MagnifyingGlassIcon } from '@heroicons/vue/24/outline';
 import type { FiltrosFila } from '../types';
-import GovButton from './GovButton.vue';
+import Button from '../../shared/components/Button.vue';
 
 const REGIOES = ['Região Metropolitana', 'Agreste', 'Mata Sul', 'Mata Norte', 'Sertão'];
 const TIPOS_EXAME = ['Tomografia', 'Ressonância', 'Mamografia', 'Endoscopia', 'Colonoscopia', 'Ultrassonografia', 'Espirometria'];
@@ -48,10 +48,10 @@ function limpar() {
 <template>
   <div class="mt-4 grid gap-6 rounded-lg border border-govbr-border bg-white p-6 sm:grid-cols-2">
     <div>
-      <p class="font-semibold text-govbr-text">Região</p>
-      <p class="text-sm text-govbr-text-secondary">Selecione uma ou mais regiões.</p>
+      <p class="text-[18px] font-semibold text-govbr-text">Região</p>
+      <p class="text-[16px] text-govbr-text-secondary">Selecione uma ou mais regiões.</p>
       <div class="mt-3 space-y-2">
-        <label v-for="regiao in REGIOES" :key="regiao" class="flex items-center gap-2 text-sm text-govbr-text">
+        <label v-for="regiao in REGIOES" :key="regiao" class="flex items-center gap-2 text-[16px] text-govbr-text cursor-pointer">
           <input type="checkbox" :value="regiao" v-model="regioesSelecionadas" class="h-4 w-4 rounded border-govbr-border text-govbr-primary focus:ring-govbr-primary" />
           {{ regiao }}
         </label>
@@ -59,10 +59,10 @@ function limpar() {
     </div>
 
     <div>
-      <p class="font-semibold text-govbr-text">Tipo de Exame</p>
-      <p class="text-sm text-govbr-text-secondary">Selecione uma ou mais regiões.</p>
+      <p class="text-[18px] font-semibold text-govbr-text">Tipo de Exame</p>
+      <p class="text-[16px] text-govbr-text-secondary">Selecione uma ou mais regiões.</p>
       <div class="mt-3 grid grid-cols-2 gap-2">
-        <label v-for="tipo in TIPOS_EXAME" :key="tipo" class="flex items-center gap-2 text-sm text-govbr-text">
+        <label v-for="tipo in TIPOS_EXAME" :key="tipo" class="flex items-center gap-2 text-[16px] text-govbr-text cursor-pointer">
           <input type="checkbox" :value="tipo" v-model="tiposExameSelecionados" class="h-4 w-4 rounded border-govbr-border text-govbr-primary focus:ring-govbr-primary" />
           {{ tipo }}
         </label>
@@ -70,34 +70,34 @@ function limpar() {
     </div>
 
     <div class="relative">
-      <label class="mb-1 block text-sm font-semibold text-govbr-text">Município</label>
+      <label class="mb-1 block text-[18px] font-semibold text-govbr-text">Município</label>
       <input
         v-model="municipio"
         type="text"
         placeholder="Digite o Município"
-        class="w-full rounded border border-govbr-border px-3 py-2 pr-9 text-sm placeholder-govbr-text-secondary focus:outline-none focus:ring-1 focus:ring-govbr-primary"
+        class="w-full rounded border border-govbr-border px-3 py-2 pr-9 text-[16px] placeholder-govbr-text-secondary focus:outline-none focus:ring-1 focus:ring-govbr-primary"
       />
       <MagnifyingGlassIcon class="absolute right-3 top-9 h-4 w-4 text-govbr-text-secondary" />
     </div>
 
     <div>
-      <label class="mb-1 block text-sm font-semibold text-govbr-text">Faixa etária</label>
+      <label class="mb-1 block text-[18px] font-semibold text-govbr-text">Faixa etária</label>
       <select
         v-model="faixaEtaria"
-        class="w-full rounded border border-govbr-primary px-3 py-2 text-sm text-govbr-text focus:outline-none focus:ring-1 focus:ring-govbr-primary"
+        class="w-full rounded border px-3 py-2 text-[16px] text-govbr-text focus:outline-none focus:ring-1 focus:ring-govbr-primary cursor-pointer"
       >
         <option v-for="faixa in FAIXAS_ETARIAS" :key="faixa.value" :value="faixa.value">{{ faixa.label }}</option>
       </select>
     </div>
 
     <div class="flex items-center gap-6 sm:col-span-2">
-      <GovButton variant="primary" @click="aplicar">
+      <Button variant="primary" @click="aplicar">
         Aplicar Filtros
-      </GovButton>
+      </Button>
 
-      <GovButton variant="tertiary" @click="limpar">
+      <Button variant="tertiary" @click="limpar">
         Limpar
-      </GovButton>
+      </Button>
     </div>
   </div>
 </template>

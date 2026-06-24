@@ -9,7 +9,7 @@ import MinhaAreaDetailModal from '../components/MinhaAreaDetailModal.vue';
 import FilaFiltros from '../components/FilaFiltros.vue';
 import type { MinhaAreaItem, ResultadoFinalizacao } from '../types';
 
-import GovButton from '../components/GovButton.vue';
+import Button from '../../shared/components/Button.vue';
 
 const funcionarioStore = useFuncionarioStore();
 const toast = useToast();
@@ -121,10 +121,10 @@ onUnmounted(() => {
         <MagnifyingGlassIcon class="absolute right-3 top-1/2 h-5 w-5 -translate-y-1/2 stroke-2 text-govbr-primary" />
       </div>
 
-      <GovButton variant="primary" @click="filtrosExpandidos = !filtrosExpandidos">
+      <Button variant="primary" @click="filtrosExpandidos = !filtrosExpandidos">
         <FunnelIcon class="h-5 w-5" />
         {{ filtrosExpandidos ? 'Ocultar Filtros' : 'Expandir Filtros' }}
-      </GovButton>
+      </Button>
     </div>
 
     <FilaFiltros

@@ -1,11 +1,13 @@
 <script setup lang="ts">
-import { ref, watch, onBeforeUnmount } from 'vue';
+import { ref, computed, watch, onBeforeUnmount } from 'vue';
 import { MagnifyingGlassIcon, ChevronDownIcon } from '@heroicons/vue/24/outline';
+import type { Funcionario } from '../types';
+
 import Button from '../../shared/components/Button.vue';
 
 const props = defineProps<{
   modelValue: string;
-  opcoes: string[];
+  opcoes: Funcionario[];
   placeholder?: string;
 }>();
 
@@ -15,6 +17,8 @@ const emit = defineEmits<{
 
 const aberto = ref(false);
 const raiz = ref<HTMLElement | null>(null);
+
+const nomeSelecionado = computed(() => props.opcoes.find((f) => f.username === props.modelValue)?.nome ?? '');
 
 function fecharSeClicarFora(event: MouseEvent) {
   if (raiz.value && !raiz.value.contains(event.target as Node)) {
@@ -30,8 +34,8 @@ watch(aberto, (estaAberto) => {
   }
 });
 
-function selecionar(opcao: string) {
-  emit('update:modelValue', opcao);
+function selecionar(funcionario: Funcionario) {
+  emit('update:modelValue', funcionario.username);
   aberto.value = false;
 }
 
@@ -40,11 +44,15 @@ onBeforeUnmount(() => document.removeEventListener('click', fecharSeClicarFora))
 
 <template>
   <div ref="raiz">
-    <Button variant="tertiary" class="border border-govbr-border" @click="aberto = !aberto">
+    <Button
+      type="button"
+      variant="secondary"
+      @click="aberto = !aberto"
+    >
       <span class="flex items-center gap-2 truncate">
         <MagnifyingGlassIcon class="h-4 w-4 shrink-0 text-govbr-text-secondary" />
-        <span :class="modelValue ? 'text-govbr-text' : 'italic text-govbr-text-secondary'">
-          {{ modelValue || props.placeholder || 'Selecione a opção' }}
+        <span :class="nomeSelecionado ? 'text-govbr-text' : 'italic text-govbr-text-secondary'">
+          {{ nomeSelecionado || props.placeholder || 'Selecione um funcionário' }}
         </span>
       </span>
       <ChevronDownIcon class="h-4 w-4 shrink-0 text-govbr-primary" />
@@ -55,13 +63,13 @@ onBeforeUnmount(() => document.removeEventListener('click', fecharSeClicarFora))
       class="mt-1 overflow-hidden rounded border border-govbr-border bg-white shadow-sm"
     >
       <li
-        v-for="opcao in props.opcoes"
-        :key="opcao"
-        class="cursor-pointer px-3 py-3 text-[16px] text-govbr-text hover:bg-govbr-bg"
-        :class="{ 'bg-govbr-bg': opcao === modelValue }"
-        @click="selecionar(opcao)"
+        v-for="funcionario in props.opcoes"
+        :key="funcionario.username"
+        class="cursor-pointer px-3 py-3 text-sm text-govbr-text hover:bg-govbr-bg"
+        :class="{ 'bg-govbr-bg': funcionario.username === modelValue }"
+        @click="selecionar(funcionario)"
       >
-        {{ opcao }}
+        {{ funcionario.nome }}
       </li>
     </ul>
   </div>
