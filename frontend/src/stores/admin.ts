@@ -2,7 +2,7 @@ import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
 import type { AgendamentoItem, FiltrosFila } from '../funcionario/types';
 import { filtrarAgendamentos, FILTROS_VAZIOS } from '../shared/utils/filtrarAgendamentos';
-import type { AgendamentoGerenciamento, Funcionario, PendenciaItem, VisaoGeral } from '../admin/types';
+import type { AgendamentoGerenciamento, Funcionario, Kpi, PendenciaItem, VisaoGeral } from '../admin/types';
 import { PREFERENCIAS_VISAO_GERAL_KEY } from '../admin/types';
 
 // isso é só pra funcionar por enquanto ...
@@ -44,17 +44,7 @@ export const useAdminStore = defineStore('admin', () => {
     { username: 'ricardo.alves', nome: 'Ricardo Alves' },
   ];
 
-  const MOCK_VISAO_GERAL: VisaoGeral = {
-    kpis: [
-      { id: 'media_card_funcionario', label: 'Média de Card por Funcionário', valor: 3.5, categoria: 'principal' },
-      { id: 'media_exames_agendados', label: 'Média de Exames Agendados', valor: 4.0, tendencia: 5, categoria: 'principal' },
-      { id: 'quantidade_funcionarios', label: 'Quantidade de Funcionários', valor: 4, categoria: 'principal' },
-      { id: 'total_cards', label: 'Total de Cards', valor: 14, categoria: 'principal' },
-      { id: 'tempo_medio_atendimento', label: 'Tempo médio de atendimento', valor: 3.8, sufixo: 'dias', categoria: 'extra' },
-      { id: 'solicitacoes_atendidas', label: 'Solicitações atendidas', valor: 367, categoria: 'extra' },
-      { id: 'pacientes_devolvidos_fila', label: 'Pacientes devolvidos à fila', valor: 55, tendencia: 15, categoria: 'extra' },
-    ],
-    graficos: [
+  const MOCK_GRAFICOS: VisaoGeral['graficos'] = [
       {
         id: 'por_tipo_exame',
         titulo: 'Por tipo de exame',
@@ -84,20 +74,20 @@ export const useAdminStore = defineStore('admin', () => {
         ],
       },
       {
-        id: 'motivos_devolucao',
-        titulo: 'Pacientes devolvidos à fila',
-        subtitulo: 'Quantitativo por motivo de devolução',
+        id: 'problemas_reportados',
+        titulo: 'Problemas reportados',
+        subtitulo: 'Quantitativo por motivo de problema',
         tipo: 'barras_verticais',
         categoria: 'extra',
         dados: [
-          { motivo: 'Falha em contato com o paciente', quantidade: 99 },
-          { motivo: 'Pendência Operacional', quantidade: 74 },
-          { motivo: 'Reagendamento', quantidade: 95 },
-          { motivo: 'Outros', quantidade: 24 },
+          { motivo: 'Paciente não respondeu', quantidade: 12 },
+          { motivo: 'Dados inconsistentes', quantidade: 8 },
+          { motivo: 'Duplicidade', quantidade: 5 },
+          { motivo: 'Erro cadastral', quantidade: 3 },
+          { motivo: 'Outro', quantidade: 2 },
         ],
       },
-    ],
-  };
+  ];
 
   const MOCK_PENDENCIAS: PendenciaItem[] = [
     {
@@ -209,10 +199,48 @@ export const useAdminStore = defineStore('admin', () => {
   //Ações
   
   // Visão Geral
+  function calcularKpis(): Kpi[] {
+    const totalCards = MOCK_FILA_ADMIN.length
+      + MOCK_GERENCIAMENTO_ANDAMENTO.length
+      + MOCK_GERENCIAMENTO_CONCLUIDO.length
+      + MOCK_PENDENCIAS.length;
+
+    const totalFuncionarios = MOCK_FUNCIONARIOS.length;
+
+    const mediaCardFuncionario = totalFuncionarios > 0
+      ? +(totalCards / totalFuncionarios).toFixed(1)
+      : 0;
+
+    const percentProblematicas = totalCards > 0
+      ? +((MOCK_PENDENCIAS.length / totalCards) * 100).toFixed(1)
+      : 0;
+
+    const percentConcluidas = totalCards > 0
+      ? +((MOCK_GERENCIAMENTO_CONCLUIDO.length / totalCards) * 100).toFixed(1)
+      : 0;
+
+    const todosItens = [
+      ...MOCK_FILA_ADMIN,
+      ...MOCK_GERENCIAMENTO_ANDAMENTO,
+      ...MOCK_GERENCIAMENTO_CONCLUIDO,
+      ...MOCK_PENDENCIAS,
+    ];
+    const tempoMedio = todosItens.length > 0
+      ? +(todosItens.reduce((acc, i) => acc + i.diasNaFila, 0) / todosItens.length).toFixed(1)
+      : 0;
+
+    return [
+      { id: 'media_card_funcionario', label: 'Média de Card por Funcionário', valor: mediaCardFuncionario, categoria: 'principal' },
+      { id: 'percent_problematicas', label: 'Solicitações problemáticas', valor: percentProblematicas, sufixo: '%', categoria: 'principal' },
+      { id: 'percent_concluidas', label: 'Solicitações concluídas', valor: percentConcluidas, sufixo: '%', categoria: 'principal' },
+      { id: 'tempo_medio_atendimento', label: 'Tempo médio de atendimento', valor: tempoMedio, sufixo: 'dias', categoria: 'principal' },
+    ];
+  }
+
   async function fetchVisaoGeral(opcoes: { silencioso?: boolean } = {}) {
     if (!opcoes.silencioso) isLoadingVisaoGeral.value = true;
     await new Promise((r) => setTimeout(r, 300));
-    visaoGeral.value = MOCK_VISAO_GERAL;
+    visaoGeral.value = { kpis: calcularKpis(), graficos: MOCK_GRAFICOS };
     if (!opcoes.silencioso) isLoadingVisaoGeral.value = false;
   }
 
