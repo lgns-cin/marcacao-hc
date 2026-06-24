@@ -1,41 +1,113 @@
-import os
 from typing import List, Dict, Any
-from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.future import select
 from fastapi import HTTPException, status
 
 from ..interfaces.paciente_provider_interface import PacienteProviderInterface
+from ...models.paciente import Paciente
+from ...models.exame import Exame
+from ...models.exame_solicitado import ExameSolicitado
 
-def get_sql_query(file_path: str) -> str:
-    base_dir = os.path.dirname(os.path.abspath(__file__))
-    # Ajuste no caminho para voltar dois níveis (implementations -> providers -> src) e depois entrar em providers/sql
-    sql_file_path = os.path.join(base_dir, '..', 'sql', file_path)
-    try:
-        with open(sql_file_path, 'r') as f:
-            return f.read()
-    except FileNotFoundError:
-        raise RuntimeError(f"Arquivo SQL não encontrado em: {sql_file_path}")
 
 class PacientePostgresProvider(PacienteProviderInterface):
     def __init__(self, session: AsyncSession):
         self.session = session
 
+    # métodos base
+
     async def listar_pacientes(self) -> List[Dict[str, Any]]:
-        query_string = get_sql_query("paciente/listar_pacientes.sql")
-        query = text(query_string)
-        
-        result = await self.session.execute(query)
-        pacientes = result.mappings().all()
-        return [dict(paciente) for paciente in pacientes]
+        result = await self.session.execute(
+            select(Paciente).where(Paciente.deleted_at.is_(None))
+        )
+        pacientes = result.scalars().all()
+        return [
+            {
+                "prontuario": p.prontuario,
+                "telefone": p.telefone,
+                "cidade": p.cidade,
+                "estado": p.estado,
+            }
+            for p in pacientes
+        ]
 
     async def obter_paciente_por_codigo(self, codigo: int) -> Dict[str, Any]:
-        query_string = get_sql_query("paciente/obter_paciente.sql")
-        query = text(query_string)
-        
-        result = await self.session.execute(query, {"codigo": codigo})
-        paciente = result.mappings().first()
-        
+        result = await self.session.execute(
+            select(Paciente).where(
+                Paciente.prontuario == codigo,
+                Paciente.deleted_at.is_(None),
+            )
+        )
+        paciente = result.scalars().first()
         if not paciente:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Paciente não encontrado")
-            
-        return dict(paciente)
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Paciente não encontrado",
+            )
+        return {
+            "prontuario": paciente.prontuario,
+            "telefone": paciente.telefone,
+            "cidade": paciente.cidade,
+            "estado": paciente.estado,
+        }
+
+    # tool 1
+
+    async def verificar_prontuario(self, prontuario: int) -> bool:
+        result = await self.session.execute(
+            select(Paciente).where(
+                Paciente.prontuario == prontuario,
+                Paciente.deleted_at.is_(None),
+            )
+        )
+        return result.scalars().first() is not None
+
+    # tool 2
+
+    async def verificar_solicitacao(
+        self, codigo_solicitacao: int, prontuario: int
+    ) -> bool:
+        result = await self.session.execute(
+            select(ExameSolicitado).where(
+                ExameSolicitado.solicitacao == codigo_solicitacao,
+                ExameSolicitado.paciente_solicitante == prontuario,
+                ExameSolicitado.deleted_at.is_(None),
+            )
+        )
+        return result.scalars().first() is not None
+
+    # tool 3
+
+    async def obter_exames_por_solicitacao(
+        self, codigo_solicitacao: int, prontuario: int
+    ) -> List[Dict[str, Any]]:
+        if not await self.verificar_prontuario(prontuario):
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Prontuário não encontrado",
+            )
+        if not await self.verificar_solicitacao(codigo_solicitacao, prontuario):
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Solicitação não encontrada para este prontuário",
+            )
+
+        result = await self.session.execute(
+            select(ExameSolicitado, Exame)
+            .join(Exame, ExameSolicitado.exame == Exame.codigo)
+            .where(
+                ExameSolicitado.solicitacao == codigo_solicitacao,
+                ExameSolicitado.paciente_solicitante == prontuario,
+                ExameSolicitado.deleted_at.is_(None),
+                Exame.deleted_at.is_(None),
+            )
+        )
+        rows = result.all()
+        return [
+            {
+                "codigo_exame": exame.codigo,
+                "nome_exame": exame.nome,
+                "status_atribuicao": es.status_atribuicao,
+                "funcionario_atribuido": es.funcionario_atribuido,
+            }
+            for es, exame in rows
+        ]
