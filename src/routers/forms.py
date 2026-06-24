@@ -12,6 +12,9 @@ router = APIRouter(
     prefix="/forms",
     tags=["Forms"],
     dependencies=[Depends(auth_handler.decode_token)]
+router = APIRouter(
+    prefix="/forms",
+    tags=["Forms"]
 )
 
 @router.get("/validar_paciente/{numero_prontuario}", response_model=bool)
