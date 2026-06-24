@@ -14,6 +14,29 @@ router = APIRouter(
     dependencies=[Depends(auth_handler.decode_token)]
 )
 
+@router.get("/validar_paciente/{numero_prontuario}", response_model=dict)
+async def validar_prontuario(
+    numero_prontuario: int,
+    provider: AghuProviderInterface = Depends(get_aghu_provider("csv"))
+):
+    """Valida se um prontuário existe no AGHU mock."""
+    return await forms_controller.validar_prontuario(numero_prontuario, provider)
+
+@router.get("/validar_solicitacao/{numero_prontuario}/{numero_solicitacao}", response_model=dict)
+async def consultar_exames_solicitacao(
+    numero_prontuario: int,
+    numero_solicitacao: int,
+    db: AsyncSession = Depends(get_postgres_session),
+    provider: AghuProviderInterface = Depends(get_aghu_provider("csv"))
+):
+    """Consulta exames de imagem de uma solicitação vinculada a um prontuário AGHU mock."""
+    return await forms_controller.consultar_exames_solicitacao(
+        numero_prontuario,
+        numero_solicitacao,
+        db,
+        provider
+    )
+
 @router.post("/enviar", response_model=dict)
 async def enviar_formulario_paciente(
     payload: FormularioPacienteRequest,
