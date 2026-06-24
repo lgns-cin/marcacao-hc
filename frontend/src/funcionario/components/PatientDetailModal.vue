@@ -3,7 +3,7 @@ import { ClockIcon, ArrowDownTrayIcon } from '@heroicons/vue/24/outline';
 import { UserGroupIcon } from '@heroicons/vue/24/solid';
 import Modal from '../../shared/components/Modal.vue';
 import type { AgendamentoItem } from '../types';
-import GovButton from './GovButton.vue';
+import GovButton from '../../shared/components/GovButton.vue';
 
 const props = defineProps<{
   show: boolean;

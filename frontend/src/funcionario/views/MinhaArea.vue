@@ -9,7 +9,7 @@ import MinhaAreaDetailModal from '../components/MinhaAreaDetailModal.vue';
 import FilaFiltros from '../components/FilaFiltros.vue';
 import type { MinhaAreaItem, ResultadoFinalizacao } from '../types';
 
-import GovButton from '../components/GovButton.vue';
+import GovButton from '../../shared/components/GovButton.vue';
 
 const funcionarioStore = useFuncionarioStore();
 const toast = useToast();

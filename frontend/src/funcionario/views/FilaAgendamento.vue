@@ -8,7 +8,7 @@ import PatientQueueCard from '../components/PatientQueueCard.vue';
 import PatientDetailModal from '../components/PatientDetailModal.vue';
 import FilaFiltros from '../components/FilaFiltros.vue';
 import type { AgendamentoItem } from '../types';
-import GovButton from '../components/GovButton.vue';
+import GovButton from '../../shared/components/GovButton.vue';
 
 // Plugins e stores
 const funcionarioStore = useFuncionarioStore();

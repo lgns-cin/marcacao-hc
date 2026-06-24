@@ -2,7 +2,7 @@
 import { ref } from 'vue';
 import { MagnifyingGlassIcon } from '@heroicons/vue/24/outline';
 import type { FiltrosFila } from '../types';
-import GovButton from './GovButton.vue';
+import GovButton from '../../shared/components/GovButton.vue';
 
 const REGIOES = ['Região Metropolitana', 'Agreste', 'Mata Sul', 'Mata Norte', 'Sertão'];
 const TIPOS_EXAME = ['Tomografia', 'Ressonância', 'Mamografia', 'Endoscopia', 'Colonoscopia', 'Ultrassonografia', 'Espirometria'];

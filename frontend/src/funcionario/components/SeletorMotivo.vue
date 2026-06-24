@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, watch, onBeforeUnmount } from 'vue';
 import { MagnifyingGlassIcon, ChevronDownIcon } from '@heroicons/vue/24/outline';
-import GovButton from './GovButton.vue';
+import GovButton from '../../shared/components/GovButton.vue';
 
 const props = defineProps<{
   modelValue: string;

@@ -11,7 +11,7 @@ import Modal from '../../shared/components/Modal.vue';
 import SeletorMotivo from './SeletorMotivo.vue';
 import { MOTIVOS_DEVOLUCAO, MOTIVOS_PROBLEMA } from '../types';
 import type { MinhaAreaItem, ResultadoFinalizacao } from '../types';
-import GovButton from './GovButton.vue';
+import GovButton from '../../shared/components/GovButton.vue';
 
 type Visao = 'detalhes' | 'reportarProblema' | 'devolverAFila';
 

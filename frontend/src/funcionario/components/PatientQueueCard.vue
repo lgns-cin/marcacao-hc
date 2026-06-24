@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import BaseCard from './BaseCard.vue';
-import GovButton from './GovButton.vue';
+import GovButton from '../../shared/components/GovButton.vue';
 import { ArrowDownTrayIcon } from '@heroicons/vue/24/solid';
 import type { AgendamentoItem } from '../types';
 

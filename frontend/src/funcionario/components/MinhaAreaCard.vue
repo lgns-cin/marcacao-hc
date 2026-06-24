@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import BaseCard from './BaseCard.vue';
-import GovButton from './GovButton.vue';
+import GovButton from '../../shared/components/GovButton.vue';
 import type { MinhaAreaItem } from '../types';
 
 //  Recebe o objeto específico desta tela através da prop meuItem
