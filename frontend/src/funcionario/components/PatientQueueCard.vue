@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import BaseCard from './BaseCard.vue';
-import GovButton from '../../shared/components/GovButton.vue';
+import Button from '../../shared/components/Button.vue';
 import { ArrowDownTrayIcon } from '@heroicons/vue/24/solid';
 import type { AgendamentoItem } from '../types';
 
@@ -19,14 +19,14 @@ const emit = defineEmits<{
 <template>
   <BaseCard :item="agendamento">
     
-    <GovButton variant="primary" @click="emit('puxar', agendamento.id)">
+    <Button variant="primary" @click="emit('puxar', agendamento.id)">
       <ArrowDownTrayIcon class="h-5 w-5 stroke-2" />
       Puxar
-    </GovButton>
+    </Button>
 
-    <GovButton variant="tertiary" @click="emit('verMais', agendamento)">
+    <Button variant="tertiary" @click="emit('verMais', agendamento)">
       Ver mais
-    </GovButton>
+    </Button>
     
   </BaseCard>
 </template>

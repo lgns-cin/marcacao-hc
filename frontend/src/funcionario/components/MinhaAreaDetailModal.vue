@@ -11,7 +11,7 @@ import Modal from '../../shared/components/Modal.vue';
 import SeletorMotivo from './SeletorMotivo.vue';
 import { MOTIVOS_DEVOLUCAO, MOTIVOS_PROBLEMA } from '../types';
 import type { MinhaAreaItem, ResultadoFinalizacao } from '../types';
-import GovButton from '../../shared/components/GovButton.vue';
+import Button from '../../shared/components/Button.vue';
 
 type Visao = 'detalhes' | 'reportarProblema' | 'devolverAFila';
 
@@ -83,18 +83,18 @@ function handleFinalizar(resultado: ResultadoFinalizacao) {
           {{ item.nome }}
         </span>
 
-        <GovButton
+        <Button
           v-if="visao === 'detalhes' && item.estado === 'AGUARDANDO_CONFIRMACAO'"
           variant="tertiary"
           @click="visao = 'reportarProblema'"
         >
           Reportar Problema
-        </GovButton>
+        </Button>
 
-        <GovButton v-else-if="visao !== 'detalhes'" variant="primary" @click="voltarParaDetalhes">
+        <Button v-else-if="visao !== 'detalhes'" variant="primary" @click="voltarParaDetalhes">
           <ArrowLeftIcon class="h-5 w-5" />
           Voltar
-        </GovButton>
+        </Button>
       </div>
     </template>
 
@@ -158,12 +158,12 @@ function handleFinalizar(resultado: ResultadoFinalizacao) {
         <div v-if="item.estado === 'AGUARDANDO_CONFIRMACAO'" class="mt-6 space-y-2">
           <p class="font-semibold text-govbr-text">Finalizar Agendamento, o exame foi:</p>
           <div class="flex items-center gap-3">
-            <GovButton variant="tertiary" @click="handleFinalizar('CONFIRMADO')">
+            <Button variant="tertiary" @click="handleFinalizar('CONFIRMADO')">
               Confirmado
-            </GovButton>
-            <GovButton variant="tertiary" @click="handleFinalizar('CANCELADO')">
+            </Button>
+            <Button variant="tertiary" @click="handleFinalizar('CANCELADO')">
               Cancelado
-            </GovButton>
+            </Button>
           </div>
         </div>
       </dl>
@@ -196,59 +196,59 @@ function handleFinalizar(resultado: ResultadoFinalizacao) {
 
     <template #footer>
       <template v-if="visao === 'detalhes'">
-        <GovButton
+        <Button
           v-if="item?.estado === 'EM_ANDAMENTO'"
           variant="tertiary"
           @click="visao = 'reportarProblema'"
         >
           Reportar Problema
-        </GovButton>
-        <GovButton
+        </Button>
+        <Button
           variant="secondary"
           @click="fechar"
         >
           Fechar
-        </GovButton>
-        <GovButton
+        </Button>
+        <Button
           v-if="item?.estado === 'EM_ANDAMENTO'"
           variant="primary"
           @click="handleAguardarConfirmacao"
         >
           <ClockIcon class="h-5 w-5" />
           Aguardar confirmação do Paciente
-        </GovButton>
+        </Button>
       </template>
 
       <template v-else-if="visao === 'reportarProblema'">
-        <GovButton
+        <Button
           variant="tertiary"
           @click="voltarParaDetalhes"
         >
           Cancelar
-        </GovButton>
-        <GovButton
+        </Button>
+        <Button
           variant="primary"
           :disabled="!motivoProblema"
           @click="handleEnviarProblema"
         >
           Enviar
-        </GovButton>
+        </Button>
       </template>
 
       <template v-else-if="visao === 'devolverAFila'">
-        <GovButton
+        <Button
           variant="secondary"
           :disabled="!motivoDevolucao"
           @click="handleConfirmarDevolucao"
         >
           Confirmar devolução
-        </GovButton>
-        <GovButton
+        </Button>
+        <Button
           variant="primary"
           @click="fechar"
         >
           Fechar
-        </GovButton>
+        </Button>
       </template>
     </template>
   </Modal>

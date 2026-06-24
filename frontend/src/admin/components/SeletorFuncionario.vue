@@ -3,6 +3,8 @@ import { ref, computed, watch, onBeforeUnmount } from 'vue';
 import { MagnifyingGlassIcon, ChevronDownIcon } from '@heroicons/vue/24/outline';
 import type { Funcionario } from '../types';
 
+import Button from '../../shared/components/Button.vue';
+
 const props = defineProps<{
   modelValue: string;
   opcoes: Funcionario[];
@@ -42,9 +44,9 @@ onBeforeUnmount(() => document.removeEventListener('click', fecharSeClicarFora))
 
 <template>
   <div ref="raiz">
-    <button
+    <Button
       type="button"
-      class="flex w-full items-center justify-between gap-2 rounded border border-govbr-border px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-govbr-primary"
+      variant="secondary"
       @click="aberto = !aberto"
     >
       <span class="flex items-center gap-2 truncate">
@@ -54,7 +56,7 @@ onBeforeUnmount(() => document.removeEventListener('click', fecharSeClicarFora))
         </span>
       </span>
       <ChevronDownIcon class="h-4 w-4 shrink-0 text-govbr-primary" />
-    </button>
+    </Button>
 
     <ul
       v-if="aberto"

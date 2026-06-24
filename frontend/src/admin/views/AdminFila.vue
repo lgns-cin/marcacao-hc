@@ -7,6 +7,7 @@ import AdminFilaCard from '../components/AdminFilaCard.vue';
 import AdminFilaDetailModal from '../components/AdminFilaDetailModal.vue';
 import FilaFiltros from '../../funcionario/components/FilaFiltros.vue';
 import type { AgendamentoItem } from '../../funcionario/types';
+import Button from '../../shared/components/Button.vue';
 
 const adminStore = useAdminStore();
 const toast = useToast();
@@ -64,13 +65,13 @@ onUnmounted(() => {
         <MagnifyingGlassIcon class="absolute right-3 top-1/2 h-5 w-5 -translate-y-1/2 text-govbr-primary" />
       </div>
 
-      <button
-        class="flex items-center justify-center gap-2 rounded-full bg-govbr-primary px-6 py-3 text-sm font-bold text-white hover:bg-govbr-primary-hover"
+      <Button
+        variant="primary"
         @click="filtrosExpandidos = !filtrosExpandidos"
       >
         <FunnelIcon class="h-5 w-5" />
         {{ filtrosExpandidos ? 'Ocultar Filtros' : 'Expandir Filtros' }}
-      </button>
+      </Button>
     </div>
 
     <FilaFiltros

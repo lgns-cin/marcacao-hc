@@ -3,6 +3,8 @@ import { UserGroupIcon, ClockIcon } from '@heroicons/vue/24/outline';
 import Modal from '../../shared/components/Modal.vue';
 import type { AgendamentoItem } from '../../funcionario/types';
 
+import Button from '../../shared/components/Button.vue';
+
 defineProps<{
   show: boolean;
   agendamento: AgendamentoItem | null;
@@ -78,12 +80,12 @@ const emit = defineEmits<{
     </div>
 
     <template #footer>
-      <button
-        class="rounded-full bg-govbr-primary px-5 py-2 text-sm font-bold text-white hover:bg-govbr-primary-hover"
+      <Button
+        variant="primary"
         @click="emit('close')"
       >
         Fechar
-      </button>
+      </Button>
     </template>
   </Modal>
 </template>

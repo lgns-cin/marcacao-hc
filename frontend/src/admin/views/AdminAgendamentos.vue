@@ -8,6 +8,8 @@ import AdminAgendamentoModal from '../components/AdminAgendamentoModal.vue';
 import FilaFiltros from '../../funcionario/components/FilaFiltros.vue';
 import type { AgendamentoGerenciamento } from '../types';
 
+import Button from '../../shared/components/Button.vue';
+
 const adminStore = useAdminStore();
 const toast = useToast();
 
@@ -121,22 +123,20 @@ onUnmounted(() => {
     />
 
     <div class="mt-6 flex items-center gap-6 border-b border-govbr-border">
-      <button
-        class="flex items-center gap-2 border-b-2 px-1 pb-3 text-sm font-bold"
-        :class="abaAtiva === 'emAndamento' ? 'border-govbr-primary text-govbr-primary' : 'border-transparent text-govbr-text-secondary'"
+      <Button
+        variant="tertiary"
         @click="abaAtiva = 'emAndamento'"
       >
         <ClockIcon class="h-5 w-5" />
         Em andamento
-      </button>
-      <button
-        class="flex items-center gap-2 border-b-2 px-1 pb-3 text-sm font-bold"
-        :class="abaAtiva === 'concluido' ? 'border-govbr-primary text-govbr-primary' : 'border-transparent text-govbr-text-secondary'"
+      </Button>
+      <Button
+        variant="tertiary"
         @click="abaAtiva = 'concluido'"
       >
         <CheckCircleIcon class="h-5 w-5" />
         Concluído
-      </button>
+      </Button>
     </div>
 
     <p v-if="adminStore.isLoadingAgendamentos" class="mt-8 text-govbr-text-secondary">Carregando agendamentos...</p>

@@ -3,6 +3,8 @@ import { computed } from 'vue';
 import { UserGroupIcon, ClockIcon } from '@heroicons/vue/24/outline';
 import type { AgendamentoGerenciamento } from '../types';
 
+import Button from '../../shared/components/Button.vue';
+
 const props = defineProps<{
   item: AgendamentoGerenciamento;
 }>();
@@ -68,20 +70,20 @@ function handleDevolverAFila() {
     </div>
 
     <div class="mt-4 flex items-center gap-6">
-      <button
+      <Button
         v-if="!finalizado"
-        class="flex items-center gap-1 text-sm font-bold text-govbr-primary hover:underline"
+        variant="secondary"
         @click="handleDevolverAFila"
       >
         <ClockIcon class="h-4 w-4" />
         Devolver à fila
-      </button>
-      <button
-        class="ml-auto rounded-full bg-govbr-primary px-5 py-2 text-sm font-bold text-white hover:bg-govbr-primary-hover"
+      </Button>
+      <Button
+        variant="primary"
         @click="handleVerMais"
       >
         Ver mais
-      </button>
+      </Button>
     </div>
   </div>
 </template>

@@ -8,7 +8,7 @@ import PatientQueueCard from '../components/PatientQueueCard.vue';
 import PatientDetailModal from '../components/PatientDetailModal.vue';
 import FilaFiltros from '../components/FilaFiltros.vue';
 import type { AgendamentoItem } from '../types';
-import GovButton from '../../shared/components/GovButton.vue';
+import Button from '../../shared/components/Button.vue';
 
 // Plugins e stores
 const funcionarioStore = useFuncionarioStore();
@@ -103,14 +103,14 @@ onUnmounted(() => {
         <MagnifyingGlassIcon class="absolute right-3 top-1/2 h-5 w-5 stroke-3 -translate-y-1/2 text-govbr-primary" />
       </div>
 
-      <GovButton
+      <Button
         type="button"
         variant="primary"
         @click="filtrosExpandidos = !filtrosExpandidos"
       >
         <FunnelIcon class="h-5 w-5" />
         {{ filtrosExpandidos ? 'Ocultar Filtros' : 'Expandir Filtros' }}
-      </GovButton>
+      </Button>
     </div>
 
     <FilaFiltros

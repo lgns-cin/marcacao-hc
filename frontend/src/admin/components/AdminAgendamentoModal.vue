@@ -14,6 +14,8 @@ import { MOTIVOS_DEVOLUCAO } from '../../funcionario/types';
 import type { AgendamentoItem } from '../../funcionario/types';
 import type { Funcionario } from '../types';
 
+import Button from '../../shared/components/Button.vue';
+
 type ItemModal = AgendamentoItem & {
   responsavel: string;
   problema_motivo?: string | null;
@@ -142,19 +144,19 @@ function handleResolver() {
           <div class="flex-1">
             <SeletorMotivo v-model="motivoDevolucao" :opcoes="MOTIVOS_DEVOLUCAO" />
           </div>
-          <button
-            class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-govbr-error text-govbr-error hover:bg-govbr-error-bg"
+          <Button
+            variant="secondary"
             @click="fecharPainel"
           >
             <XMarkIcon class="h-5 w-5" />
-          </button>
-          <button
-            class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-govbr-success text-govbr-success hover:bg-green-50 disabled:cursor-not-allowed disabled:opacity-40"
+          </Button>
+          <Button
+            variant="primary"
             :disabled="!motivoDevolucao"
             @click="confirmarDevolucao"
           >
             <CheckIcon class="h-5 w-5" />
-          </button>
+          </Button>
         </div>
       </div>
 
@@ -165,68 +167,68 @@ function handleResolver() {
           <div class="flex-1">
             <SeletorFuncionario v-model="funcionarioSelecionado" :opcoes="funcionarios" />
           </div>
-          <button
-            class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-govbr-error text-govbr-error hover:bg-govbr-error-bg"
+          <Button
+            variant="secondary"
             @click="fecharPainel"
           >
             <XMarkIcon class="h-5 w-5" />
-          </button>
-          <button
-            class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-govbr-success text-govbr-success hover:bg-green-50 disabled:cursor-not-allowed disabled:opacity-40"
+          </Button>
+          <Button
+            variant="primary"
             :disabled="!funcionarioSelecionado"
             @click="confirmarReatribuicao"
           >
             <CheckIcon class="h-5 w-5" />
-          </button>
+          </Button>
         </div>
       </div>
     </div>
 
     <template #footer>
       <template v-if="item?.problema_motivo">
-        <button
-          class="rounded-full border border-govbr-primary px-5 py-2 text-sm font-bold text-govbr-primary hover:bg-govbr-bg"
+        <Button
+          variant="secondary"
           @click="fechar"
         >
           Fechar
-        </button>
-        <button
-          class="flex items-center gap-2 rounded-full bg-govbr-primary px-5 py-2 text-sm font-bold text-white hover:bg-govbr-primary-hover"
+        </Button>
+        <Button
+          variant="primary"
           @click="handleResolver"
         >
           <CheckIcon class="h-5 w-5" />
           Resolvido
-        </button>
+        </Button>
       </template>
       <template v-else-if="permitirAcoes === false">
-        <button
-          class="rounded-full bg-govbr-primary px-5 py-2 text-sm font-bold text-white hover:bg-govbr-primary-hover"
+        <Button
+          variant="primary"
           @click="fechar"
         >
           Fechar
-        </button>
+        </Button>
       </template>
       <template v-else>
-        <button
-          class="mr-auto flex items-center gap-1 text-sm font-bold text-govbr-primary hover:underline"
+        <Button
+          variant="secondary"
           @click="abrirPainel('devolver')"
         >
           <ClockIcon class="h-4 w-4" />
           Devolver à fila
-        </button>
-        <button
-          class="flex items-center gap-1 rounded-full border border-govbr-primary px-5 py-2 text-sm font-bold text-govbr-primary hover:bg-govbr-bg"
+        </Button>
+        <Button
+          variant="secondary"
           @click="abrirPainel('reatribuir')"
         >
           <ExclamationCircleIcon class="h-4 w-4" />
           Reatribuir
-        </button>
-        <button
-          class="rounded-full bg-govbr-primary px-5 py-2 text-sm font-bold text-white hover:bg-govbr-primary-hover"
+        </Button>
+        <Button
+          variant="primary"
           @click="fechar"
         >
           Fechar
-        </button>
+        </Button>
       </template>
     </template>
   </Modal>

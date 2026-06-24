@@ -2,6 +2,8 @@
 import { UserGroupIcon, ClockIcon } from '@heroicons/vue/24/outline';
 import type { PendenciaItem } from '../types';
 
+import Button from '../../shared/components/Button.vue';
+
 const props = defineProps<{
   pendencia: PendenciaItem;
 }>();
@@ -56,9 +58,12 @@ function handleVerMais() {
     </div>
 
     <div class="mt-4 flex items-center justify-end">
-      <button class="text-sm font-bold text-govbr-primary hover:underline" @click="handleVerMais">
+      <Button
+        variant="secondary"
+        @click="handleVerMais"
+      >
         Ver mais
-      </button>
+      </Button>
     </div>
   </div>
 </template>

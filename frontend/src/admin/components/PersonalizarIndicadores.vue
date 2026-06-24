@@ -2,6 +2,8 @@
 import { ref, watch } from 'vue';
 import { AdjustmentsHorizontalIcon } from '@heroicons/vue/24/outline';
 
+import Button from '../../shared/components/Button.vue';
+
 const props = defineProps<{
   todos: { id: string; label: string }[];
   selecionados: string[] | null;
@@ -33,13 +35,13 @@ function aplicar() {
 
 <template>
   <div class="relative">
-    <button
-      class="flex items-center gap-2 rounded-full border border-govbr-primary px-5 py-2 text-sm font-bold text-govbr-primary hover:bg-govbr-bg"
+    <Button
+      variant="secondary"
       @click="aberto = !aberto"
     >
       <AdjustmentsHorizontalIcon class="h-5 w-5" />
       Personalizar Indicadores
-    </button>
+    </Button>
 
     <div v-if="aberto" class="fixed inset-0 z-10" @click="aberto = false" />
 
@@ -60,15 +62,18 @@ function aplicar() {
         </label>
       </div>
       <div class="mt-4 flex items-center justify-between gap-3">
-        <button class="text-sm font-bold text-govbr-primary hover:underline" @click="selecionarTodos">
+        <Button
+          variant="secondary"
+          @click="selecionarTodos"
+        >
           Selecionar todos
-        </button>
-        <button
-          class="rounded-full bg-govbr-primary px-5 py-2 text-sm font-bold text-white hover:bg-govbr-primary-hover"
+        </Button>
+        <Button
+          variant="primary"
           @click="aplicar"
         >
           Aplicar
-        </button>
+        </Button>
       </div>
     </div>
   </div>
