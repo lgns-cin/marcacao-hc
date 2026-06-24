@@ -1,5 +1,6 @@
+import unicodedata
 from datetime import date, timedelta
-from typing import List
+from typing import Any, Dict, List, Optional
 
 from fastapi import HTTPException, status
 from sqlalchemy import select, func
@@ -10,6 +11,104 @@ from ..models.solicitacao import Solicitacao, FormularioPacienteRequest
 from ..models.exame import Exame
 from ..models.exame_solicitado import ExameSolicitado
 from ..providers.interfaces.aghu_provider_interface import AghuProviderInterface
+
+
+def _normalize_name(value: str) -> str:
+    normalized = unicodedata.normalize("NFKD", value or "")
+    return "".join(
+        char for char in normalized if unicodedata.category(char) != "Mn"
+    ).strip().lower()
+
+
+async def validar_prontuario(
+    numero_prontuario: int,
+    provider: AghuProviderInterface
+) -> Dict[str, Any]:
+    existe = await provider.verificar_prontuario_existe(numero_prontuario)
+    if not existe:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Prontuário não encontrado no AGHU"
+        )
+    return {"prontuario": numero_prontuario, "exists": True}
+
+
+async def consultar_exames_solicitacao(
+    numero_prontuario: int,
+    numero_solicitacao: int,
+    db: AsyncSession,
+    provider: AghuProviderInterface
+) -> Dict[str, Any]:
+    exames = await provider.buscar_exames_solicitacao(
+        numero_prontuario,
+        numero_solicitacao
+    )
+    if not exames:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Solicitação não encontrada ou não pertence a este prontuário"
+        )
+
+    exames_imagem = [
+        exame
+        for exame in exames
+        if str(exame.get("tipo_exame", "")).strip().lower() == "imagem"
+    ]
+
+    if not exames_imagem:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Nenhum exame de imagem encontrado para esta solicitação"
+        )
+
+    nomes_exames = [str(exame.get("nome_exame", "")).strip() for exame in exames_imagem]
+    nomes_normalizados = [
+        _normalize_name(nome)
+        for nome in nomes_exames
+        if nome
+    ]
+
+    stmt_exames = select(Exame).where(func.lower(Exame.nome).in_(nomes_normalizados))
+    result_exames = await db.execute(stmt_exames)
+    exames_locais = result_exames.scalars().all()
+    mapping_codigo = {
+        _normalize_name(exame.nome): exame.codigo
+        for exame in exames_locais
+        if exame.nome
+    }
+
+    if len(mapping_codigo) != len(set(nomes_normalizados)):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Alguns exames de imagem não estão cadastrados localmente"
+        )
+
+    stmt_vagas = select(ExameSolicitado.exame_codigo).where(
+        ExameSolicitado.solicitacao_codigo == numero_solicitacao,
+        ExameSolicitado.paciente_solicitante == numero_prontuario,
+    )
+    result_vagas = await db.execute(stmt_vagas)
+    exames_na_fila = {row[0] for row in result_vagas.fetchall()}
+
+    exames_com_status = []
+    for exame in exames_imagem:
+        codigo_exame = mapping_codigo[_normalize_name(str(exame.get("nome_exame", "")))]
+        tem_vagas = bool(exame.get("tem_vagas", False))
+        if codigo_exame in exames_na_fila:
+            status_vaga = "já na fila"
+        elif tem_vagas:
+            status_vaga = "tem vaga no AGHU"
+        else:
+            status_vaga = "não tem vaga no AGHU"
+
+        exames_com_status.append({
+            "codigo_exame": codigo_exame,
+            "nome_exame": exame.get("nome_exame"),
+            "tem_vagas": tem_vagas,
+            "status_vaga": status_vaga,
+        })
+
+    return {"exames": exames_com_status}
 
 
 async def processar_formulario_paciente(
@@ -41,16 +140,34 @@ async def processar_formulario_paciente(
         payload.numero_solicitacao
     )
 
-    # Dados fictícios para preencher a solicitação local
-    data_retorno = date.today() + timedelta(days=30)
-    unidade_solicitante = (
-        "IMAGEM"
-        if any(
-            str(item.get("tipo_exame", "")).strip().lower() == "imagem"
-            for item in exames_aghu
+    data_retorno: Optional[date] = None
+    unidade_solicitante: Optional[str] = None
+    if exames_aghu:
+        primeiro_exame = exames_aghu[0]
+        raw_data_retorno = primeiro_exame.get("data_retorno")
+
+        if isinstance(raw_data_retorno, date):
+            data_retorno = raw_data_retorno
+        elif isinstance(raw_data_retorno, str):
+            try:
+                data_retorno = date.fromisoformat(raw_data_retorno)
+            except ValueError:
+                data_retorno = None
+
+        unidade_solicitante = str(primeiro_exame.get("unidade_solicitante") or "").strip() or None
+
+    if data_retorno is None:
+        data_retorno = date.today() + timedelta(days=30)
+
+    if not unidade_solicitante:
+        unidade_solicitante = (
+            "IMAGEM"
+            if any(
+                str(item.get("tipo_exame", "")).strip().lower() == "imagem"
+                for item in exames_aghu
+            )
+            else "GERAL"
         )
-        else "GERAL"
-    )
 
     stmt_solicitacao = select(Solicitacao).where(Solicitacao.codigo == payload.numero_solicitacao)
     result_solicitacao = await db.execute(stmt_solicitacao)
@@ -70,43 +187,54 @@ async def processar_formulario_paciente(
     # Persistir paciente e solicitação antes de criar vínculos
     await db.flush()
 
-    # Buscar exames no banco local pelos códigos
     exames_confirmados: List[Exame] = []
     if payload.exames:
-        stmt_exames = select(Exame).where(Exame.codigo.in_(payload.exames))
+        payload_exame_codigos = [str(codigo) for codigo in payload.exames]
+        stmt_exames = select(Exame).where(Exame.codigo.in_(payload_exame_codigos))
         result_exames = await db.execute(stmt_exames)
         exames_confirmados = result_exames.scalars().all()
 
-        codigo_unicos = set(payload.exames)
-        if len(exames_confirmados) != len(codigo_unicos):
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Código de exame inválido encontrado"
-            )
+        existentes_por_codigo = {str(exame.codigo): exame for exame in exames_confirmados}
+        missing_codigos = [str(codigo) for codigo in payload.exames if str(codigo) not in existentes_por_codigo]
 
-    # Evitar inserções duplicadas para o mesmo par solicitacao/exame
+        for missing_codigo in missing_codigos:
+            exame_nome = None
+            for item in exames_aghu:
+                if str(item.get("codigo_exame", "")).strip() == missing_codigo:
+                    exame_nome = item.get("nome_exame")
+                    break
+
+            if exame_nome is None and len(exames_aghu) == 1:
+                exame_nome = exames_aghu[0].get("nome_exame")
+
+            exame_nome = str(exame_nome or f"Exame {missing_codigo}").strip()
+            novo_exame = Exame(codigo=missing_codigo, nome=exame_nome)
+            db.add(novo_exame)
+            exames_confirmados.append(novo_exame)
+
     stmt_existentes = select(ExameSolicitado.exame_codigo).where(
         ExameSolicitado.solicitacao_codigo == solicitacao.codigo
     )
     result_existentes = await db.execute(stmt_existentes)
-    existentes = {row[0] for row in result_existentes.fetchall()}
+    existentes = {str(row[0]) for row in result_existentes.fetchall()}
 
     vinculos_existentes = set(existentes)
     novos_vinculos = set()
 
     for exame_obj in exames_confirmados:
-        if exame_obj.codigo in vinculos_existentes or exame_obj.codigo in novos_vinculos:
+        exame_codigo = str(exame_obj.codigo)
+        if exame_codigo in vinculos_existentes or exame_codigo in novos_vinculos:
             continue
         exame_solicitado = ExameSolicitado(
             solicitacao_codigo=solicitacao.codigo,
-            exame_codigo=exame_obj.codigo,
+            exame_codigo=exame_codigo,
             paciente_solicitante=payload.numero_prontuario,
             funcionario_atribuido=None,
             status_atribuicao="PENDENTE",
             data_atribuicao=None,
         )
         db.add(exame_solicitado)
-        novos_vinculos.add(exame_obj.codigo)
+        novos_vinculos.add(exame_codigo)
 
     try:
         await db.commit()
