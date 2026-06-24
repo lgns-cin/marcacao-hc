@@ -2,6 +2,8 @@ import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
 import type { AgendamentoItem, FiltrosFila, MinhaAreaItem, ResultadoFinalizacao } from '../funcionario/types';
 import { filtrarAgendamentos, FILTROS_VAZIOS } from '../shared/utils/filtrarAgendamentos';
+import { derivarRegiao, fetchMesorregioes, fetchMunicipios, FORA_DO_ESTADO } from '../shared/services/ibge';
+import type { MunicipioIBGE } from '../shared/services/ibge';
 
 export const useFuncionarioStore = defineStore('funcionario', () => {
   // state - fila de agendamento
@@ -13,6 +15,10 @@ export const useFuncionarioStore = defineStore('funcionario', () => {
   const minhaArea = ref<MinhaAreaItem[]>([]);
   const isLoadingMinhaArea = ref(false);
   const filtrosMinhaArea = ref<FiltrosFila>({ ...FILTROS_VAZIOS });
+
+  // state - IBGE
+  const regioes = ref<string[]>([]);
+  const municipiosIBGE = ref<MunicipioIBGE[]>([]);
 
   // computed - fila de agendamento
   const totalAgendamentos = computed(() => agendamentos.value.length);
@@ -34,8 +40,12 @@ export const useFuncionarioStore = defineStore('funcionario', () => {
     minhaAreaFiltrada.value.filter((item) => item.estado === 'FINALIZADO')
   );
 
-  // Dados hardecoded
-  const AGENDAMENTOS_MOCK: AgendamentoItem[] = [
+  const nomesMunicipios = computed(() =>
+    municipiosIBGE.value.map((m) => m.nome),
+  );
+
+  // Dados mock (sem regiao — será derivada via IBGE)
+  const AGENDAMENTOS_MOCK: Omit<AgendamentoItem, 'regiao'>[] = [
     {
       id: 1,
       nome: 'Maria das Graças Oliveira',
@@ -47,7 +57,6 @@ export const useFuncionarioStore = defineStore('funcionario', () => {
       unidadeSolicitante: 'UBS Centro - Caruaru',
       dataRetorno: '15/07/2026',
       localizacao: 'Caruaru',
-      regiao: 'Agreste',
       idade: 67,
     },
     {
@@ -61,7 +70,6 @@ export const useFuncionarioStore = defineStore('funcionario', () => {
       unidadeSolicitante: 'UBS Boa Viagem - Recife',
       dataRetorno: '20/07/2026',
       localizacao: 'Recife',
-      regiao: 'Região Metropolitana',
       idade: 45,
     },
     {
@@ -75,7 +83,6 @@ export const useFuncionarioStore = defineStore('funcionario', () => {
       unidadeSolicitante: 'UBS Olinda Norte',
       dataRetorno: '10/08/2026',
       localizacao: 'Olinda',
-      regiao: 'Região Metropolitana',
       idade: 52,
     },
     {
@@ -89,7 +96,6 @@ export const useFuncionarioStore = defineStore('funcionario', () => {
       unidadeSolicitante: 'UBS Garanhuns Centro',
       dataRetorno: '18/07/2026',
       localizacao: 'Garanhuns',
-      regiao: 'Agreste',
       idade: 63,
     },
     {
@@ -103,7 +109,6 @@ export const useFuncionarioStore = defineStore('funcionario', () => {
       unidadeSolicitante: 'UBS Petrolina Centro',
       dataRetorno: '25/08/2026',
       localizacao: 'Petrolina',
-      regiao: 'Sertão',
       idade: 29,
     },
     {
@@ -117,7 +122,6 @@ export const useFuncionarioStore = defineStore('funcionario', () => {
       unidadeSolicitante: 'UBS Palmares',
       dataRetorno: '12/07/2026',
       localizacao: 'Palmares',
-      regiao: 'Mata Sul',
       idade: 71,
     },
     {
@@ -131,7 +135,6 @@ export const useFuncionarioStore = defineStore('funcionario', () => {
       unidadeSolicitante: 'UBS Arcoverde',
       dataRetorno: '01/08/2026',
       localizacao: 'Arcoverde',
-      regiao: 'Sertão',
       idade: 38,
     },
     {
@@ -145,12 +148,11 @@ export const useFuncionarioStore = defineStore('funcionario', () => {
       unidadeSolicitante: 'UBS Goiana',
       dataRetorno: '30/07/2026',
       localizacao: 'Goiana',
-      regiao: 'Mata Norte',
       idade: 55,
     },
   ];
 
-  const MINHA_AREA_MOCK: MinhaAreaItem[] = [
+  const MINHA_AREA_MOCK: Omit<MinhaAreaItem, 'regiao'>[] = [
     {
       id: 101,
       nome: 'Patrícia Vieira Mendes',
@@ -162,7 +164,6 @@ export const useFuncionarioStore = defineStore('funcionario', () => {
       unidadeSolicitante: 'UBS Jaboatão',
       dataRetorno: '22/07/2026',
       localizacao: 'Jaboatão dos Guararapes',
-      regiao: 'Região Metropolitana',
       idade: 58,
       estado: 'EM_ANDAMENTO',
     },
@@ -177,7 +178,6 @@ export const useFuncionarioStore = defineStore('funcionario', () => {
       unidadeSolicitante: 'UBS Caruaru Sul',
       dataRetorno: '14/07/2026',
       localizacao: 'Caruaru',
-      regiao: 'Agreste',
       idade: 72,
       estado: 'AGUARDANDO_CONFIRMACAO',
     },
@@ -192,7 +192,6 @@ export const useFuncionarioStore = defineStore('funcionario', () => {
       unidadeSolicitante: 'UBS Paulista',
       dataRetorno: '05/08/2026',
       localizacao: 'Paulista',
-      regiao: 'Região Metropolitana',
       idade: 48,
       estado: 'FINALIZADO',
       resultado: 'CONFIRMADO',
@@ -208,18 +207,36 @@ export const useFuncionarioStore = defineStore('funcionario', () => {
       unidadeSolicitante: 'UBS Afogados da Ingazeira',
       dataRetorno: '28/07/2026',
       localizacao: 'Afogados da Ingazeira',
-      regiao: 'Sertão',
       idade: 33,
       estado: 'EM_ANDAMENTO',
     },
   ];
 
+  async function preencherRegioes<T extends { localizacao: string }>(
+    itens: Omit<T, 'regiao'>[],
+  ): Promise<(T & { regiao: string })[]> {
+    return Promise.all(
+      itens.map(async (item) => ({
+        ...item,
+        regiao: await derivarRegiao(item.localizacao),
+      })) as Promise<T & { regiao: string }>[],
+    );
+  }
+
+  async function carregarDadosIBGE() {
+    const [mesorregioes, municipios] = await Promise.all([
+      fetchMesorregioes(),
+      fetchMunicipios(),
+    ]);
+    regioes.value = [...mesorregioes, FORA_DO_ESTADO];
+    municipiosIBGE.value = municipios;
+  }
+
   // actions - fila de agendamento
   async function fetchAgendamentos(opcoes: { silencioso?: boolean } = {}) {
     if (!opcoes.silencioso) isLoading.value = true;
-    // Simula delay de rede
-    await new Promise((r) => setTimeout(r, 300));
-    agendamentos.value = AGENDAMENTOS_MOCK;
+    await carregarDadosIBGE();
+    agendamentos.value = await preencherRegioes<AgendamentoItem>(AGENDAMENTOS_MOCK);
     if (!opcoes.silencioso) isLoading.value = false;
   }
 
@@ -244,8 +261,8 @@ export const useFuncionarioStore = defineStore('funcionario', () => {
   // actions - minha área
   async function fetchMinhaArea(opcoes: { silencioso?: boolean } = {}) {
     if (!opcoes.silencioso) isLoadingMinhaArea.value = true;
-    await new Promise((r) => setTimeout(r, 300));
-    minhaArea.value = MINHA_AREA_MOCK;
+    await carregarDadosIBGE();
+    minhaArea.value = await preencherRegioes<MinhaAreaItem>(MINHA_AREA_MOCK);
     if (!opcoes.silencioso) isLoadingMinhaArea.value = false;
   }
 
@@ -289,6 +306,9 @@ export const useFuncionarioStore = defineStore('funcionario', () => {
     filtros,
     totalAgendamentos,
     agendamentosFiltrados,
+    regioes,
+    municipiosIBGE,
+    nomesMunicipios,
     fetchAgendamentos,
     puxarAgendamento,
     setBusca,
