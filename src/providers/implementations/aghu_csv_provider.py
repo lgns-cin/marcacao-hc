@@ -40,6 +40,12 @@ class AghuCsvProvider(AghuProviderInterface):
             for record in self.records
         )
 
+    async def verificar_solicitacao_existe(self, numero_solicitacao: int) -> bool:
+        return any(
+            record.get("numero_solicitacao") == numero_solicitacao
+            for record in self.records
+        )
+
     async def buscar_exames_solicitacao(
         self,
         numero_prontuario: int,
