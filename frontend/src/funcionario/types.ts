@@ -39,6 +39,7 @@ export const MOTIVOS_DEVOLUCAO = [
 ];
 
 export const MOTIVOS_PROBLEMA = [
+  'Paciente não respondeu',
   'Dados inconsistentes',
   'Duplicidade',
   'Erro cadastral',

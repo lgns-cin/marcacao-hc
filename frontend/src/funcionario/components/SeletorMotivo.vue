@@ -57,7 +57,7 @@ onBeforeUnmount(() => document.removeEventListener('click', fecharSeClicarFora))
       <li
         v-for="opcao in props.opcoes"
         :key="opcao"
-        class="cursor-pointer px-3 py-3 text-sm text-govbr-text hover:bg-govbr-bg"
+        class="cursor-pointer px-3 py-3 text-[16px] text-govbr-text hover:bg-govbr-bg"
         :class="{ 'bg-govbr-bg': opcao === modelValue }"
         @click="selecionar(opcao)"
       >

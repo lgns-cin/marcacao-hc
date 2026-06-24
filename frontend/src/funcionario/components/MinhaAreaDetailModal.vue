@@ -83,15 +83,7 @@ function handleFinalizar(resultado: ResultadoFinalizacao) {
           {{ item.nome }}
         </span>
 
-        <Button
-          v-if="visao === 'detalhes' && item.estado === 'AGUARDANDO_CONFIRMACAO'"
-          variant="tertiary"
-          @click="visao = 'reportarProblema'"
-        >
-          Reportar Problema
-        </Button>
-
-        <Button v-else-if="visao !== 'detalhes'" variant="primary" @click="voltarParaDetalhes">
+        <Button v-if="visao !== 'detalhes'" variant="primary" @click="voltarParaDetalhes">
           <ArrowLeftIcon class="h-5 w-5 ml-2" />
         </Button>
       </div>
@@ -105,9 +97,6 @@ function handleFinalizar(resultado: ResultadoFinalizacao) {
           <div class="flex items-center gap-3">
             <Button variant="tertiary" @click="handleFinalizar('CONFIRMADO')">
               Confirmado
-            </Button>
-            <Button variant="tertiary" @click="handleFinalizar('CANCELADO')">
-              Cancelado
             </Button>
           </div>
         </div>
@@ -141,7 +130,7 @@ function handleFinalizar(resultado: ResultadoFinalizacao) {
     <template #footer>
       <template v-if="visao === 'detalhes'">
         <Button
-          v-if="item?.estado === 'EM_ANDAMENTO'"
+          v-if="item?.estado === 'EM_ANDAMENTO' || item?.estado === 'AGUARDANDO_CONFIRMACAO'"
           variant="tertiary"
           @click="visao = 'reportarProblema'"
         >
