@@ -6,7 +6,6 @@ const navItems = [
   { name: 'AdminVisaoGeral', label: 'Visão geral' },
   { name: 'AdminPendencias', label: 'Gestão de Pendências' },
   { name: 'AdminAgendamentos', label: 'Gerenciamento de Agendamentos' },
-  { name: 'AdminFila', label: 'Fila de Agendamentos' },
 ];
 </script>
 

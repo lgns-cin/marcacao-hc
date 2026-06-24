@@ -13,7 +13,6 @@ import LoginView from '../auth/views/LoginView.vue';
 import AdminVisaoGeral from '../admin/views/AdminVisaoGeral.vue';
 import AdminPendencias from '../admin/views/AdminPendencias.vue';
 import AdminAgendamentos from '../admin/views/AdminAgendamentos.vue';
-import AdminFila from '../admin/views/AdminFila.vue';
 
 const routes: RouteRecordRaw[] = [
   {
@@ -90,16 +89,6 @@ const routes: RouteRecordRaw[] = [
     path: '/admin/agendamentos',
     name: 'AdminAgendamentos',
     component: AdminAgendamentos,
-    meta: {
-      layout: AdminLayout,
-      requiresAuth: true,
-      requiresAdmin: true
-    }
-  },
-  {
-    path: '/admin/fila',
-    name: 'AdminFila',
-    component: AdminFila,
     meta: {
       layout: AdminLayout,
       requiresAuth: true,

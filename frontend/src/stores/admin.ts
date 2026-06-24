@@ -16,9 +16,7 @@ function carregarPreferenciasIniciais(): string[] | null {
 }
 
 export const useAdminStore = defineStore('admin', () => {
-  // ==========================================
-  // ESTADOS (STATE)
-  // ==========================================
+  // Estados
   const visaoGeral = ref<VisaoGeral | null>(null);
   const isLoadingVisaoGeral = ref(false);
   const indicadoresVisiveis = ref<string[] | null>(carregarPreferenciasIniciais());

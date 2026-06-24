@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted } from 'vue';
 import { useToast } from 'vue-toastification';
-import { MagnifyingGlassIcon, FunnelIcon, ClockIcon, CheckCircleIcon } from '@heroicons/vue/24/outline';
+import { MagnifyingGlassIcon, ClockIcon, CheckCircleIcon } from '@heroicons/vue/24/outline';
+import { FunnelIcon } from '@heroicons/vue/20/solid';
 import { useAdminStore } from '../../stores/admin';
 import GerenciamentoCard from '../components/GerenciamentoCard.vue';
 import AdminAgendamentoModal from '../components/AdminAgendamentoModal.vue';
@@ -89,30 +90,31 @@ onUnmounted(() => {
 
 <template>
   <div>
-    <h1 class="text-3xl font-bold text-govbr-text">Gerenciamento de Agendamentos</h1>
-    <p class="mt-1 text-govbr-text-secondary">
-      Visualize os exames em andamento e concluídos, acompanhando os responsáveis por cada etapa.
+    <h1 class="text-[2.4rem] text-govbr-text">Gerenciamento de Agendamentos</h1>
+    <p class="text-[1.6rem] text-govbr-text-secondary">
+      Visualize os exames em andamento e finalizados, acompanhando os responsáveis por cada etapa.
     </p>
 
-    <div class="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center">
-      <div class="relative flex-1">
+    <div class="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+      <div class="relative w-2/3">
         <input
           :value="adminStore.filtrosAgendamentos.busca"
           type="text"
           placeholder="Busque por nome ou n° do prontuário"
-          class="w-full rounded border border-govbr-border bg-white px-4 py-3 pr-10 text-sm placeholder-govbr-text-secondary focus:outline-none focus:ring-1 focus:ring-govbr-primary"
+          class="w-full rounded bg-[#F8F8F8] px-4 py-3 pr-10 text-[14px] placeholder-govbr-text-secondary focus:outline-none focus:ring-1 focus:ring-govbr-primary"
           @input="adminStore.setBuscaAgendamentos(($event.target as HTMLInputElement).value)"
         />
-        <MagnifyingGlassIcon class="absolute right-3 top-1/2 h-5 w-5 -translate-y-1/2 text-govbr-primary" />
+        <MagnifyingGlassIcon class="absolute right-3 top-1/2 h-5 w-5 stroke-3 -translate-y-1/2 text-govbr-primary" />
       </div>
 
-      <button
-        class="flex items-center justify-center gap-2 rounded-full bg-govbr-primary px-6 py-3 text-sm font-bold text-white hover:bg-govbr-primary-hover"
+      <Button
+        type="button"
+        variant="primary"
         @click="filtrosExpandidos = !filtrosExpandidos"
       >
         <FunnelIcon class="h-5 w-5" />
         {{ filtrosExpandidos ? 'Ocultar Filtros' : 'Expandir Filtros' }}
-      </button>
+      </Button>
     </div>
 
     <FilaFiltros
@@ -135,7 +137,7 @@ onUnmounted(() => {
         @click="abaAtiva = 'concluido'"
       >
         <CheckCircleIcon class="h-5 w-5" />
-        Concluído
+        Finalizados
       </Button>
     </div>
 

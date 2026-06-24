@@ -35,11 +35,11 @@ watch(() => route.path, () => {
         >
           <Bars3Icon class="h-7 w-7" />
         </button>
-        <h1 class="text-2xl font-bold text-govbr-text">Hospital das Clínicas - UFPE</h1>
+        <h1 class="text-2xl text-govbr-text">Hospital das Clínicas - UFPE</h1>
       </div>
 
       <div class="flex items-center gap-4">
-        <ProfileDropdown />
+        <ProfileDropdown/>
       </div>
     </header>
 
