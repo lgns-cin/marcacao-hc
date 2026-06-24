@@ -46,6 +46,10 @@ const validationSchema = toTypedSchema(
         cidade: zod.string({
             required_error: "Campo está vazio."
         }).refine(
+              (_: string) => local.value.estado && estados.value.length > 0 && estados.value.includes(local.value.estado),
+              "O estado não foi preenchido corretamente."
+          )
+          .refine(
               (_: string) => cidades.value.length != 0,
               "Não pudemos recuperar os municípios. Tente novamente depois."
           )
@@ -55,8 +59,6 @@ const validationSchema = toTypedSchema(
           )
     })
 );
-// TODO: Vincular a validacao do cidade ao estado completamente
-// (ex. cidade esta invalido pois estado esta invalido)
 
 const onSubmit = async (values: any, _: any) => {
     formStore.setLocal({
@@ -173,8 +175,9 @@ const updateMunicipios = async (e: string) => {
                         outline-2 outline-dark-blue rounded-xl bg-dark-blue-transparent
                     "
                     validate-on-input
-                    :disabled="false"
-                >   <!-- TODO desabilitar o input de cidade dinamicamente (se não houver cidade) -->
+                    :disabled="!local.estado"
+                    :class="{ 'cursor-not-allowed': !local.estado }"
+                >
                     <datalist id="cidades">
                         <template v-for="cidade in cidades">
                             <option :value="cidade">{{ cidade }}</option>
