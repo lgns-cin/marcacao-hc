@@ -23,14 +23,14 @@ def _normalize_name(value: str) -> str:
 async def validar_prontuario(
     numero_prontuario: int,
     provider: AghuProviderInterface
-) -> Dict[str, Any]:
+) -> bool:
     existe = await provider.verificar_prontuario_existe(numero_prontuario)
     if not existe:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Prontuário não encontrado no AGHU"
         )
-    return {"prontuario": numero_prontuario, "exists": True}
+    return True
 
 
 async def consultar_exames_solicitacao(

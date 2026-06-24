@@ -14,7 +14,7 @@ router = APIRouter(
     dependencies=[Depends(auth_handler.decode_token)]
 )
 
-@router.get("/validar_paciente/{numero_prontuario}", response_model=dict)
+@router.get("/validar_paciente/{numero_prontuario}", response_model=bool)
 async def validar_prontuario(
     numero_prontuario: int,
     provider: AghuProviderInterface = Depends(get_aghu_provider("csv"))
