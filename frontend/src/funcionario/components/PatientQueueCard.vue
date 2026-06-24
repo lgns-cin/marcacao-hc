@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import BaseCard from './BaseCard.vue';
+import BaseCard from '../../shared/components/BaseCard.vue';
 import Button from '../../shared/components/Button.vue';
 import { ArrowDownTrayIcon } from '@heroicons/vue/24/solid';
 import type { AgendamentoItem } from '../types';

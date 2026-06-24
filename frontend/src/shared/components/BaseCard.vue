@@ -2,6 +2,7 @@
 import { computed } from 'vue';
 import { UserGroupIcon, ClockIcon } from '@heroicons/vue/24/solid';
 
+// Componente base para o card de fila(funcionário e admin)
 /**
  * Definição de props
  * usamos uma tipagem flexível para o 'item' para que ele consiga aceitar 
