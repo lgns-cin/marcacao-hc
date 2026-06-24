@@ -1,19 +1,19 @@
 <script setup lang="ts">
 import { ref, watch } from 'vue';
 import {
-  UserGroupIcon,
   ClockIcon,
   CheckIcon,
   XMarkIcon,
   ExclamationCircleIcon,
 } from '@heroicons/vue/24/outline';
+import { UserGroupIcon } from '@heroicons/vue/24/solid';
 import Modal from '../../shared/components/Modal.vue';
+import BaseModalDetails from '../../shared/components/BaseModalDetails.vue';
 import SeletorMotivo from '../../funcionario/components/SeletorMotivo.vue';
 import SeletorFuncionario from './SeletorFuncionario.vue';
 import { MOTIVOS_DEVOLUCAO } from '../../funcionario/types';
 import type { AgendamentoItem } from '../../funcionario/types';
 import type { Funcionario } from '../types';
-
 import Button from '../../shared/components/Button.vue';
 
 type ItemModal = AgendamentoItem & {
@@ -93,142 +93,74 @@ function handleResolver() {
     </template>
 
     <div v-if="item" class="space-y-4">
-      <p class="text-sm">
+      <p class="text-[16px]">
         <span class="font-semibold text-govbr-text">Responsável</span>:
         <span class="text-govbr-text-secondary">{{ item.responsavel }}</span>
       </p>
 
-      <div class="flex flex-wrap items-center justify-between gap-2">
-        <p class="text-sm text-govbr-text-secondary">
-          N° do Prontuário: <span class="text-govbr-text">{{ item.prontuario }}</span>
-        </p>
-        <div class="flex items-center gap-2">
-          <span class="flex items-center gap-1 text-sm text-govbr-text-secondary">
-            <ClockIcon class="h-4 w-4" />
-            há {{ item.diasNaFila }}d
-          </span>
-          <span :class="[
-            'rounded-full px-2.5 py-0.5 text-xs font-bold',
-            item.status === 'ALTA' ? 'bg-govbr-error-bg text-govbr-error' :
-            item.status === 'MÉDIA' ? 'bg-amber-100 text-amber-800' :
-            'bg-green-100 text-green-800'
-          ]">
-            {{ item.status }}
-          </span>
+      <BaseModalDetails :item="item" :mostrar-descricao="painel === 'nenhum'">
+        
+        <div v-if="item.problema_motivo" class="space-y-2 pt-2">
+          <p class="font-semibold text-govbr-text">Informações sobre o Reporte do Problema:</p>
+          <ul class="list-disc space-y-1 pl-5 text-[16px]">
+            <li><span class="font-semibold text-govbr-text">Motivo</span>: <span class="text-govbr-text-secondary">{{ item.problema_motivo }}</span></li>
+            <li v-if="item.problema_detalhes"><span class="font-semibold text-govbr-text">Detalhes</span>: <span class="text-govbr-text-secondary">{{ item.problema_detalhes }}</span></li>
+          </ul>
         </div>
-      </div>
 
-      <div class="flex flex-wrap gap-2">
-        <span
-          v-for="exame in item.exames"
-          :key="exame"
-          class="rounded border border-govbr-border px-3 py-1 text-sm font-semibold text-govbr-text"
-        >
-          {{ exame }}
-        </span>
-      </div>
-
-      <!-- Problema reportado (somente leitura) -->
-      <div v-if="item.problema_motivo" class="space-y-2">
-        <p class="font-semibold text-govbr-text">Informações sobre o Reporte do Problema:</p>
-        <ul class="list-disc space-y-1 pl-5 text-sm">
-          <li><span class="font-semibold text-govbr-text">Motivo</span>: <span class="text-govbr-text-secondary">{{ item.problema_motivo }}</span></li>
-          <li v-if="item.problema_detalhes"><span class="font-semibold text-govbr-text">Detalhes</span>: <span class="text-govbr-text-secondary">{{ item.problema_detalhes }}</span></li>
-        </ul>
-      </div>
-
-      <!-- Painel: Devolver à fila -->
-      <div v-else-if="painel === 'devolver'" class="space-y-2 rounded border border-govbr-border bg-govbr-bg p-4">
-        <label class="mb-1 block text-sm font-semibold text-govbr-text">Motivo*</label>
-        <div class="flex items-center gap-2">
-          <div class="flex-1">
-            <SeletorMotivo v-model="motivoDevolucao" :opcoes="MOTIVOS_DEVOLUCAO" />
+        <div v-else-if="painel === 'devolver'" class="space-y-2 rounded border border-govbr-border bg-govbr-bg p-4 mt-4">
+          <label class="mb-1 block text-sm font-semibold text-govbr-text">Motivo*</label>
+          <div class="flex items-center gap-2">
+            <div class="flex-1">
+              <SeletorMotivo v-model="motivoDevolucao" :opcoes="MOTIVOS_DEVOLUCAO" />
+            </div>
+            <Button variant="secondary" @click="fecharPainel">
+              <XMarkIcon class="h-5 w-5" />
+            </Button>
+            <Button variant="primary" :disabled="!motivoDevolucao" @click="confirmarDevolucao">
+              <CheckIcon class="h-5 w-5" />
+            </Button>
           </div>
-          <Button
-            variant="secondary"
-            @click="fecharPainel"
-          >
-            <XMarkIcon class="h-5 w-5" />
-          </Button>
-          <Button
-            variant="primary"
-            :disabled="!motivoDevolucao"
-            @click="confirmarDevolucao"
-          >
-            <CheckIcon class="h-5 w-5" />
-          </Button>
         </div>
-      </div>
 
-      <!-- Painel: Reatribuir -->
-      <div v-else-if="painel === 'reatribuir'" class="space-y-2 rounded border border-govbr-border bg-govbr-bg p-4">
-        <label class="mb-1 block text-sm font-semibold text-govbr-text">Selecionar Funcionário</label>
-        <div class="flex items-center gap-2">
-          <div class="flex-1">
-            <SeletorFuncionario v-model="funcionarioSelecionado" :opcoes="funcionarios" />
+        <div v-else-if="painel === 'reatribuir'" class="space-y-2 rounded border border-govbr-border bg-govbr-bg p-4 mt-4">
+          <label class="mb-1 block text-sm font-semibold text-govbr-text">Selecionar Funcionário</label>
+          <div class="flex items-center gap-2">
+            <div class="flex-1">
+              <SeletorFuncionario v-model="funcionarioSelecionado" :opcoes="funcionarios" />
+            </div>
+            <Button variant="secondary" @click="fecharPainel">
+              <XMarkIcon class="h-5 w-5" />
+            </Button>
+            <Button variant="primary" :disabled="!funcionarioSelecionado" @click="confirmarReatribuicao">
+              <CheckIcon class="h-5 w-5" />
+            </Button>
           </div>
-          <Button
-            variant="secondary"
-            @click="fecharPainel"
-          >
-            <XMarkIcon class="h-5 w-5" />
-          </Button>
-          <Button
-            variant="primary"
-            :disabled="!funcionarioSelecionado"
-            @click="confirmarReatribuicao"
-          >
-            <CheckIcon class="h-5 w-5" />
-          </Button>
         </div>
-      </div>
+      </BaseModalDetails>
     </div>
 
     <template #footer>
       <template v-if="item?.problema_motivo">
-        <Button
-          variant="secondary"
-          @click="fechar"
-        >
-          Fechar
-        </Button>
-        <Button
-          variant="primary"
-          @click="handleResolver"
-        >
+        <Button variant="secondary" @click="fechar">Fechar</Button>
+        <Button variant="primary" @click="handleResolver">
           <CheckIcon class="h-5 w-5" />
           Resolvido
         </Button>
       </template>
       <template v-else-if="permitirAcoes === false">
-        <Button
-          variant="primary"
-          @click="fechar"
-        >
-          Fechar
-        </Button>
+        <Button variant="primary" @click="fechar">Fechar</Button>
       </template>
       <template v-else>
-        <Button
-          variant="secondary"
-          @click="abrirPainel('devolver')"
-        >
+        <Button variant="secondary" @click="abrirPainel('devolver')">
           <ClockIcon class="h-4 w-4" />
           Devolver à fila
         </Button>
-        <Button
-          variant="secondary"
-          @click="abrirPainel('reatribuir')"
-        >
+        <Button variant="secondary" @click="abrirPainel('reatribuir')">
           <ExclamationCircleIcon class="h-4 w-4" />
           Reatribuir
         </Button>
-        <Button
-          variant="primary"
-          @click="fechar"
-        >
-          Fechar
-        </Button>
+        <Button variant="primary" @click="fechar">Fechar</Button>
       </template>
     </template>
   </Modal>

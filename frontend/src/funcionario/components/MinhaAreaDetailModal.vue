@@ -3,11 +3,11 @@ import { ref, watch } from 'vue';
 import {
   ClockIcon,
   ArrowLeftIcon,
-  ExclamationCircleIcon,
   InformationCircleIcon,
 } from '@heroicons/vue/24/outline';
 import { UserGroupIcon } from '@heroicons/vue/20/solid';
 import Modal from '../../shared/components/Modal.vue';
+import BaseModalDetails from '../../shared/components/BaseModalDetails.vue';
 import SeletorMotivo from './SeletorMotivo.vue';
 import { MOTIVOS_DEVOLUCAO, MOTIVOS_PROBLEMA } from '../types';
 import type { MinhaAreaItem, ResultadoFinalizacao } from '../types';
@@ -92,70 +92,15 @@ function handleFinalizar(resultado: ResultadoFinalizacao) {
         </Button>
 
         <Button v-else-if="visao !== 'detalhes'" variant="primary" @click="voltarParaDetalhes">
-          <ArrowLeftIcon class="h-5 w-5" />
-          Voltar
+          <ArrowLeftIcon class="h-5 w-5 ml-2" />
         </Button>
       </div>
     </template>
 
     <div v-if="item" class="space-y-4">
-      <div class="flex flex-wrap items-center justify-between gap-2">
-        <p class="text-[16px] text-govbr-text-secondary">
-          N° do Prontuário: <span class="text-govbr-text">{{ item.prontuario }}</span>
-        </p>
-        <div v-if="item.estado !== 'FINALIZADO'" class="flex items-center gap-2">
-          <span class="flex items-center gap-1 text-[16px] text-govbr-text-secondary">
-            <ClockIcon class="h-4 w-4" />
-            há {{ item.diasNaFila }}d
-          </span>
-          <span :class="[
-            'rounded-full px-2.5 py-0.5 text-xs font-bold',
-            item.status === 'ALTA' ? 'bg-govbr-error-bg text-govbr-error' :
-            item.status === 'MÉDIA' ? 'bg-amber-100 text-amber-800' :
-            'bg-green-100 text-green-800'
-          ]">
-            {{ item.status }}
-          </span>
-        </div>
-        <span v-else class="rounded-full border border-govbr-border px-2.5 py-0.5 text-xs font-bold text-govbr-text-secondary">
-          {{ item.resultado }}
-        </span>
-      </div>
-
-      <div class="flex flex-wrap gap-2">
-        <span
-          v-for="exame in item.exames"
-          :key="exame"
-          class="rounded border border-govbr-border px-3 py-1 text-sm font-semibold text-govbr-text"
-        >
-          {{ exame }}
-        </span>
-      </div>
-
-      <!-- Detalhes do agendamento -->
-      <dl v-if="visao === 'detalhes'" class="space-y-3 text-[16px]">
-        <div>
-          <dt class="inline font-semibold text-govbr-text">Unidade Executora: </dt>
-          <dd class="inline text-govbr-text-secondary"> {{ item.unidadeExecutora }}</dd>
-        </div>
-        <div>
-          <dt class="inline font-semibold text-govbr-text">Unidade Solicitante: </dt>
-          <dd class="inline text-govbr-text-secondary"> {{ item.unidadeSolicitante }}</dd>
-        </div>
-        <div>
-          <dt class="inline font-semibold text-govbr-text">Data de retorno: </dt>
-          <dd class="inline text-govbr-text-secondary"> {{ item.dataRetorno }}</dd>
-        </div>
-        <div>
-          <dt class="inline font-semibold text-govbr-text">Localização: </dt>
-          <dd class="inline text-govbr-text-secondary"> {{ item.localizacao }}</dd>
-        </div>
-        <div>
-          <dt class="inline font-semibold text-govbr-text">Idade: </dt>
-          <dd class="inline text-govbr-text-secondary"> {{ item.idade }} anos</dd>
-        </div>
-
-        <div v-if="item.estado === 'AGUARDANDO_CONFIRMACAO'" class="mt-6 space-y-2">
+      <BaseModalDetails :item="item" :mostrar-descricao="visao === 'detalhes'">
+        
+        <div v-if="visao === 'detalhes' && item.estado === 'AGUARDANDO_CONFIRMACAO'" class="mt-6 space-y-2">
           <p class="font-semibold text-govbr-text">Finalizar Agendamento, o exame foi:</p>
           <div class="flex items-center gap-3">
             <Button variant="tertiary" @click="handleFinalizar('CONFIRMADO')">
@@ -166,32 +111,31 @@ function handleFinalizar(resultado: ResultadoFinalizacao) {
             </Button>
           </div>
         </div>
-      </dl>
 
-      <!-- Reportar Problema -->
-      <div v-else-if="visao === 'reportarProblema'" class="space-y-3">
-        <p class="font-semibold text-govbr-text">Informações sobre o Reporte de Problema:</p>
-        <div>
-          <label class="mb-1 block text-sm font-semibold text-govbr-text">Descreva qual o problema*</label>
-          <SeletorMotivo v-model="motivoProblema" :opcoes="MOTIVOS_PROBLEMA" />
+        <div v-else-if="visao === 'reportarProblema'" class="space-y-3 pt-2">
+          <p class="font-semibold text-govbr-text text-[18px]">Informações sobre o Reporte de Problema:</p>
+          <div>
+            <label class="mb-1 block text-[16px] font-semibold text-govbr-text">Descreva qual o problema*</label>
+            <SeletorMotivo v-model="motivoProblema" :opcoes="MOTIVOS_PROBLEMA" />
+          </div>
         </div>
-      </div>
 
-      <!-- Devolver à fila -->
-      <div v-else-if="visao === 'devolverAFila'" class="space-y-3">
-        <p class="font-semibold text-govbr-text">Informações sobre o Devolver à fila:</p>
-        <div class="flex items-start gap-2 rounded bg-govbr-primary px-4 py-3 text-sm text-white">
-          <InformationCircleIcon class="mt-0.5 h-5 w-5 shrink-0" />
-          <p>
-            Utilize esta opção apenas para devolver a solicitação à fila geral. Para inconsistências nos dados
-            ou erros no sistema, utilize a opção "Reportar Problema".
-          </p>
+        <div v-else-if="visao === 'devolverAFila'" class="space-y-3 pt-2">
+          <p class="font-semibold text-govbr-text text-[18px]">Informações sobre o Devolver à fila:</p>
+          <div class="flex items-start gap-2 rounded bg-govbr-primary px-4 py-3 text-[16px] text-semibold text-white">
+            <InformationCircleIcon class="mt-0.5 h-5 w-5 shrink-0" />
+            <p>
+              Utilize esta opção apenas para devolver a solicitação à fila geral. Para inconsistências nos dados
+              ou erros no sistema, utilize a opção "Reportar Problema".
+            </p>
+          </div>
+          <div>
+            <label class="mb-1 block text-[16px] font-semibold text-govbr-text">Motivo*</label>
+            <SeletorMotivo v-model="motivoDevolucao" :opcoes="MOTIVOS_DEVOLUCAO" />
+          </div>
         </div>
-        <div>
-          <label class="mb-1 block text-sm font-semibold text-govbr-text">Motivo*</label>
-          <SeletorMotivo v-model="motivoDevolucao" :opcoes="MOTIVOS_DEVOLUCAO" />
-        </div>
-      </div>
+
+      </BaseModalDetails>
     </div>
 
     <template #footer>
@@ -203,10 +147,7 @@ function handleFinalizar(resultado: ResultadoFinalizacao) {
         >
           Reportar Problema
         </Button>
-        <Button
-          variant="secondary"
-          @click="fechar"
-        >
+        <Button variant="secondary" @click="fechar">
           Fechar
         </Button>
         <Button
@@ -220,10 +161,7 @@ function handleFinalizar(resultado: ResultadoFinalizacao) {
       </template>
 
       <template v-else-if="visao === 'reportarProblema'">
-        <Button
-          variant="tertiary"
-          @click="voltarParaDetalhes"
-        >
+        <Button variant="tertiary" @click="voltarParaDetalhes">
           Cancelar
         </Button>
         <Button
@@ -243,10 +181,7 @@ function handleFinalizar(resultado: ResultadoFinalizacao) {
         >
           Confirmar devolução
         </Button>
-        <Button
-          variant="primary"
-          @click="fechar"
-        >
+        <Button variant="primary" @click="fechar">
           Fechar
         </Button>
       </template>
