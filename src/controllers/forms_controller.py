@@ -39,14 +39,25 @@ async def consultar_exames_solicitacao(
     db: AsyncSession,
     provider: AghuProviderInterface
 ) -> Dict[str, Any]:
+    existe_solic = await provider.verificar_solicitacao_existe(
+        numero_solicitacao
+    )
+
+    if not existe_solic:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Solicitação não encontrada no AGHU"
+        )
+
     exames = await provider.buscar_exames_solicitacao(
         numero_prontuario,
         numero_solicitacao
     )
+
     if not exames:
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Solicitação não encontrada ou não pertence a este prontuário"
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="Solicitação não pertence a este prontuário"
         )
 
     exames_imagem = [
@@ -77,11 +88,30 @@ async def consultar_exames_solicitacao(
         if exame.nome
     }
 
-    if len(mapping_codigo) != len(set(nomes_normalizados)):
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Alguns exames de imagem não estão cadastrados localmente"
-        )
+    nomes_faltando = [
+        nome_norm
+        for nome_norm in nomes_normalizados
+        if nome_norm not in mapping_codigo
+    ]
+
+    # Se e o nome faz parte dos exames aceitos (imagem), adicionamos no bd local
+    if nomes_faltando:
+        for exame in exames_imagem:
+            nome_exame = str(exame.get("nome_exame", "")).strip()
+            nome_norm = _normalize_name(nome_exame)
+            if nome_norm not in nomes_faltando:
+                continue
+
+            codigo_exame = str(exame.get("codigo_exame", "")).strip()
+            if not codigo_exame:
+                continue
+
+            novo_exame = Exame(codigo=codigo_exame, nome=nome_exame)
+            db.add(novo_exame)
+            mapping_codigo[nome_norm] = codigo_exame
+            nomes_faltando.remove(nome_norm)
+
+        await db.flush()
 
     stmt_vagas = select(ExameSolicitado.exame_codigo).where(
         ExameSolicitado.solicitacao_codigo == numero_solicitacao,
@@ -95,16 +125,16 @@ async def consultar_exames_solicitacao(
         codigo_exame = mapping_codigo[_normalize_name(str(exame.get("nome_exame", "")))]
         tem_vagas = bool(exame.get("tem_vagas", False))
         if codigo_exame in exames_na_fila:
-            status_vaga = "já na fila"
+            status_vaga = "DUPLICADO"
         elif tem_vagas:
-            status_vaga = "tem vaga no AGHU"
+            status_vaga = "DISPONÍVEL"
         else:
-            status_vaga = "não tem vaga no AGHU"
+            status_vaga = "INDISPONÍVEL"
+        
 
         exames_com_status.append({
             "codigo_exame": codigo_exame,
             "nome_exame": exame.get("nome_exame"),
-            "tem_vagas": tem_vagas,
             "status_vaga": status_vaga,
         })
 
