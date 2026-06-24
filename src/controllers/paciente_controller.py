@@ -1,8 +1,6 @@
 from typing import List, Dict, Any
 
-from ..models.exame import Exame
 from ..providers.interfaces.paciente_provider_interface import PacienteProviderInterface
-from ..providers.interfaces.aghu_provider_interface import AghuProviderInterface
 
 async def listar_pacientes(
     provider: PacienteProviderInterface
