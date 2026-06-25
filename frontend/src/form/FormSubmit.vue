@@ -25,25 +25,6 @@ onMounted(async () => {
     uiStore.setLoading(true);
     
     exames.value = formStore.exames;
-    /* valores hardcoded para testes!
-    exames.value = [
-        {
-            codigo_exame: "T1",
-            nome_exame: "Teste 1",
-            status_vaga: "DISPONÍVEL"
-        },
-        {
-            codigo_exame: "T2",
-            nome_exame: "Teste 3",
-            status_vaga: "INDISPONÍVEL"
-        }
-        {
-            codigo_exame: "T3",
-            nome_exame: "Teste 3",
-            status_vaga: "DUPLICADO"
-        }
-    ];
-    */
 
     if (exames.value.every(v => v.status_vaga == "DUPLICADO") || exames.value.length == 0) {
         // tudo já tá na fila OU não tem nenhum exame novo.
@@ -64,25 +45,26 @@ onMounted(async () => {
 const exames = ref<any[]>([]);
 
 const onSubmit = async () => {
-    const examesToDo = exames.value.filter(v => v.status_vaga == "DISPONÍVEL")
+    const examesToDo = exames.value.filter(v => v.status_vaga == "DISPONÍVEL").map(v => v.codigo_exame);
+    await api.post(
+        "/api/forms/enviar",
+        {
+            numero_prontuario: formStore.prontuario,
+            numero_solicitacao: formStore.solicitacao,
+            telefone: formStore.telefone?.toString(),
+            estado: formStore.local?.estado,
+            cidade: formStore.local?.cidade,
+            exames: examesToDo
+        }
+    ).then(response => {
+        if (response.data.status !== "sucesso") {
+            throw new Error();
+        }
 
-    try {
-        const response = await api.post(
-            "forms/enviar",
-            {
-                numero_prontuario: formStore.prontuario,
-                numero_solicitacao: formStore.solicitacao,
-                telefone: formStore.telefone,
-                estado: formStore.local?.estado,
-                cidade: formStore.local?.cidade,
-                exames: examesToDo.map(v => v.codigo_exame)
-            }
-        );
-
-        state.value = response.status == 200 && response.data.status == "sucesso" ? "SUBMETIDO" : "ERRO";
-    } catch {
+        state.value = "SUBMETIDO";
+    }).catch(() => {
         state.value = "ERRO";
-    }
+    });
 }
 
 </script>

@@ -8,6 +8,7 @@ import { useFormStore } from '../stores/form';
 import FormView from './components/FormView.vue';
 import { onMounted } from 'vue';
 import api from '../services/api';
+import { AxiosError } from 'axios';
 
 const formStore = useFormStore();
 
@@ -27,7 +28,7 @@ const validationSchema = toTypedSchema(
             invalid_type_error: "Deve ser um número.",
             required_error: "Campo está vazio."
         }).int("Número deve ser inteiro.")
-          .gte(1_000_000, "Número muito pequeno.")
+          .gte(10_000, "Número muito pequeno.")
           .lte(9_999_999, "Número muito grande.")
     })
 );
@@ -36,32 +37,31 @@ const onSubmit = async (values: any, actions: any) => {
     const prontuario = formStore.prontuario;
     const solicitacao = values.solicitacao;
 
-    let exists = true, mismatched = false;
-    let exames = undefined;
+    await api.get(`/api/forms/validar_solicitacao/${prontuario}/${solicitacao}`)
+            .then(async response => {
+                const exames = response.data.exames;
 
-    try {
-        const { status, data } = await api.get(`forms/validar_solicitacao/${prontuario}/${solicitacao}`);
-        exists = status == 200;
-        mismatched = status == 422;
-        exames = data.exames;
-    } catch {
-        actions.setErrors({ prontuario: "Ocorreu uma falha na validação interna." });
-        return;
-    }
+                formStore.setExames(exames);
+                formStore.setSolicitacao(solicitacao);
+                await toNext();
+            })
+            .catch((error: AxiosError) => {
+                let errorMessage = "";
 
-    if (!exists || exames === undefined) {
-        actions.setErrors({ solicitacao: "Número não encontrado." });
-        return;
-    }
+                switch (error.status) {
+                    case 404:
+                        errorMessage = "Número não encontrado.";
+                        break;
+                    case 422:
+                        errorMessage = "Esse número não é o da sua solicitação.";
+                        break;
+                    default:
+                        errorMessage = "Ocorreu uma falha na validação interna.";
+                        break;
+                }
 
-    if (mismatched) {
-        actions.setErrors({ solicitacao: "Esse número não é o da sua solicitação." });
-        return;
-    }
-
-    formStore.setExames(exames); // exames é truthy aqui
-    formStore.setSolicitacao(solicitacao);
-    await toNext();
+                actions.setErrors({ solicitacao: errorMessage });
+            });
 };
 
 const items = [

@@ -7,6 +7,7 @@ import { toTypedSchema } from '@vee-validate/zod';
 import { useFormStore } from '../stores/form';
 import FormView from './components/FormView.vue';
 import api from '../services/api';
+import { AxiosError } from 'axios';
 
 const formStore = useFormStore();
 
@@ -28,22 +29,26 @@ const validationSchema = toTypedSchema(
 const onSubmit = async (values: any, actions: any) => {
     const prontuario = values.prontuario;
 
-    let exists = true;
-    try {
-        const response = await api.get<boolean>(`forms/validar_paciente/${prontuario}`);
-        exists = response.status == 200 && response.data === true;
-    } catch {
-        actions.setErrors({ prontuario: "Ocorreu uma falha na validação interna." });
-        return;
-    }
+    await api.get<boolean>(`/api/forms/validar_paciente/${prontuario}`)
+            .then(async response => {
+                // O padrão da resposta é:
+                // - se for um sucesso, data === true. caso contrário,
+                // - receberemos um 404 e iremos executar o catch.
+                
+                if (response.data !== true) {
+                    throw new Error();
+                }
 
-    if (!exists) {
-        actions.setErrors({ prontuario: "Número não encontrado." });
-        return;
-    }
+                formStore.setProntuario(prontuario);
+                await toNext();
+            })
+            .catch((error: AxiosError) => {
+                const errorMessage = error.status == 404 // previsto para números inexistentes
+                    ? "Número não encontrado."
+                    : "Ocorreu uma falha na validação interna.";
 
-    formStore.setProntuario(prontuario);
-    await toNext();
+                actions.setErrors({ prontuario: errorMessage });
+            });
 };
 
 const items = [
