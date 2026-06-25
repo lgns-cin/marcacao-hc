@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ..controllers import forms_controller
-from ..resources.postgres import get_postgres_session
+from ..resources.database import get_app_db_session
 from ..providers.interfaces.aghu_provider_interface import AghuProviderInterface
 from ..dependencies import get_aghu_provider
 from ..models.solicitacao import FormularioPacienteRequest
@@ -25,7 +25,7 @@ async def validar_prontuario(
 async def consultar_exames_solicitacao(
     numero_prontuario: int,
     numero_solicitacao: int,
-    db: AsyncSession = Depends(get_postgres_session),
+    db: AsyncSession = Depends(get_app_db_session),
     provider: AghuProviderInterface = Depends(get_aghu_provider("csv"))
 ):
     """Consulta exames de imagem de uma solicitação vinculada a um prontuário AGHU mock."""
@@ -39,7 +39,7 @@ async def consultar_exames_solicitacao(
 @router.post("/enviar", response_model=dict)
 async def enviar_formulario_paciente(
     payload: FormularioPacienteRequest,
-    db: AsyncSession = Depends(get_postgres_session),
+    db: AsyncSession = Depends(get_app_db_session),
     aghu_provider: AghuProviderInterface = Depends(get_aghu_provider("csv"))
 ):
     """Recebe os dados do formulário do paciente e persiste a solicitação localmente no banco de dados."""
