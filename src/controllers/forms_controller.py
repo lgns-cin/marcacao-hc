@@ -79,44 +79,33 @@ async def consultar_exames_solicitacao(
             detail="Nenhum exame de imagem encontrado para esta solicitação"
         )
 
-    nomes_exames = [str(exame.get("nome_exame", "")).strip() for exame in exames_imagem]
-    nomes_normalizados = [
-        _normalize_name(nome)
-        for nome in nomes_exames
-        if nome
+    codigos_exames = [
+        str(exame.get("codigo_exame", "")).strip()
+        for exame in exames_imagem
+        if exame.get("codigo_exame")
     ]
 
-    stmt_exames = select(Exame).where(func.lower(Exame.nome).in_(nomes_normalizados))
+    stmt_exames = select(Exame).where(Exame.codigo.in_(codigos_exames))
     result_exames = await db.execute(stmt_exames)
     exames_locais = result_exames.scalars().all()
-    mapping_codigo = {
-        _normalize_name(exame.nome): exame.codigo
-        for exame in exames_locais
-        if exame.nome
-    }
+    exames_locais_codigos = {str(exame.codigo).strip() for exame in exames_locais}
 
-    nomes_faltando = [
-        nome_norm
-        for nome_norm in nomes_normalizados
-        if nome_norm not in mapping_codigo
+    codigos_faltando = [
+        codigo
+        for codigo in codigos_exames
+        if codigo not in exames_locais_codigos
     ]
 
-    # Se e o nome faz parte dos exames aceitos (imagem), adicionamos no bd local
-    if nomes_faltando:
+    # Se o exame não existe na tabela local, adicionamos no bd local
+    if codigos_faltando:
+        inseridos = set()
         for exame in exames_imagem:
-            nome_exame = str(exame.get("nome_exame", "")).strip()
-            nome_norm = _normalize_name(nome_exame)
-            if nome_norm not in nomes_faltando:
-                continue
-
             codigo_exame = str(exame.get("codigo_exame", "")).strip()
-            if not codigo_exame:
-                continue
-
-            novo_exame = Exame(codigo=codigo_exame, nome=nome_exame)
-            db.add(novo_exame)
-            mapping_codigo[nome_norm] = codigo_exame
-            nomes_faltando.remove(nome_norm)
+            if codigo_exame in codigos_faltando and codigo_exame not in inseridos:
+                nome_exame = str(exame.get("nome_exame", "")).strip()
+                novo_exame = Exame(codigo=codigo_exame, nome=nome_exame)
+                db.add(novo_exame)
+                inseridos.add(codigo_exame)
 
         await db.flush()
 
@@ -129,7 +118,7 @@ async def consultar_exames_solicitacao(
 
     exames_com_status = []
     for exame in exames_imagem:
-        codigo_exame = mapping_codigo[_normalize_name(str(exame.get("nome_exame", "")))]
+        codigo_exame = str(exame.get("codigo_exame", "")).strip()
         tem_vagas = bool(exame.get("tem_vagas", False))
         if codigo_exame in exames_na_fila:
             status_vaga = "DUPLICADO"
@@ -137,7 +126,6 @@ async def consultar_exames_solicitacao(
             status_vaga = "DISPONÍVEL"
         else:
             status_vaga = "INDISPONÍVEL"
-        
 
         exames_com_status.append({
             "codigo_exame": codigo_exame,
