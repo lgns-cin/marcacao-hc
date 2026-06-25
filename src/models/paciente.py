@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, DateTime
+from sqlalchemy import Column, Integer, String, Date, DateTime
 from sqlalchemy.orm import relationship
 from ..resources.database import Base
 
@@ -10,6 +10,7 @@ class Paciente(Base):
     telefone = Column(String)
     cidade = Column(String)
     estado = Column(String)
+    data_nascimento = Column(Date, nullable=True)
     deleted_at = Column(DateTime, nullable=True)
 
     exames_solicitados = relationship(
