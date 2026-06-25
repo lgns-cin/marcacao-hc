@@ -14,6 +14,8 @@ import type { GraficoMotivosDevolucao } from '../types';
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Tooltip, Legend);
 
+const CORES_BARRAS = ['#168821', '#FFCD07', '#E52207', '#1351B4', '#FF8C00'];
+
 const props = defineProps<{
   grafico: GraficoMotivosDevolucao;
 }>();
@@ -22,8 +24,8 @@ const chartData = computed(() => ({
   labels: props.grafico.dados.map((d) => d.motivo),
   datasets: [
     {
-      label: 'Pacientes',
-      backgroundColor: '#7C3AED',
+      label: 'Quantidade',
+      backgroundColor: props.grafico.dados.map((_, i) => CORES_BARRAS[i % CORES_BARRAS.length]),
       data: props.grafico.dados.map((d) => d.quantidade),
     },
   ],
