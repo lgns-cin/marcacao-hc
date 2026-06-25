@@ -120,8 +120,8 @@ async def consultar_exames_solicitacao(
 
         await db.flush()
 
-    stmt_vagas = select(ExameSolicitado.exame_codigo).where(
-        ExameSolicitado.solicitacao_codigo == numero_solicitacao,
+    stmt_vagas = select(ExameSolicitado.exame).where(
+        ExameSolicitado.solicitacao == numero_solicitacao,
         ExameSolicitado.paciente_solicitante == numero_prontuario,
     )
     result_vagas = await db.execute(stmt_vagas)
@@ -242,8 +242,8 @@ async def processar_formulario_paciente(
             db.add(novo_exame)
             exames_confirmados.append(novo_exame)
 
-    stmt_existentes = select(ExameSolicitado.exame_codigo).where(
-        ExameSolicitado.solicitacao_codigo == solicitacao.codigo
+    stmt_existentes = select(ExameSolicitado.exame).where(
+        ExameSolicitado.solicitacao == solicitacao.codigo
     )
     result_existentes = await db.execute(stmt_existentes)
     existentes = {str(row[0]) for row in result_existentes.fetchall()}
@@ -256,8 +256,8 @@ async def processar_formulario_paciente(
         if exame_codigo in vinculos_existentes or exame_codigo in novos_vinculos:
             continue
         exame_solicitado = ExameSolicitado(
-            solicitacao_codigo=solicitacao.codigo,
-            exame_codigo=exame_codigo,
+            solicitacao=solicitacao.codigo,
+            exame=exame_codigo,
             paciente_solicitante=payload.numero_prontuario,
             funcionario_atribuido=None,
             status_atribuicao="PENDENTE",
