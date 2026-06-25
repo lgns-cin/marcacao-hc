@@ -250,6 +250,7 @@ async def processar_formulario_paciente(
             funcionario_atribuido=None,
             status_atribuicao="PENDENTE",
             data_atribuicao=None,
+            data_solicitacao=date.today(),
         )
         db.add(exame_solicitado)
         novos_vinculos.add(exame_codigo)
