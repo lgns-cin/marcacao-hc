@@ -8,6 +8,12 @@ export const useFormStore = defineStore("form", () => {
         cidade: string
     };
 
+    type Exame = {
+        codigo_exame: string
+        nome_exame: string
+        status_vaga: "DISPONÍVEL" | "INDISPONÍVEL" | "DUPLICADO"
+    }
+
     const prontuario = ref<number>();
     const setProntuario = (val: number) => prontuario.value = val;
 
@@ -20,10 +26,14 @@ export const useFormStore = defineStore("form", () => {
     const local = ref<Local>();
     const setLocal = (val: Local) => local.value = val;
 
+    const exames = ref<Exame[]>([]);
+    const setExames = (val: Exame[]) => exames.value = val;
+
     return {
         prontuario, setProntuario,
         solicitacao, setSolicitacao,
         telefone, setTelefone,
-        local, setLocal
+        local, setLocal,
+        exames, setExames
     }
 })

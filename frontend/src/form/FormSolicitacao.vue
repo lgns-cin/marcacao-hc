@@ -7,6 +7,7 @@ import { toTypedSchema } from '@vee-validate/zod';
 import { useFormStore } from '../stores/form';
 import FormView from './components/FormView.vue';
 import { onMounted } from 'vue';
+import api from '../services/api';
 
 const formStore = useFormStore();
 
@@ -32,14 +33,23 @@ const validationSchema = toTypedSchema(
 );
 
 const onSubmit = async (values: any, actions: any) => {
+    const prontuario = formStore.prontuario;
     const solicitacao = values.solicitacao;
 
     let exists = true, mismatched = false;
-    // TODO: Fazer requisição à API
-    // Verifica se `solicitacao` existe no AGHU
-    // Caso exista, verifica se `formStore.prontuario` está associado à essa solicitação
+    let exames = undefined;
 
-    if (!exists) {
+    try {
+        const { status, data } = await api.get(`forms/validar_solicitacao/${prontuario}/${solicitacao}`);
+        exists = status == 200;
+        mismatched = status == 422;
+        exames = data.exames;
+    } catch {
+        actions.setErrors({ prontuario: "Ocorreu uma falha na validação interna." });
+        return;
+    }
+
+    if (!exists || exames === undefined) {
         actions.setErrors({ solicitacao: "Número não encontrado." });
         return;
     }
@@ -49,6 +59,7 @@ const onSubmit = async (values: any, actions: any) => {
         return;
     }
 
+    formStore.setExames(exames); // exames é truthy aqui
     formStore.setSolicitacao(solicitacao);
     await toNext();
 };
@@ -57,7 +68,8 @@ const items = [
     {
         name: 'solicitacao',
         type: 'number',
-        placeholder: '1234567'
+        placeholder: '1234567',
+        default: formStore.solicitacao
     }
 ];
 

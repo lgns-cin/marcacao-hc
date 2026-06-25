@@ -11,6 +11,7 @@ const props = defineProps<{
     validationSchema: TypedSchema<any>
     onPrevClick: () => void
     onSubmit: (values: any, actions: any) => void
+    preventSubmit?: (errors: Partial<Record<string, string | undefined>>) => boolean
 }>();
 
 const values = ref<any[]>(
@@ -51,8 +52,15 @@ const invalidValuesPresent = (errors: Partial<Record<string, string | undefined>
                             class="
                                 grid grid-cols-none grid-flow-col auto-cols-auto
                                 gap-2 px-3 py-2 
-                                outline-2 outline-dark-blue rounded-xl bg-dark-blue-transparent
+                                outline-2 rounded-xl bg-dark-blue-transparent
                             "
+                            :class="[
+                                item.name in getErrors()
+                                    ? 'outline-light-red' 
+                                    : values[props.items.indexOf(item)] != undefined 
+                                        ? 'outline-light-green' 
+                                        : 'outline-dark-blue'
+                            ]"
                         >
                             <Field
                                 :name="item.name"
@@ -80,13 +88,14 @@ const invalidValuesPresent = (errors: Partial<Record<string, string | undefined>
                         <ErrorMessage :name="item.name" class="text-base font-normal text-light-red" />
                     </div>
                 </template>
+                <slot name="extra"></slot>
             </template>
 
             <template #buttons>
                 <ButtonWithIcon @click="props.onPrevClick">
                     <ArrowLeftIcon #icon class="w-8 h-8 stroke-2 stroke-white"/>
                 </ButtonWithIcon>
-                <ButtonWithIcon type="submit" :disabled="invalidValuesPresent(getErrors()) || isSubmitting">
+                <ButtonWithIcon type="submit" :disabled="invalidValuesPresent(getErrors()) || (props.preventSubmit && props.preventSubmit(getErrors())) || isSubmitting">
                     <ArrowRightIcon #icon class="w-8 h-8 stroke-2 stroke-white"/>
                 </ButtonWithIcon>
             </template>

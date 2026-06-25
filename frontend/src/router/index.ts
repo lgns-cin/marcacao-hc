@@ -7,6 +7,8 @@ import AdminLayout from '../shared/layouts/AdminLayout.vue';
 import FormInicio from '../form/FormInicio.vue';
 import FormProntuario from '../form/FormProntuario.vue';
 import FormSolicitacao from '../form/FormSolicitacao.vue';
+import FormContato from '../form/FormContato.vue';
+import FormSubmit from '../form/FormSubmit.vue';
 import FilaAgendamento from '../funcionario/views/FilaAgendamento.vue';
 import MinhaArea from '../funcionario/views/MinhaArea.vue';
 import LoginView from '../auth/views/LoginView.vue';
@@ -43,6 +45,22 @@ const routes: RouteRecordRaw[] = [
     path: '/solicitacao',
     name: 'FormSolicitacao',
     component: FormSolicitacao,
+    meta: {
+      layout: FormLayout
+    }
+  },
+  {
+    path: '/contato',
+    name: 'FormContato',
+    component: FormContato,
+    meta: {
+      layout: FormLayout
+    }
+  },
+  {
+    path: '/submit',
+    name: 'FormSubmit',
+    component: FormSubmit,
     meta: {
       layout: FormLayout
     }
