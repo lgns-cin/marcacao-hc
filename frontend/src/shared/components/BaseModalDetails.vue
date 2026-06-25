@@ -12,7 +12,7 @@ const props = defineProps<{
     diasNaFila: number;
     status: string;
     exames: string[];
-    unidadeExecutora: string;
+//    unidadeExecutora: string;
     unidadeSolicitante: string;
     dataRetorno: string;
     localizacao: string;
