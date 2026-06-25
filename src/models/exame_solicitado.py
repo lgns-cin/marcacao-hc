@@ -1,3 +1,4 @@
+from datetime import date
 from sqlalchemy import Column, Integer, String, Date, DateTime, ForeignKey
 from sqlalchemy.orm import relationship
 from ..resources.database import Base
@@ -13,7 +14,11 @@ class ExameSolicitado(Base):
     funcionario_atribuido = Column(Integer, ForeignKey("funcionarios.id"), nullable=True)
     status_atribuicao = Column(String)
     data_atribuicao = Column(Date)
-    data_solicitacao = Column(Date, nullable=False)
+    resultado = Column(String, nullable=True)
+    motivo = Column(String, nullable=True)
+    detalhes = Column(String, nullable=True)
+    data_solicitacao = Column(Date, nullable=False, default=date.today)
+    data_conclusao = Column(Date, nullable=True)
     deleted_at = Column(DateTime, nullable=True)
 
     paciente = relationship("Paciente", back_populates="exames_solicitados")

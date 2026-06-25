@@ -1,0 +1,13 @@
+from enum import Enum
+
+
+class StatusAtribuicao(str, Enum):
+    PENDENTE = "PENDENTE"
+    EM_ANDAMENTO = "EM_ANDAMENTO"
+    AGUARDANDO_CONFIRMACAO = "AGUARDANDO_CONFIRMACAO"
+    FINALIZADO = "FINALIZADO"
+
+
+class ResultadoAtribuicao(str, Enum):
+    CONFIRMADO = "CONFIRMADO"
+    PROBLEMA_REPORTADO = "PROBLEMA_REPORTADO"

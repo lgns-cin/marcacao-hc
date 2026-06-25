@@ -11,6 +11,11 @@ class AghuProviderInterface(ABC):
         pass
 
     @abstractmethod
+    async def verificar_solicitacao_existe(self, numero_solicitacao: int) -> bool:
+        """Verifica se a solicitação existe no AGHU mock."""
+        pass
+
+    @abstractmethod
     async def buscar_exames_solicitacao(
         self,
         numero_prontuario: int,
