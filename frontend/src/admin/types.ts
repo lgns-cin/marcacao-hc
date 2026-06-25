@@ -62,6 +62,11 @@ export type AgendamentoGerenciamento = AgendamentoItem & {
   responsavel: string;
 };
 
+export type AgendamentoRemovido = AgendamentoItem & {
+  responsavel: string;
+  motivoDevolucao: string;
+};
+
 export type Funcionario = {
   username: string;
   nome: string;

@@ -1,10 +1,11 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted } from 'vue';
 import { useToast } from 'vue-toastification';
-import { MagnifyingGlassIcon, ClockIcon, CheckCircleIcon } from '@heroicons/vue/24/outline';
+import { MagnifyingGlassIcon, ClockIcon, CheckCircleIcon, ArrowUturnLeftIcon } from '@heroicons/vue/24/outline';
 import { FunnelIcon } from '@heroicons/vue/20/solid';
 import { useAdminStore } from '../../stores/admin';
 import GerenciamentoCard from '../components/GerenciamentoCard.vue';
+import RemovidoCard from '../components/RemovidoCard.vue';
 import AdminAgendamentoModal from '../components/AdminAgendamentoModal.vue';
 import FilaFiltros from '../../funcionario/components/FilaFiltros.vue';
 import type { AgendamentoGerenciamento } from '../types';
@@ -14,7 +15,7 @@ import Button from '../../shared/components/Button.vue';
 const adminStore = useAdminStore();
 const toast = useToast();
 
-const abaAtiva = ref<'emAndamento' | 'concluido'>('emAndamento');
+const abaAtiva = ref<'emAndamento' | 'concluido' | 'removido'>('emAndamento');
 const filtrosExpandidos = ref(false);
 const modalAberto = ref(false);
 const itemSelecionado = ref<AgendamentoGerenciamento | null>(null);
@@ -92,7 +93,7 @@ onUnmounted(() => {
   <div>
     <h1 class="text-[2.4rem] text-govbr-text">Gerenciamento de Agendamentos</h1>
     <p class="text-[1.6rem] text-govbr-text-secondary">
-      Visualize os exames em andamento e finalizados, acompanhando os responsáveis por cada etapa.
+      Visualize os exames em andamento, concluídos e devolvidos à fila, acompanhando os responsáveis por cada etapa.
     </p>
 
     <div class="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -125,20 +126,36 @@ onUnmounted(() => {
     />
 
     <div class="mt-6 flex items-center gap-6 border-b border-govbr-border">
-      <Button
-        variant="tertiary"
+      <button
+        class="flex items-center gap-2 border-b-2 px-1 pb-3 text-sm font-bold"
+        :class="abaAtiva === 'emAndamento' ? 'border-govbr-primary text-govbr-primary' : 'border-transparent text-govbr-text-secondary'"
         @click="abaAtiva = 'emAndamento'"
       >
         <ClockIcon class="h-5 w-5" />
         Em andamento
-      </Button>
-      <Button
-        variant="tertiary"
+      </button>
+      <button
+        class="flex items-center gap-2 border-b-2 px-1 pb-3 text-sm font-bold"
+        :class="abaAtiva === 'concluido' ? 'border-govbr-primary text-govbr-primary' : 'border-transparent text-govbr-text-secondary'"
         @click="abaAtiva = 'concluido'"
       >
         <CheckCircleIcon class="h-5 w-5" />
-        Finalizados
-      </Button>
+        Concluído
+      </button>
+      <button
+        class="flex items-center gap-2 border-b-2 px-1 pb-3 text-sm font-bold"
+        :class="abaAtiva === 'removido' ? 'border-govbr-primary text-govbr-primary' : 'border-transparent text-govbr-text-secondary'"
+        @click="abaAtiva = 'removido'"
+      >
+        <ArrowUturnLeftIcon class="h-5 w-5" />
+        Removidos
+        <span
+          v-if="adminStore.agendamentosRemovidos.length > 0"
+          class="rounded-full bg-govbr-primary px-2 py-0.5 text-xs text-white"
+        >
+          {{ adminStore.agendamentosRemovidos.length }}
+        </span>
+      </button>
     </div>
 
     <p v-if="adminStore.isLoadingAgendamentos" class="mt-8 text-govbr-text-secondary">Carregando agendamentos...</p>
@@ -158,7 +175,7 @@ onUnmounted(() => {
       </div>
     </template>
 
-    <template v-else>
+    <template v-else-if="abaAtiva === 'concluido'">
       <p v-if="adminStore.agendamentosConcluidosFiltrados.length === 0" class="mt-8 text-govbr-text-secondary">
         Nenhum agendamento concluído encontrado.
       </p>
@@ -169,6 +186,19 @@ onUnmounted(() => {
           :item="item"
           @ver-mais="abrirDetalhes"
           @devolver-a-fila="abrirDevolverAFila"
+        />
+      </div>
+    </template>
+
+    <template v-else-if="abaAtiva === 'removido'">
+      <p v-if="adminStore.agendamentosRemovidosFiltrados.length === 0" class="mt-8 text-govbr-text-secondary">
+        Nenhuma solicitação devolvida à fila encontrada.
+      </p>
+      <div v-else class="mt-6 grid gap-4 sm:grid-cols-2">
+        <RemovidoCard
+          v-for="item in adminStore.agendamentosRemovidosFiltrados"
+          :key="item.id"
+          :item="item"
         />
       </div>
     </template>

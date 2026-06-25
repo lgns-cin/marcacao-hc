@@ -2,7 +2,7 @@ import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
 import type { AgendamentoItem, FiltrosFila } from '../funcionario/types';
 import { filtrarAgendamentos, FILTROS_VAZIOS } from '../shared/utils/filtrarAgendamentos';
-import type { AgendamentoGerenciamento, Funcionario, PendenciaItem, VisaoGeral } from '../admin/types';
+import type { AgendamentoGerenciamento, AgendamentoRemovido, Funcionario, PendenciaItem, VisaoGeral } from '../admin/types';
 import { PREFERENCIAS_VISAO_GERAL_KEY } from '../admin/types';
 
 // isso é só pra funcionar por enquanto ...
@@ -27,6 +27,7 @@ export const useAdminStore = defineStore('admin', () => {
 
   const agendamentosEmAndamento = ref<AgendamentoGerenciamento[]>([]);
   const agendamentosConcluidos = ref<AgendamentoGerenciamento[]>([]);
+  const agendamentosRemovidos = ref<AgendamentoRemovido[]>([]);
   const isLoadingAgendamentos = ref(false);
   const filtrosAgendamentos = ref<FiltrosFila>({ ...FILTROS_VAZIOS });
 
@@ -203,6 +204,9 @@ export const useAdminStore = defineStore('admin', () => {
   const agendamentosConcluidosFiltrados = computed(() =>
     filtrarAgendamentos(agendamentosConcluidos.value, filtrosAgendamentos.value)
   );
+  const agendamentosRemovidosFiltrados = computed(() =>
+    filtrarAgendamentos(agendamentosRemovidos.value, filtrosAgendamentos.value)
+  );
   const filaFiltrada = computed(() => filtrarAgendamentos(fila.value, filtrosFila.value));
 
   //Ações
@@ -257,15 +261,21 @@ export const useAdminStore = defineStore('admin', () => {
 
   async function reatribuirAgendamento(id: number, funcionarioUsername: string) {
     await new Promise((r) => setTimeout(r, 200));
-    // Procura localmente e altera o funcionário responsável (Mock)
     const item = agendamentosEmAndamento.value.find((i) => i.id === id);
     if (item) {
       item.responsavel = funcionarioUsername;
     }
   }
 
-  async function devolverAFilaAdmin(id: number, _motivo: string) {
+  async function devolverAFilaAdmin(id: number, motivo: string) {
     await new Promise((r) => setTimeout(r, 200));
+    const item = agendamentosEmAndamento.value.find((i) => i.id === id);
+    if (item) {
+      agendamentosRemovidos.value = [
+        ...agendamentosRemovidos.value,
+        { ...item, motivoDevolucao: motivo },
+      ];
+    }
     agendamentosEmAndamento.value = agendamentosEmAndamento.value.filter((i) => i.id !== id);
     agendamentosConcluidos.value = agendamentosConcluidos.value.filter((i) => i.id !== id);
   }
@@ -332,10 +342,12 @@ export const useAdminStore = defineStore('admin', () => {
 
     agendamentosEmAndamento,
     agendamentosConcluidos,
+    agendamentosRemovidos,
     isLoadingAgendamentos,
     filtrosAgendamentos,
     agendamentosEmAndamentoFiltrados,
     agendamentosConcluidosFiltrados,
+    agendamentosRemovidosFiltrados,
     fetchAgendamentosGerenciamento,
     reatribuirAgendamento,
     devolverAFilaAdmin,
