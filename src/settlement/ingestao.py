@@ -75,7 +75,11 @@ async def ingerir_dados_se_vazio(db_url: str, project_root: str):
 
     df_fatos = df_raw[['codigo_solicitacao', 'codigo_exame', 'prontuario', 'id_funcionario']].copy()
     df_fatos = df_fatos.dropna(subset=['codigo_solicitacao', 'codigo_exame', 'prontuario'])
-    df_fatos['id_funcionario'] = df_fatos['id_funcionario'].apply(lambda x: None if pd.isna(x) else int(x))
+    
+    df_fatos['id_funcionario'] = None
+
+    df_fatos = df_fatos.sample(frac=0.60, random_state=42)
+
     df_fatos = df_fatos.rename(columns={
         'codigo_solicitacao': 'solicitacao',
         'codigo_exame': 'exame',
