@@ -53,6 +53,10 @@ export async function fetchMesorregioes(): Promise<string[]> {
 export async function fetchMunicipios(): Promise<MunicipioIBGE[]> {
   if (cacheMunicipios) return cacheMunicipios;
 
+  // o const {data} já desestrutura a resposta da promise e pega só o data
+  //obs: esse view:nivelado já deixa o dado no formato que queremos
+  // pq caso o ibge não ofereça essa view, teríamos que fazer um segundo
+  // endpoint para obter as mesorregiões e depois montar o objeto na mão
   const { data } = await axios.get<MunicipioNivelado[]>(
     `${IBGE_API}/estados/${UF_PERNAMBUCO}/municipios`,
     { params: { orderBy: 'nome', view: 'nivelado' } },
@@ -69,26 +73,21 @@ export async function fetchMunicipios(): Promise<MunicipioIBGE[]> {
 
   return cacheMunicipios;
 }
-
-export async function derivarRegiao(localizacao: string): Promise<string> {
-  const municipios = await fetchMunicipios();
-  const normalizado = localizacao.trim().toLowerCase();
-  const encontrado = municipios.find(
-    (m) => m.nome.toLowerCase() === normalizado,
-  );
-  return encontrado ? encontrado.mesorregiao.nome : FORA_DO_ESTADO;
-}
-
+// para não ficar chamando fetchMunicipios() em loop, geramos um mapa
+// desse mapeamento uma vez só
+// com map não precisamos ordenar, só faz a busca linear no hash
 export async function derivarRegioes(
-  itens: { localizacao: string }[],
-): Promise<Map<string, string>> {
+  itens: { localizacao: string }[], // precisa ter a propriedade localizacao pra poder chamar esse método
+): Promise<Map<string, string>> {// 'caruaru' --> 'Agreste'
   const municipios = await fetchMunicipios();
   const mapa = new Map<string, string>();
 
+  // catalogo de municipios
   for (const municipio of municipios) {
     mapa.set(municipio.nome.toLowerCase(), municipio.mesorregiao.nome);
   }
 
+  // agora montamos o resultado
   const resultado = new Map<string, string>();
   for (const item of itens) {
     const chave = item.localizacao.trim().toLowerCase();

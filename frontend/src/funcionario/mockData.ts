@@ -1,12 +1,14 @@
 /**
- * Dados de exemplo (mock) para PREVIEW em desenvolvimento.
+ * Dados de exemplo(enquanto a api está em desenvolvimento).
  *
  * A região (mesorregião) de cada paciente é derivada automaticamente
- * a partir da `localizacao` via API do IBGE, por isso não está presente
+ * a partir da localizacao via API do IBGE, por isso não está presente
  * nos mocks. A store preenche esse campo ao carregar os dados.
  */
 import type { AgendamentoItem, MinhaAreaItem } from './types';
 
+// colocamos esse omit, pois ele representa um tipo de agendamento que não tem a propriedade "regiao"
+// pois será calculado depois
 export const AGENDAMENTOS_MOCK: Omit<AgendamentoItem, 'regiao'>[] = [
   {
     id: 1,
@@ -15,7 +17,6 @@ export const AGENDAMENTOS_MOCK: Omit<AgendamentoItem, 'regiao'>[] = [
     exames: ['Tomografia', 'Ultrassonografia'],
     diasNaFila: 5,
     status: 'ALTA',
-    unidadeExecutora: 'HC-UFPE',
     unidadeSolicitante: 'Hospital Barão de Lucena',
     dataRetorno: '15/07/2026',
     localizacao: 'Recife',
@@ -28,7 +29,6 @@ export const AGENDAMENTOS_MOCK: Omit<AgendamentoItem, 'regiao'>[] = [
     exames: ['Ressonância'],
     diasNaFila: 12,
     status: 'ALTA',
-    unidadeExecutora: 'HC-UFPE',
     unidadeSolicitante: 'UPA Caruaru',
     dataRetorno: '02/08/2026',
     localizacao: 'Caruaru',
@@ -41,7 +41,6 @@ export const AGENDAMENTOS_MOCK: Omit<AgendamentoItem, 'regiao'>[] = [
     exames: ['Mamografia'],
     diasNaFila: 3,
     status: 'ALTA',
-    unidadeExecutora: 'HC-UFPE',
     unidadeSolicitante: 'Policlínica Lessa de Andrade',
     dataRetorno: '20/07/2026',
     localizacao: 'Olinda',
@@ -54,7 +53,6 @@ export const AGENDAMENTOS_MOCK: Omit<AgendamentoItem, 'regiao'>[] = [
     exames: ['Endoscopia', 'Colonoscopia'],
     diasNaFila: 8,
     status: 'ALTA',
-    unidadeExecutora: 'HC-UFPE',
     unidadeSolicitante: 'Hospital Regional do Sertão',
     dataRetorno: '28/07/2026',
     localizacao: 'Petrolina',
@@ -67,7 +65,6 @@ export const AGENDAMENTOS_MOCK: Omit<AgendamentoItem, 'regiao'>[] = [
     exames: ['Espirometria'],
     diasNaFila: 1,
     status: 'ALTA',
-    unidadeExecutora: 'HC-UFPE',
     unidadeSolicitante: 'UBS Carpina',
     dataRetorno: '10/08/2026',
     localizacao: 'Carpina',
@@ -80,7 +77,6 @@ export const AGENDAMENTOS_MOCK: Omit<AgendamentoItem, 'regiao'>[] = [
     exames: ['Ultrassonografia', 'Tomografia'],
     diasNaFila: 21,
     status: 'ALTA',
-    unidadeExecutora: 'HC-UFPE',
     unidadeSolicitante: 'Hospital de Vitória de Santo Antão',
     dataRetorno: '05/08/2026',
     localizacao: 'Vitória de Santo Antão',
@@ -96,7 +92,6 @@ export const MINHA_AREA_MOCK: Omit<MinhaAreaItem, 'regiao'>[] = [
     exames: ['Tomografia'],
     diasNaFila: 4,
     status: 'ALTA',
-    unidadeExecutora: 'HC-UFPE',
     unidadeSolicitante: 'UPA Caruaru',
     dataRetorno: '18/07/2026',
     localizacao: 'Caruaru',
@@ -110,7 +105,6 @@ export const MINHA_AREA_MOCK: Omit<MinhaAreaItem, 'regiao'>[] = [
     exames: ['Ressonância', 'Ultrassonografia'],
     diasNaFila: 6,
     status: 'ALTA',
-    unidadeExecutora: 'HC-UFPE',
     unidadeSolicitante: 'Hospital Barão de Lucena',
     dataRetorno: '22/07/2026',
     localizacao: 'Recife',
@@ -124,7 +118,6 @@ export const MINHA_AREA_MOCK: Omit<MinhaAreaItem, 'regiao'>[] = [
     exames: ['Endoscopia'],
     diasNaFila: 9,
     status: 'ALTA',
-    unidadeExecutora: 'HC-UFPE',
     unidadeSolicitante: 'Hospital Regional do Sertão',
     dataRetorno: '25/07/2026',
     localizacao: 'Serra Talhada',
@@ -138,7 +131,6 @@ export const MINHA_AREA_MOCK: Omit<MinhaAreaItem, 'regiao'>[] = [
     exames: ['Mamografia'],
     diasNaFila: 2,
     status: 'ALTA',
-    unidadeExecutora: 'HC-UFPE',
     unidadeSolicitante: 'Policlínica Lessa de Andrade',
     dataRetorno: '30/07/2026',
     localizacao: 'Nazaré da Mata',
@@ -152,7 +144,6 @@ export const MINHA_AREA_MOCK: Omit<MinhaAreaItem, 'regiao'>[] = [
     exames: ['Espirometria'],
     diasNaFila: 0,
     status: 'ALTA',
-    unidadeExecutora: 'HC-UFPE',
     unidadeSolicitante: 'UBS Garanhuns',
     dataRetorno: '12/07/2026',
     localizacao: 'Garanhuns',
@@ -167,7 +158,6 @@ export const MINHA_AREA_MOCK: Omit<MinhaAreaItem, 'regiao'>[] = [
     exames: ['Colonoscopia'],
     diasNaFila: 0,
     status: 'ALTA',
-    unidadeExecutora: 'HC-UFPE',
     unidadeSolicitante: 'Hospital de Vitória de Santo Antão',
     dataRetorno: '08/07/2026',
     localizacao: 'Vitória de Santo Antão',

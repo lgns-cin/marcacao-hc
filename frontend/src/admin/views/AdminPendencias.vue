@@ -85,6 +85,8 @@ onMounted(() => {
   }, INTERVALO_ATUALIZACAO_MS);
 });
 
+// importante colocar o clearInterval, caso contrário, quando o usuário sair da página,
+// vai continuar executando e gerando requests indesejadas
 onUnmounted(() => {
   clearInterval(intervaloAtualizacao);
 });
