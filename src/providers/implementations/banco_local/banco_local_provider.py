@@ -38,7 +38,7 @@ class BancoLocalPostgresProvider():
 
     async def listar_fila_geral(self) -> List[Dict[str, Any]]:
         """
-        Retorna todos os exames com status NAO_ATRIBUIDO do banco local
+        Retorna todos os exames com status PENDENTE do banco local
 
         Faz JOIN entre ExameSolicitado, Exame, Solicitacao e Paciente.
         """
@@ -48,7 +48,7 @@ class BancoLocalPostgresProvider():
             .join(Solicitacao, ExameSolicitado.solicitacao == Solicitacao.codigo)
             .join(Paciente, ExameSolicitado.paciente_solicitante == Paciente.prontuario)
             .where(
-                ExameSolicitado.status_atribuicao == "NAO_ATRIBUIDO",
+                ExameSolicitado.status_atribuicao == "PENDENTE",
                 ExameSolicitado.deleted_at.is_(None),
                 Exame.deleted_at.is_(None),
                 Solicitacao.deleted_at.is_(None),
@@ -104,6 +104,7 @@ class BancoLocalPostgresProvider():
                 telefone=telefone,
                 estado=estado,
                 cidade=cidade,
+                data_nascimento=None,
             )
             self.session.add(paciente)
 
@@ -181,9 +182,14 @@ class BancoLocalPostgresProvider():
                 exame=codigo_exame,
                 paciente_solicitante=numero_prontuario,
                 funcionario_atribuido=None,
-                status_atribuicao="NAO_ATRIBUIDO",
+                status_atribuicao="PENDENTE",
                 data_atribuicao=None,
                 data_solicitacao=date.today(),
+                motivo=None,
+                deleted_at=None,
+                detalhes=None, 
+                resultado=None,
+                data_conclusao=None,
             )
             self.session.add(exame_solicitado)
 
