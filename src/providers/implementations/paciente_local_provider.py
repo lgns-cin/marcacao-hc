@@ -3,14 +3,13 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from fastapi import HTTPException, status
 
-from ..interfaces.paciente_provider_completo_interface import PacienteProviderCompletoInterface
 from ...models.paciente import Paciente
 from ...models.exame import Exame
 from ...models.exame_solicitado import ExameSolicitado
 from ...models.solicitacao import Solicitacao
 
 
-class PacientePostgresProviderCompleto(PacienteProviderCompletoInterface):
+class PacientePostgresProviderCompleto():
 
     def __init__(self, session: AsyncSession):
         self.session = session
