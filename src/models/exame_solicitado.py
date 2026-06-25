@@ -11,6 +11,7 @@ class ExameSolicitado(Base):
     exame = Column(String, ForeignKey("exames.codigo"), nullable=False)
     paciente_solicitante = Column(Integer, ForeignKey("pacientes.prontuario"), nullable=False)
     funcionario_atribuido = Column(Integer, ForeignKey("funcionarios.id"), nullable=True)
+    responsavel_username = Column(String, nullable=True)
     status_atribuicao = Column(String)
     data_atribuicao = Column(Date)
     data_solicitacao = Column(Date, nullable=False)
