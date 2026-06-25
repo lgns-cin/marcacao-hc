@@ -68,10 +68,12 @@ const statusClasses = computed(() => {
     </div>
 
     <dl class="space-y-3 text-[16px] pt-2">
+      <!-- Não mostrar a unidade executora por enquanto
       <div>
         <dt class="inline font-semibold text-govbr-text">Unidade Executora: </dt>
         <dd class="inline text-govbr-text-secondary"> {{ item.unidadeExecutora }}</dd>
       </div>
+      -->
       <div>
         <dt class="inline font-semibold text-govbr-text">Unidade Solicitante: </dt>
         <dd class="inline text-govbr-text-secondary"> {{ item.unidadeSolicitante }}</dd>
