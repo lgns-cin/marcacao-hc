@@ -16,7 +16,7 @@ export function filtrarAgendamentos<T extends AgendamentoItem>(lista: T[], filtr
 
     const correspondeExame =
       filtros.tiposExame.length === 0 ||
-      item.exames.some((exame) => filtros.tiposExame.includes(exame));
+      filtros.tiposExame.includes(item.exame);
 
     const correspondeMunicipio =
       !municipio || item.localizacao.toLowerCase().includes(municipio);

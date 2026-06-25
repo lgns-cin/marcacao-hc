@@ -10,7 +10,7 @@ import Modal from '../../shared/components/Modal.vue';
 import BaseModalDetails from '../../shared/components/BaseModalDetails.vue';
 import SeletorMotivo from './SeletorMotivo.vue';
 import { MOTIVOS_DEVOLUCAO, MOTIVOS_PROBLEMA } from '../types';
-import type { MinhaAreaItem, ResultadoFinalizacao } from '../types';
+import type { MinhaAreaItem } from '../types';
 import Button from '../../shared/components/Button.vue';
 
 type Visao = 'detalhes' | 'reportarProblema' | 'devolverAFila';
@@ -26,7 +26,7 @@ const emit = defineEmits<{
   aguardarConfirmacao: [id: number];
   devolverAFila: [id: number, motivo: string];
   reportarProblema: [id: number, motivo: string];
-  finalizar: [id: number, resultado: ResultadoFinalizacao];
+  finalizar: [id: number];
 }>();
 
 const visao = ref<Visao>('detalhes');
@@ -69,8 +69,8 @@ function handleConfirmarDevolucao() {
   }
 }
 
-function handleFinalizar(resultado: ResultadoFinalizacao) {
-  if (props.item) emit('finalizar', props.item.id, resultado);
+function handleFinalizar() {
+  if (props.item) emit('finalizar', props.item.id);
 }
 </script>
 
@@ -91,11 +91,11 @@ function handleFinalizar(resultado: ResultadoFinalizacao) {
 
     <div v-if="item" class="space-y-4">
       <BaseModalDetails :item="item" :mostrar-descricao="visao === 'detalhes'">
-        
+
         <div v-if="visao === 'detalhes' && item.estado === 'AGUARDANDO_CONFIRMACAO'" class="mt-6 space-y-2">
           <p class="font-semibold text-govbr-text">Finalizar Agendamento, o exame foi:</p>
           <div class="flex items-center gap-3">
-            <Button variant="tertiary" @click="handleFinalizar('CONFIRMADO')">
+            <Button variant="tertiary" @click="handleFinalizar">
               Confirmado
             </Button>
           </div>

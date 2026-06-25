@@ -177,7 +177,7 @@ onUnmounted(() => {
       :show="modalAberto"
       :item="itemSelecionado"
       :funcionarios="adminStore.funcionarios"
-      :permitir-acoes="itemSelecionado?.estado !== 'FINALIZADO'"
+      :permitir-acoes="itemSelecionado?.estado !== 'CONFIRMADO' && itemSelecionado?.estado !== 'PROBLEMA_REPORTADO'"
       :painel-inicial="painelInicialModal"
       @close="fecharDetalhes"
       @devolver="devolverAFila"
