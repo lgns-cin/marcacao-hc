@@ -7,7 +7,6 @@ export type AgendamentoItem = {
   exames: string[];
   diasNaFila: number;
   status: StatusPaciente;
-  unidadeExecutora: string;
   unidadeSolicitante: string;
   dataRetorno: string;
   localizacao: string;

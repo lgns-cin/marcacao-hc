@@ -3,8 +3,9 @@ import { ref } from 'vue';
 import { MagnifyingGlassIcon } from '@heroicons/vue/24/outline';
 import type { FiltrosFila } from '../types';
 import Button from '../../shared/components/Button.vue';
+import { useFuncionarioStore } from '../../stores/funcionario';
 
-const REGIOES = ['Região Metropolitana', 'Agreste', 'Mata Sul', 'Mata Norte', 'Sertão'];
+const store = useFuncionarioStore();
 const TIPOS_EXAME = ['Tomografia', 'Ressonância', 'Mamografia', 'Endoscopia', 'Colonoscopia', 'Ultrassonografia', 'Espirometria'];
 const FAIXAS_ETARIAS = [
   { value: 'Todas', label: 'Todas' },
@@ -51,7 +52,7 @@ function limpar() {
       <p class="text-[18px] font-semibold text-govbr-text">Região</p>
       <p class="text-[16px] text-govbr-text-secondary">Selecione uma ou mais regiões.</p>
       <div class="mt-3 space-y-2">
-        <label v-for="regiao in REGIOES" :key="regiao" class="flex items-center gap-2 text-[16px] text-govbr-text cursor-pointer">
+        <label v-for="regiao in store.regioes" :key="regiao" class="flex items-center gap-2 text-[16px] text-govbr-text cursor-pointer">
           <input type="checkbox" :value="regiao" v-model="regioesSelecionadas" class="h-4 w-4 rounded border-govbr-border text-govbr-primary focus:ring-govbr-primary" />
           {{ regiao }}
         </label>
