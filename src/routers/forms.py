@@ -6,10 +6,9 @@ from ..resources.database import get_app_db_session
 from ..providers.interfaces.aghu_provider_interface import AghuProviderInterface
 from ..dependencies import get_aghu_provider
 from ..models.solicitacao import FormularioPacienteRequest
-from ..auth.auth import auth_handler
 
 router = APIRouter(
-    prefix="/forms",
+    prefix="/api/forms",
     tags=["Forms"]
 )
 
