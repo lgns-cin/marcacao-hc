@@ -15,25 +15,25 @@
         v-if="show" 
         class="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6"
       >
-        <div 
-          class="bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden transform transition-all"
+        <div
+          class="bg-white rounded-2xl shadow-2xl w-full max-w-3xl overflow-hidden transform transition-all"
           @click.stop
         >
           <!-- Header -->
           <div class="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
-            <h2 class="text-xl font-bold text-gray-800">
+            <h2 class="flex-1 min-w-0 text-xl font-bold text-gray-800">
               <slot name="header">Título do Modal</slot>
             </h2>
             <button 
               @click="close" 
-              class="p-2 rounded-full text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors"
+              class="p-2 rounded-full text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors cursor-pointer ml-3"
             >
               <XMarkIcon class="h-6 w-6" />
             </button>
           </div>
 
           <!-- Body -->
-          <div class="px-6 py-6 text-gray-600 leading-relaxed">
+          <div class="px-6 pt-0 pb-6 text-gray-600 leading-relaxed">
             <slot></slot>
           </div>
 
