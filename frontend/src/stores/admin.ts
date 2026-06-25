@@ -105,7 +105,7 @@ export const useAdminStore = defineStore('admin', () => {
       id: 201,
       nome: 'Everaldo Albuquerque Cavalcanti',
       prontuario: '000555444',
-      numeroSolicitacao: 'SOL-0201',
+      numeroSolicitacao: '0201',
       exame: 'Tomografia',
       diasNaFila: 15,
       status: 'ALTA',
@@ -126,7 +126,7 @@ export const useAdminStore = defineStore('admin', () => {
       id: 301,
       nome: 'Gisela Maria Santos',
       prontuario: '000333222',
-      numeroSolicitacao: 'SOL-0301',
+      numeroSolicitacao: '0301',
       exame: 'Ressonância',
       diasNaFila: 22,
       status: 'MÉDIA',
@@ -145,7 +145,7 @@ export const useAdminStore = defineStore('admin', () => {
       id: 302,
       nome: 'Severino Ramos da Silva',
       prontuario: '000111999',
-      numeroSolicitacao: 'SOL-0302',
+      numeroSolicitacao: '0302',
       exame: 'Endoscopia',
       diasNaFila: 45,
       status: 'ALTA',
@@ -164,7 +164,7 @@ export const useAdminStore = defineStore('admin', () => {
       id: 1,
       nome: 'Maria das Graças Oliveira',
       prontuario: '000123456',
-      numeroSolicitacao: 'SOL-0401',
+      numeroSolicitacao: '0401',
       exame: 'Tomografia',
       diasNaFila: 42,
       status: 'ALTA',
@@ -210,7 +210,7 @@ export const useAdminStore = defineStore('admin', () => {
   const filaFiltrada = computed(() => filtrarAgendamentos(fila.value, filtrosFila.value));
 
   //Ações
-  
+
   // Visão Geral
   async function fetchVisaoGeral(opcoes: { silencioso?: boolean } = {}) {
     if (!opcoes.silencioso) isLoadingVisaoGeral.value = true;

@@ -24,7 +24,7 @@ defineProps<{
       <span class="font-semibold text-govbr-text">Responsável</span>:
       <span class="text-govbr-text-secondary">{{ item.responsavel }}</span>
     </p>
-    <p class="mt-0.5 text-sm text-govbr-text-secondary">({{ item.prontuario }})</p>
+    <p class="mt-0.5 text-sm text-govbr-text-secondary">Prontuário: {{ item.prontuario }}</p>
 
     <div class="mt-3">
       <span class="rounded border border-govbr-border px-3 py-1 text-sm font-semibold text-govbr-text">

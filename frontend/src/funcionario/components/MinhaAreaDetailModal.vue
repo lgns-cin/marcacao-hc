@@ -90,7 +90,7 @@ function handleFinalizar() {
     </template>
 
     <div v-if="item" class="space-y-4">
-      <BaseModalDetails :item="item" :mostrar-descricao="visao === 'detalhes'">
+      <BaseModalDetails :item="item">
 
         <div v-if="visao === 'detalhes' && item.estado === 'AGUARDANDO_CONFIRMACAO'" class="mt-6 space-y-2">
           <p class="font-semibold text-govbr-text">Finalizar Agendamento, o exame foi:</p>

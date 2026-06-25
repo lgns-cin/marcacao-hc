@@ -15,7 +15,6 @@ const props = defineProps<{
     idade: number;
     estado?: string;
   };
-  mostrarDescricao?: boolean;
 }>();
 
 const finalizado = computed(() =>
@@ -40,10 +39,12 @@ const statusClasses = computed(() => {
 
 <template>
   <div class="space-y-4">
-    <div class="flex flex-wrap items-center justify-between gap-2">
-      <p class="text-[16px] text-govbr-text-secondary">
-        N° do Prontuário: <span class="text-govbr-text font-medium">{{ item.prontuario }}</span>
-      </p>
+    <div class="flex flex-wrap items-center justify-between gap-2">      
+      <div class="flex flex-wrap gap-2">
+        <span class="rounded border border-govbr-border px-3 py-1 text-sm font-semibold text-govbr-text bg-gray-50">
+          {{ item.exame }}
+        </span>
+      </div>
 
       <div v-if="!finalizado" class="flex items-center gap-2">
         <span class="flex items-center gap-1 text-[16px] text-govbr-text-secondary">
@@ -59,14 +60,19 @@ const statusClasses = computed(() => {
       </span>
     </div>
 
-    <div class="flex flex-wrap gap-2">
-      <span class="rounded border border-govbr-border px-3 py-1 text-sm font-semibold text-govbr-text bg-gray-50">
-        {{ item.exame }}
-      </span>
-    </div>
-    <p v-if="item.numeroSolicitacao" class="text-xs text-govbr-text-secondary">Sol. nº {{ item.numeroSolicitacao }}</p>
-
-    <dl v-if="mostrarDescricao !== false" class="space-y-3 text-[16px] pt-2">
+    <dl class="space-y-3 text-[16px] pt-2">
+      <div>
+        <dt v-if="item.numeroSolicitacao" class="inline font-semibold text-govbr-text">Solicitação: </dt>
+        <dd v-if="item.numeroSolicitacao" class="inline text-govbr-text-secondary"> {{ item.numeroSolicitacao }}</dd>
+      </div>
+      <div>
+        <dt class="inline font-semibold text-govbr-text">Prontuário: </dt>
+        <dd class="inline text-govbr-text-secondary"> {{ item.prontuario }}</dd>
+      </div>
+      <div>
+        <dt class="inline font-semibold text-govbr-text">Exame: </dt>
+        <dd class="inline text-govbr-text-secondary"> {{ item.exame }}</dd>
+      </div>
       <div>
         <dt class="inline font-semibold text-govbr-text">Unidade Solicitante: </dt>
         <dd class="inline text-govbr-text-secondary"> {{ item.unidadeSolicitante }}</dd>

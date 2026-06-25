@@ -98,7 +98,7 @@ function handleResolver() {
         <span class="text-govbr-text-secondary">{{ item.responsavel }}</span>
       </p>
 
-      <BaseModalDetails :item="item" :mostrar-descricao="painel === 'nenhum'">
+      <BaseModalDetails :item="item">
         
         <div v-if="item.problema_motivo" class="space-y-2 pt-2">
           <p class="font-semibold text-govbr-text">Informações sobre o Reporte do Problema:</p>

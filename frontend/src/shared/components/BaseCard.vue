@@ -64,8 +64,8 @@ const statusClasses = computed(() => {
       </div>
     </div>
 
-    <p class="mt-1 text-[16px] text-govbr-text-secondary">({{ item.prontuario }})</p>
-    <p class="text-xs text-govbr-text-secondary">Sol. nº {{ item.numeroSolicitacao }}</p>
+    <p class="mt-1 text-[16px] text-govbr-text-secondary">Prontuário: {{ item.prontuario }}</p>
+    <p class="text-[16px] text-govbr-text-secondary">Solicitação: {{ item.numeroSolicitacao }}</p>
 
     <div class="mt-3">
       <span class="rounded border border-govbr-border px-3 py-1 text-sm font-semibold text-govbr-text">
