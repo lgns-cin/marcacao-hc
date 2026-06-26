@@ -7,7 +7,7 @@ import { useFuncionarioStore } from '../../stores/funcionario';
 import { useAutoRefresh } from '../../composables/useAutoRefresh';
 import MinhaAreaCard from '../components/MinhaAreaCard.vue';
 import MinhaAreaDetailModal from '../components/MinhaAreaDetailModal.vue';
-import FilaFiltros from '../components/FilaFiltros.vue';
+import FilaFiltros from '../../shared/components/FilaFiltros.vue';
 import type { MinhaAreaItem } from '../types';
 
 import Button from '../../shared/components/Button.vue';

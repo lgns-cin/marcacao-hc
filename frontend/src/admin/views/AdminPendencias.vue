@@ -7,7 +7,7 @@ import { useAutoRefresh } from '../../composables/useAutoRefresh';
 import { useAdminStore } from '../../stores/admin';
 import PendenciaCard from '../components/PendenciaCard.vue';
 import AdminAgendamentoModal from '../components/AdminAgendamentoModal.vue';
-import FilaFiltros from '../../funcionario/components/FilaFiltros.vue';
+import FilaFiltros from '../../shared/components/FilaFiltros.vue';
 import type { PendenciaItem } from '../types';
 import Button from '../../shared/components/Button.vue';
 

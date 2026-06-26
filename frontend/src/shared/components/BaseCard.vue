@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { UserGroupIcon, ClockIcon } from '@heroicons/vue/24/solid';
-import { nomeDoCodigo } from '../utils/catalogoExames';
+import { categoriaDoCodigo } from '../utils/catalogoExames';
 import { isFinalizado, getEstadoLabel, getStatusClasses } from '../utils/statusFormatting';
 
 const props = defineProps<{
@@ -56,7 +56,7 @@ const statusClasses = computed(() => getStatusClasses(props.item.status));
 
     <div class="mt-3">
       <span class="rounded border border-govbr-border px-3 py-1 text-sm font-semibold text-govbr-text">
-        {{ nomeDoCodigo(item.exame) }}
+        {{ categoriaDoCodigo(item.exame) ?? item.exame }}
       </span>
     </div>
 

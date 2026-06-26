@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { ClockIcon } from '@heroicons/vue/24/outline';
-import { nomeDoCodigo } from '../utils/catalogoExames';
+import { nomeDoCodigo, categoriaDoCodigo } from '../utils/catalogoExames';
 import { isFinalizado, getEstadoLabel, getStatusClasses } from '../utils/statusFormatting';
 
 const props = defineProps<{
@@ -31,7 +31,7 @@ const statusClasses = computed(() => getStatusClasses(props.item.status));
     <div class="flex flex-wrap items-center justify-between gap-2">
       <div class="flex flex-wrap gap-2">
         <span class="rounded border border-govbr-border px-3 py-1 text-sm font-semibold text-govbr-text bg-gray-50">
-          {{ nomeDoCodigo(item.exame) }}
+          {{ categoriaDoCodigo(item.exame) ?? item.exame }}
         </span>
       </div>
 

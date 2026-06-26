@@ -7,7 +7,7 @@ import { useFuncionarioStore } from '../../stores/funcionario';
 import { useAutoRefresh } from '../../composables/useAutoRefresh';
 import PatientQueueCard from '../components/PatientQueueCard.vue';
 import PatientDetailModal from '../components/PatientDetailModal.vue';
-import FilaFiltros from '../components/FilaFiltros.vue';
+import FilaFiltros from '../../shared/components/FilaFiltros.vue';
 import type { AgendamentoItem } from '../types';
 import Button from '../../shared/components/Button.vue';
 

@@ -9,9 +9,9 @@ import {
 import { UserGroupIcon } from '@heroicons/vue/24/solid';
 import Modal from '../../shared/components/Modal.vue';
 import BaseModalDetails from '../../shared/components/BaseModalDetails.vue';
-import SeletorMotivo from '../../funcionario/components/SeletorMotivo.vue';
-import SeletorFuncionario from './SeletorFuncionario.vue';
-import { MOTIVOS_DEVOLUCAO } from '../../funcionario/types';
+import SeletorMotivo from '../../shared/components/SeletorMotivo.vue';
+import SeletorFuncionario from '../../shared/components/SeletorFuncionario.vue';
+import { MOTIVOS_DEVOLUCAO } from '../../shared/constants';
 import type { AgendamentoItem } from '../../funcionario/types';
 import type { Funcionario } from '../types';
 import Button from '../../shared/components/Button.vue';

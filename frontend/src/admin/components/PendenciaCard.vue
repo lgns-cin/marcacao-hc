@@ -9,10 +9,10 @@ import {
 } from '@heroicons/vue/24/outline';
 import { TrashIcon, UserGroupIcon } from '@heroicons/vue/20/solid';
 import Button from '../../shared/components/Button.vue';
-import SeletorMotivo from '../../funcionario/components/SeletorMotivo.vue';
-import SeletorFuncionario from './SeletorFuncionario.vue';
+import SeletorMotivo from '../../shared/components/SeletorMotivo.vue';
+import SeletorFuncionario from '../../shared/components/SeletorFuncionario.vue';
 import { nomeDoCodigo } from '../../shared/utils/catalogoExames';
-import { MOTIVOS_DEVOLUCAO } from '../../funcionario/types';
+import { MOTIVOS_DEVOLUCAO } from '../../shared/constants';
 import type { PendenciaItem, Funcionario } from '../types';
 
 const props = defineProps<{

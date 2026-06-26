@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import { ref, computed, watch, onBeforeUnmount } from 'vue';
 import { MagnifyingGlassIcon, ChevronDownIcon } from '@heroicons/vue/24/outline';
-import type { Funcionario } from '../types';
+import type { Funcionario } from '../../admin/types';
 
-import Button from '../../shared/components/Button.vue';
+import Button from './Button.vue';
 
 const props = defineProps<{
   modelValue: string;

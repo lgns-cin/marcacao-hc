@@ -8,7 +8,7 @@ import { useAutoRefresh } from '../../composables/useAutoRefresh';
 import GerenciamentoCard from '../components/GerenciamentoCard.vue';
 import RemovidoCard from '../components/RemovidoCard.vue';
 import AdminAgendamentoModal from '../components/AdminAgendamentoModal.vue';
-import FilaFiltros from '../../funcionario/components/FilaFiltros.vue';
+import FilaFiltros from '../../shared/components/FilaFiltros.vue';
 import type { AgendamentoItem } from '../../funcionario/types';
 
 import Button from '../../shared/components/Button.vue';
