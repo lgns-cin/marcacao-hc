@@ -4,7 +4,8 @@ export type AgendamentoItem = {
   id: number;
   nome: string;
   prontuario: string;
-  exames: string[];
+  numeroSolicitacao: string;
+  exame: string;
   diasNaFila: number;
   status: StatusPaciente;
   unidadeSolicitante: string;
@@ -12,6 +13,7 @@ export type AgendamentoItem = {
   localizacao: string;
   regiao: string;
   idade: number;
+  telefone: string;
 };
 
 export type FiltrosFila = {
@@ -22,13 +24,15 @@ export type FiltrosFila = {
   faixaEtaria: string;
 };
 
-export type EstadoMinhaArea = 'EM_ANDAMENTO' | 'AGUARDANDO_CONFIRMACAO' | 'FINALIZADO';
+export type EstadoMinhaArea = 'EM_ANDAMENTO' | 'AGUARDANDO_CONFIRMACAO' | 'CONFIRMADO' | 'PROBLEMA_REPORTADO';
 
-export type ResultadoFinalizacao = 'CONFIRMADO' | 'CANCELADO';
+export const LABEL_ESTADO: Record<'CONFIRMADO' | 'PROBLEMA_REPORTADO', string> = {
+  CONFIRMADO: 'Confirmado',
+  PROBLEMA_REPORTADO: 'Encerrado',
+};
 
 export type MinhaAreaItem = AgendamentoItem & {
   estado: EstadoMinhaArea;
-  resultado?: ResultadoFinalizacao;
 };
 
 export const MOTIVOS_DEVOLUCAO = [

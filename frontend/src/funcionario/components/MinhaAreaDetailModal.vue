@@ -10,7 +10,7 @@ import Modal from '../../shared/components/Modal.vue';
 import BaseModalDetails from '../../shared/components/BaseModalDetails.vue';
 import SeletorMotivo from './SeletorMotivo.vue';
 import { MOTIVOS_DEVOLUCAO, MOTIVOS_PROBLEMA } from '../types';
-import type { MinhaAreaItem, ResultadoFinalizacao } from '../types';
+import type { MinhaAreaItem } from '../types';
 import Button from '../../shared/components/Button.vue';
 
 type Visao = 'detalhes' | 'reportarProblema' | 'devolverAFila';
@@ -25,12 +25,13 @@ const emit = defineEmits<{
   close: [];
   aguardarConfirmacao: [id: number];
   devolverAFila: [id: number, motivo: string];
-  reportarProblema: [id: number, motivo: string];
-  finalizar: [id: number, resultado: ResultadoFinalizacao];
+  reportarProblema: [id: number, motivo: string, detalhes: string];
+  finalizar: [id: number];
 }>();
 
 const visao = ref<Visao>('detalhes');
 const motivoProblema = ref('');
+const detalhesProblema = ref('');
 const motivoDevolucao = ref('');
 
 watch(
@@ -39,6 +40,7 @@ watch(
     if (aberto) {
       visao.value = props.visaoInicial ?? 'detalhes';
       motivoProblema.value = '';
+      detalhesProblema.value = '';
       motivoDevolucao.value = '';
     }
   }
@@ -58,7 +60,7 @@ function handleAguardarConfirmacao() {
 
 function handleEnviarProblema() {
   if (props.item && motivoProblema.value) {
-    emit('reportarProblema', props.item.id, motivoProblema.value);
+    emit('reportarProblema', props.item.id, motivoProblema.value, detalhesProblema.value);
     voltarParaDetalhes();
   }
 }
@@ -69,8 +71,8 @@ function handleConfirmarDevolucao() {
   }
 }
 
-function handleFinalizar(resultado: ResultadoFinalizacao) {
-  if (props.item) emit('finalizar', props.item.id, resultado);
+function handleFinalizar() {
+  if (props.item) emit('finalizar', props.item.id);
 }
 </script>
 
@@ -90,12 +92,12 @@ function handleFinalizar(resultado: ResultadoFinalizacao) {
     </template>
 
     <div v-if="item" class="space-y-4">
-      <BaseModalDetails :item="item" :mostrar-descricao="visao === 'detalhes'">
-        
+      <BaseModalDetails :item="item">
+
         <div v-if="visao === 'detalhes' && item.estado === 'AGUARDANDO_CONFIRMACAO'" class="mt-6 space-y-2">
           <p class="font-semibold text-govbr-text">Finalizar Agendamento, o exame foi:</p>
           <div class="flex items-center gap-3">
-            <Button variant="tertiary" @click="handleFinalizar('CONFIRMADO')">
+            <Button variant="tertiary" @click="handleFinalizar">
               Confirmado
             </Button>
           </div>
@@ -106,6 +108,15 @@ function handleFinalizar(resultado: ResultadoFinalizacao) {
           <div>
             <label class="mb-1 block text-[16px] font-semibold text-govbr-text">Descreva qual o problema*</label>
             <SeletorMotivo v-model="motivoProblema" :opcoes="MOTIVOS_PROBLEMA" />
+          </div>
+          <div>
+            <label class="mb-1 block text-[16px] font-semibold text-govbr-text">Detalhamento</label>
+            <textarea
+              v-model="detalhesProblema"
+              rows="3"
+              placeholder="Descreva mais detalhes sobre o problema (opcional)"
+              class="w-full rounded border border-govbr-border px-3 py-2 text-[16px] placeholder-govbr-text-secondary focus:outline-none focus:ring-1 focus:ring-govbr-primary resize-none"
+            />
           </div>
         </div>
 

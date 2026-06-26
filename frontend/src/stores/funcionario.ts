@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
-import type { AgendamentoItem, FiltrosFila, MinhaAreaItem, ResultadoFinalizacao } from '../funcionario/types';
+import type { AgendamentoItem, FiltrosFila, MinhaAreaItem } from '../funcionario/types';
 import { filtrarAgendamentos, FILTROS_VAZIOS } from '../shared/utils/filtrarAgendamentos';
 import { derivarRegioes, fetchMesorregioes, fetchMunicipios, FORA_DO_ESTADO } from '../shared/services/ibge';
 import type { MunicipioIBGE } from '../shared/services/ibge';
@@ -38,7 +38,9 @@ export const useFuncionarioStore = defineStore('funcionario', () => {
   );
 
   const itensFinalizados = computed(() =>
-    minhaAreaFiltrada.value.filter((item) => item.estado === 'FINALIZADO')
+    minhaAreaFiltrada.value.filter(
+      (item) => item.estado === 'CONFIRMADO' || item.estado === 'PROBLEMA_REPORTADO'
+    )
   );
 
   const nomesMunicipios = computed(() =>
@@ -116,16 +118,14 @@ export const useFuncionarioStore = defineStore('funcionario', () => {
     minhaArea.value = minhaArea.value.filter((i) => i.id !== id);
   }
 
-  async function reportarProblema(_id: number, _motivo: string) {
-    // mock: sem efeito
+  async function reportarProblema(id: number, _motivo: string, _detalhes?: string) {
+    const item = minhaArea.value.find((i) => i.id === id);
+    if (item) item.estado = 'PROBLEMA_REPORTADO';
   }
 
-  async function finalizarAgendamento(id: number, resultado: ResultadoFinalizacao) {
+  async function finalizarAgendamento(id: number) {
     const item = minhaArea.value.find((i) => i.id === id);
-    if (item) {
-      item.estado = 'FINALIZADO';
-      item.resultado = resultado;
-    }
+    if (item) item.estado = 'CONFIRMADO';
   }
 
   function setBuscaMinhaArea(busca: string) {

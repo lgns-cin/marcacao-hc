@@ -1,4 +1,4 @@
-import type { AgendamentoItem, EstadoMinhaArea, ResultadoFinalizacao } from '../funcionario/types';
+import type { AgendamentoItem, EstadoMinhaArea } from '../funcionario/types';
 
 export type CategoriaIndicador = 'principal' | 'extra';
 
@@ -59,8 +59,15 @@ export type PendenciaItem = AgendamentoItem & {
 
 export type AgendamentoGerenciamento = AgendamentoItem & {
   estado: EstadoMinhaArea;
-  resultado?: ResultadoFinalizacao;
   responsavel: string;
+  problema_motivo?: string | null;
+  problema_detalhes?: string | null;
+};
+
+export type AgendamentoRemovido = AgendamentoItem & {
+  responsavel: string;
+  problema_motivo: string;
+  problema_detalhes?: string | null;
 };
 
 export type Funcionario = {

@@ -1,31 +1,35 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { ClockIcon } from '@heroicons/vue/24/outline';
+import { nomeDoCodigo } from '../utils/catalogoExames';
 
-// Esse componente é uma base utilizada na tela do funcionário e admin(modal)
-// Foi criada para facilitar a manutenção e padronização
-
-// Tipagem focada para aceitar os dados das três telas
 const props = defineProps<{
   item: {
     prontuario: string;
+    numeroSolicitacao?: string;
     diasNaFila: number;
     status: string;
-    exames: string[];
-//    unidadeExecutora: string;
+    exame: string;
     unidadeSolicitante: string;
     dataRetorno: string;
     localizacao: string;
     idade: number;
+    telefone?: string;
     estado?: string;
-    resultado?: string;
+    responsavel?: string;
   };
 }>();
 
-// Identifica se o agendamento já foi finalizado
-const finalizado = computed(() => props.item.estado === 'FINALIZADO');
+const finalizado = computed(() =>
+  props.item.estado === 'CONFIRMADO' || props.item.estado === 'PROBLEMA_REPORTADO'
+);
 
-// mapeamento das cores
+const estadoLabel = computed(() => {
+  if (props.item.estado === 'CONFIRMADO') return 'Confirmado';
+  if (props.item.estado === 'PROBLEMA_REPORTADO') return 'Encerrado';
+  return '';
+});
+
 const statusClasses = computed(() => {
   const cores = {
     ALTA: 'bg-govbr-error-bg text-govbr-error',
@@ -39,10 +43,12 @@ const statusClasses = computed(() => {
 <template>
   <div class="space-y-4">
     <div class="flex flex-wrap items-center justify-between gap-2">
-      <p class="text-[16px] text-govbr-text-secondary">
-        N° do Prontuário: <span class="text-govbr-text font-medium">{{ item.prontuario }}</span>
-      </p>
-      
+      <div class="flex flex-wrap gap-2">
+        <span class="rounded border border-govbr-border px-3 py-1 text-sm font-semibold text-govbr-text bg-gray-50">
+          {{ nomeDoCodigo(item.exame) }}
+        </span>
+      </div>
+
       <div v-if="!finalizado" class="flex items-center gap-2">
         <span class="flex items-center gap-1 text-[16px] text-govbr-text-secondary">
           <ClockIcon class="h-4 w-4" />
@@ -53,27 +59,31 @@ const statusClasses = computed(() => {
         </span>
       </div>
       <span v-else class="rounded-full border border-govbr-border px-2.5 py-0.5 text-xs font-bold text-govbr-text-secondary">
-        {{ item.resultado }}
-      </span>
-    </div>
-
-    <div class="flex flex-wrap gap-2">
-      <span
-        v-for="exame in item.exames"
-        :key="exame"
-        class="rounded border border-govbr-border px-3 py-1 text-sm font-semibold text-govbr-text bg-gray-50"
-      >
-        {{ exame }}
+        {{ estadoLabel }}
       </span>
     </div>
 
     <dl class="space-y-3 text-[16px] pt-2">
-      <!-- Não mostrar a unidade executora por enquanto
       <div>
-        <dt class="inline font-semibold text-govbr-text">Unidade Executora: </dt>
-        <dd class="inline text-govbr-text-secondary"> {{ item.unidadeExecutora }}</dd>
+        <dt class="inline font-semibold text-govbr-text">Exame: </dt>
+        <dd class="inline text-govbr-text-secondary"> {{ nomeDoCodigo(item.exame) }}</dd>
       </div>
-      -->
+      <div v-if="item.responsavel">
+        <dt class="inline font-semibold text-govbr-text">Responsável: </dt>
+        <dd class="inline text-govbr-text-secondary"> {{ item.responsavel }}</dd>
+      </div>
+      <div v-if="item.telefone">
+        <dt class="inline font-semibold text-govbr-text">Telefone: </dt>
+        <dd class="inline text-govbr-text-secondary"> {{ item.telefone }}</dd>
+      </div>
+      <div v-if="item.numeroSolicitacao">
+        <dt class="inline font-semibold text-govbr-text">Solicitação: </dt>
+        <dd class="inline text-govbr-text-secondary"> {{ item.numeroSolicitacao }}</dd>
+      </div>
+      <div>
+        <dt class="inline font-semibold text-govbr-text">Prontuário: </dt>
+        <dd class="inline text-govbr-text-secondary"> {{ item.prontuario }}</dd>
+      </div>
       <div>
         <dt class="inline font-semibold text-govbr-text">Unidade Solicitante: </dt>
         <dd class="inline text-govbr-text-secondary"> {{ item.unidadeSolicitante }}</dd>

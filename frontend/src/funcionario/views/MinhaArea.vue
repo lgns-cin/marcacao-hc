@@ -7,7 +7,7 @@ import { useFuncionarioStore } from '../../stores/funcionario';
 import MinhaAreaCard from '../components/MinhaAreaCard.vue';
 import MinhaAreaDetailModal from '../components/MinhaAreaDetailModal.vue';
 import FilaFiltros from '../components/FilaFiltros.vue';
-import type { MinhaAreaItem, ResultadoFinalizacao } from '../types';
+import type { MinhaAreaItem } from '../types';
 
 import Button from '../../shared/components/Button.vue';
 
@@ -55,19 +55,19 @@ async function devolverAFila(id: number, motivo: string) {
   }
 }
 
-async function reportarProblema(id: number, motivo: string) {
+async function reportarProblema(id: number, motivo: string, detalhes: string) {
   try {
-    await funcionarioStore.reportarProblema(id, motivo);
+    await funcionarioStore.reportarProblema(id, motivo, detalhes);
     toast.success('Problema reportado com sucesso.');
   } catch (error) {
     toast.error('Não foi possível reportar o problema.');
   }
 }
 
-async function finalizar(id: number, resultado: ResultadoFinalizacao) {
+async function finalizar(id: number) {
   try {
-    await funcionarioStore.finalizarAgendamento(id, resultado);
-    toast.success(resultado === 'CONFIRMADO' ? 'Exame finalizado com sucesso.' : 'Exame cancelado com sucesso.');
+    await funcionarioStore.finalizarAgendamento(id);
+    toast.success('Agendamento finalizado com sucesso.');
     modalAberto.value = false;
   } catch (error) {
     toast.error('Não foi possível finalizar este agendamento.');
