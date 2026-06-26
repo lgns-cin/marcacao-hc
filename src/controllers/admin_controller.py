@@ -1,3 +1,5 @@
+from services.pontuacao import calcular_pontuacao
+from sqlalchemy.util.typing import Literal
 from datetime import date
 from typing import List, Optional
 
@@ -16,6 +18,24 @@ def _validar_periodo(data_inicio: Optional[date], data_fim: Optional[date]) -> N
             detail="data_inicio não pode ser posterior a data_fim",
         )
 
+def _status(idx: int, total: int) -> Literal["ALTA", "MÉDIA", "BAIXA"]:
+    """Retorna o status do item da fila de agendamento de índice `idx` dado que a fila tem `total` posições."""
+
+    if idx in range(0, total // 4): # 0 a 25% da lista
+        return "ALTA"
+    if idx in range(total // 4, 3 * total // 4): # 25% a 75% da lista
+        return "MÉDIA"
+    if idx in range(3 * total // 4, total): # 75% a 100% da lista
+        return "BAIXA"
+
+def _aplicar_prioridade(items: list[dict]) -> list[dict]:
+    """Atribui o status de cada item da fila de agendamento com base na sua posição."""
+
+    total = len(items)
+
+    for i in range(0, total):
+        items[i]["status"] = _status(i, total)
+    return items
 
 def _build_item(row) -> dict:
     paciente = row.paciente
@@ -50,27 +70,12 @@ def _build_item(row) -> dict:
         "telefone": paciente.telefone,
         "exames": [exame_nome],
         "diasNaFila": dias_na_fila,
-        "status": _prioridade(sol.unidade_solicitante if sol else ""),
         "unidadeSolicitante": sol.unidade_solicitante if sol else None,
         "dataRetorno": sol.data_retorno.isoformat() if sol and sol.data_retorno else None,
         "localizacao": localizacao,
         "idade": idade,
         "funcionarioAtribuido": funcionario_username,
     }
-
-
-URGENCIA_ALTA = {"UTI", "OBSTETRICO", "EMERGENCIA", "MATERNIDADE", "ONCOLOGIA"}
-URGENCIA_MEDIA = {"NEFROLOGIA", "CARDIOLOGIA", "PNEUMOLOGIA", "NEUROLOGIA"}
-
-
-def _prioridade(unidade: str) -> str:
-    u = (unidade or "").upper()
-    if any(k in u for k in URGENCIA_ALTA):
-        return "alta"
-    if any(k in u for k in URGENCIA_MEDIA):
-        return "media"
-    return "baixa"
-
 
 async def listar_visao_geral(
     provider: AdminLocalProvider,
@@ -103,17 +108,37 @@ async def listar_pendencias(
     provider: AdminLocalProvider,
     data_inicio: Optional[date] = None,
     data_fim: Optional[date] = None,
+    limite: Optional[int] = None,
 ) -> List[dict]:
     _validar_periodo(data_inicio, data_fim)
     rows = await provider.listar_pendencias(data_inicio, data_fim)
+
+    # aplicar pontuacao e ordenar
     items = []
     for row in rows:
         item = _build_item(row)
+        sol = row.solicitacao_rel
+        paciente = row.paciente
+        item["_pontuacao"] = calcular_pontuacao(
+            {"cidade": paciente.cidade if paciente else ""},
+            {
+                "data_retorno": sol.data_retorno.isoformat() if sol and sol.data_retorno else "",
+                "unidade_solicitante": sol.unidade_solicitante if sol else "",
+                "data_solicitacao": row.data_solicitacao.isoformat() if row.data_solicitacao else "",
+            }
+        )
         item["estadoAtribuicao"] = row.status_atribuicao
         item["resultado"] = row.resultado
         item["motivo"] = row.motivo
         item["detalhes"] = row.detalhes
         items.append(item)
+    
+    items.sort(key=lambda x: x.pop("_pontuacao"), reverse=True)
+    items = _aplicar_prioridade(items)
+
+    if limite is not None:
+        items = items[:limite]
+    
     return items
 
 
@@ -122,6 +147,7 @@ async def listar_agendamentos(
     provider: AdminLocalProvider,
     data_inicio: Optional[date] = None,
     data_fim: Optional[date] = None,
+    limite: Optional[int] = None,
 ) -> List[dict]:
     if estado not in ESTADOS_VALIDOS:
         raise HTTPException(
@@ -130,15 +156,34 @@ async def listar_agendamentos(
         )
     _validar_periodo(data_inicio, data_fim)
     rows = await provider.listar_agendamentos(estado, data_inicio, data_fim)
+
+    # aplicar pontuacao e ordenar
     items = []
     for row in rows:
         item = _build_item(row)
+        sol = row.solicitacao_rel
+        paciente = row.paciente
+        item["_pontuacao"] = calcular_pontuacao(
+            {"cidade": paciente.cidade if paciente else ""},
+            {
+                "data_retorno": sol.data_retorno.isoformat() if sol and sol.data_retorno else "",
+                "unidade_solicitante": sol.unidade_solicitante if sol else "",
+                "data_solicitacao": row.data_solicitacao.isoformat() if row.data_solicitacao else "",
+            }
+        )
         item["estadoAtribuicao"] = row.status_atribuicao
         item["resultado"] = row.resultado
         item["motivo"] = row.motivo
         if estado == "excluidos":
             item["excluidoEm"] = row.deleted_at.isoformat() if row.deleted_at else None
         items.append(item)
+    
+    items.sort(key=lambda x: x.pop("_pontuacao"), reverse=True)
+    items = _aplicar_prioridade(items)
+
+    if limite is not None:
+        items = items[:limite]
+    
     return items
 
 
