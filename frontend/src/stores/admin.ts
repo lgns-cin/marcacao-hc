@@ -13,6 +13,7 @@ import {
   MOCK_REMOVIDOS,
   MOCK_FILA_ADMIN,
 } from '../admin/mockData';
+import { mockDelay } from '../shared/utils/mockDelay';
 
 // isso é só pra funcionar por enquanto ...
 function carregarPreferenciasIniciais(): string[] | null {
@@ -122,7 +123,7 @@ export const useAdminStore = defineStore('admin', () => {
 
   async function fetchVisaoGeral(opcoes: { silencioso?: boolean } = {}) {
     if (!opcoes.silencioso) isLoadingVisaoGeral.value = true;
-    await new Promise((r) => setTimeout(r, 300));
+    await mockDelay();
     visaoGeral.value = { kpis: calcularKpis(), graficos: MOCK_VISAO_GERAL.graficos };
     if (!opcoes.silencioso) isLoadingVisaoGeral.value = false;
   }
@@ -135,13 +136,13 @@ export const useAdminStore = defineStore('admin', () => {
   // Pendências
   async function fetchPendencias(opcoes: { silencioso?: boolean } = {}) {
     if (!opcoes.silencioso) isLoadingPendencias.value = true;
-    await new Promise((r) => setTimeout(r, 300));
+    await mockDelay();
     pendencias.value = MOCK_PENDENCIAS;
     if (!opcoes.silencioso) isLoadingPendencias.value = false;
   }
 
   async function resolverPendencia(id: number) {
-    await new Promise((r) => setTimeout(r, 200));
+    await mockDelay('action');
     const item = pendencias.value.find((i) => i.id === id);
     if (item) {
       agendamentosRemovidos.value = [
@@ -172,7 +173,7 @@ export const useAdminStore = defineStore('admin', () => {
   // Gerenciamento de Agendamentos
   async function fetchAgendamentosGerenciamento(opcoes: { silencioso?: boolean } = {}) {
     if (!opcoes.silencioso) isLoadingAgendamentos.value = true;
-    await new Promise((r) => setTimeout(r, 300));
+    await mockDelay();
     agendamentosEmAndamento.value = [...MOCK_GERENCIAMENTO_ANDAMENTO];
     agendamentosConcluidos.value = [...MOCK_GERENCIAMENTO_CONCLUIDO];
     agendamentosRemovidos.value = [...MOCK_REMOVIDOS];
@@ -180,7 +181,7 @@ export const useAdminStore = defineStore('admin', () => {
   }
 
   async function reatribuirAgendamento(id: number, funcionarioUsername: string) {
-    await new Promise((r) => setTimeout(r, 200));
+    await mockDelay('action');
     const item = agendamentosEmAndamento.value.find((i) => i.id === id);
     if (item) {
       item.responsavel = funcionarioUsername;
@@ -194,7 +195,7 @@ export const useAdminStore = defineStore('admin', () => {
   }
 
   async function devolverAFilaAdmin(id: number, motivo: string) {
-    await new Promise((r) => setTimeout(r, 200));
+    await mockDelay('action');
     // Localiza o item em qualquer uma das listas para registrar a devolução com o motivo.
     const item =
       agendamentosEmAndamento.value.find((i) => i.id === id) ??
@@ -229,12 +230,12 @@ export const useAdminStore = defineStore('admin', () => {
   }
 
   async function devolverRemovidoAFila(id: number) {
-    await new Promise((r) => setTimeout(r, 200));
+    await mockDelay('action');
     agendamentosRemovidos.value = agendamentosRemovidos.value.filter((i) => i.id !== id);
   }
 
   async function removerDaFila(id: number) {
-    await new Promise((r) => setTimeout(r, 200));
+    await mockDelay('action');
     agendamentosRemovidos.value = agendamentosRemovidos.value.filter((i) => i.id !== id);
   }
 
@@ -254,7 +255,7 @@ export const useAdminStore = defineStore('admin', () => {
   // Fila Pública (Visão Admin)
   async function fetchFila(opcoes: { silencioso?: boolean } = {}) {
     if (!opcoes.silencioso) isLoadingFila.value = true;
-    await new Promise((r) => setTimeout(r, 300));
+    await mockDelay();
     fila.value = MOCK_FILA_ADMIN;
     if (!opcoes.silencioso) isLoadingFila.value = false;
   }
@@ -274,7 +275,7 @@ export const useAdminStore = defineStore('admin', () => {
 
   // Funcionários
   async function fetchFuncionarios() {
-    await new Promise((r) => setTimeout(r, 100));
+    await mockDelay('fast');
     funcionarios.value = MOCK_FUNCIONARIOS;
   }
 
