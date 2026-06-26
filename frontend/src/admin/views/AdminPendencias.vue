@@ -126,7 +126,7 @@ onUnmounted(() => {
     <p v-if="adminStore.isLoadingPendencias" class="mt-8 text-govbr-text-secondary">Carregando exames com problemas...</p>
 
     <p v-else-if="adminStore.pendenciasFiltradas.length === 0" class="mt-8 text-govbr-text-secondary">
-      Nenhuma pendência encontrada para os filtros selecionados.
+      Nenhum problema encontrado para os filtros selecionados.
     </p>
 
     <div v-else class="mt-6 grid items-start gap-4 sm:grid-cols-2">

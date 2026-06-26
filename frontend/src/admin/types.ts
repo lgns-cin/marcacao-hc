@@ -12,6 +12,17 @@ export type Kpi = {
   periodo?: string;
 };
 
+// Recorte temporal das KPIs da Central. Enviado como parâmetro temporal à API
+// (Leonardo adicionou o parâmetro nas rotas existentes, sem mudar as rotas).
+export type PeriodoVisaoGeral = 'mes_atual' | 'ultimos_3_meses' | 'ultimos_6_meses' | 'ultimo_ano';
+
+export const PERIODOS_VISAO_GERAL: { id: PeriodoVisaoGeral; label: string; sufixo: string }[] = [
+  { id: 'mes_atual', label: 'Mês atual', sufixo: 'no mês atual' },
+  { id: 'ultimos_3_meses', label: 'Últimos 3 meses', sufixo: 'nos últimos 3 meses' },
+  { id: 'ultimos_6_meses', label: 'Últimos 6 meses', sufixo: 'nos últimos 6 meses' },
+  { id: 'ultimo_ano', label: 'Último ano', sufixo: 'no último ano' },
+];
+
 export type SerieBarrasEtapas = {
   categoria: string;
   agendados: number;
