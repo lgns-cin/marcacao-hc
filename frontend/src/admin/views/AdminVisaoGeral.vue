@@ -6,8 +6,6 @@ import AdminKpiCard from '../components/AdminKpiCard.vue';
 import BarrasEtapasChart from '../components/BarrasEtapasChart.vue';
 import MotivosDevolucaoChart from '../components/MotivosDevolucaoChart.vue';
 import PersonalizarIndicadores from '../components/PersonalizarIndicadores.vue';
-import { PERIODOS_VISAO_GERAL } from '../types';
-import type { PeriodoVisaoGeral } from '../types';
 
 const adminStore = useAdminStore();
 const toast = useToast();
@@ -38,26 +36,16 @@ onUnmounted(() => {
     <div class="flex flex-wrap items-end justify-between gap-4">
       <div>
         <h1 class="text-[2.4rem] text-govbr-text">Central Administrativa</h1>
-        <p class="text-[1.6rem] text-govbr-text-secondary">Visualize os indicadores da instituição</p>
+        <p class="text-[1.6rem] text-govbr-text-secondary">
+          Visualize os indicadores da instituição · <span class="font-semibold">mês atual</span>
+        </p>
       </div>
-      <div class="flex flex-wrap items-center gap-3">
-        <label class="flex items-center gap-2 text-sm font-semibold text-govbr-text">
-          Período:
-          <select
-            :value="adminStore.periodoVisaoGeral"
-            class="rounded border border-govbr-border bg-white px-3 py-2 text-sm font-normal text-govbr-text focus:outline-none focus:ring-1 focus:ring-govbr-primary"
-            @change="adminStore.definirPeriodoVisaoGeral(($event.target as HTMLSelectElement).value as PeriodoVisaoGeral)"
-          >
-            <option v-for="p in PERIODOS_VISAO_GERAL" :key="p.id" :value="p.id">{{ p.label }}</option>
-          </select>
-        </label>
-        <PersonalizarIndicadores
-          v-if="adminStore.visaoGeral"
-          :todos="adminStore.todosIndicadores"
-          :selecionados="adminStore.indicadoresVisiveis"
-          @aplicar="adminStore.definirIndicadoresVisiveis"
-        />
-      </div>
+      <PersonalizarIndicadores
+        v-if="adminStore.visaoGeral"
+        :todos="adminStore.todosIndicadores"
+        :selecionados="adminStore.indicadoresVisiveis"
+        @aplicar="adminStore.definirIndicadoresVisiveis"
+      />
     </div>
 
     <p v-if="adminStore.isLoadingVisaoGeral" class="mt-8 text-govbr-text-secondary">Carregando indicadores...</p>

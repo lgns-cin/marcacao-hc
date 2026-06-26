@@ -2,8 +2,8 @@ import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
 import type { AgendamentoItem, FiltrosFila } from '../funcionario/types';
 import { filtrarAgendamentos, FILTROS_VAZIOS } from '../shared/utils/filtrarAgendamentos';
-import type { AgendamentoGerenciamento, AgendamentoRemovido, Funcionario, Kpi, PendenciaItem, PeriodoVisaoGeral, VisaoGeral } from '../admin/types';
-import { PREFERENCIAS_VISAO_GERAL_KEY, PERIODOS_VISAO_GERAL } from '../admin/types';
+import type { AgendamentoGerenciamento, AgendamentoRemovido, Funcionario, Kpi, PendenciaItem, VisaoGeral } from '../admin/types';
+import { PREFERENCIAS_VISAO_GERAL_KEY } from '../admin/types';
 import {
   MOCK_FUNCIONARIOS,
   MOCK_VISAO_GERAL,
@@ -29,7 +29,6 @@ export const useAdminStore = defineStore('admin', () => {
   const visaoGeral = ref<VisaoGeral | null>(null);
   const isLoadingVisaoGeral = ref(false);
   const indicadoresVisiveis = ref<string[] | null>(carregarPreferenciasIniciais());
-  const periodoVisaoGeral = ref<PeriodoVisaoGeral>('mes_atual');
 
   const pendencias = ref<PendenciaItem[]>([]);
   const isLoadingPendencias = ref(false);
@@ -84,18 +83,9 @@ export const useAdminStore = defineStore('admin', () => {
 
   // Visão Geral
   function calcularKpis(): Kpi[] {
-    // Recorte temporal selecionado. No mock, o fator simula a acumulação de
-    // volume ao olhar janelas maiores; com a API real isso vem do parâmetro
-    // temporal que o Leonardo adicionou às rotas existentes.
-    const periodoAtual = PERIODOS_VISAO_GERAL.find((p) => p.id === periodoVisaoGeral.value) ?? PERIODOS_VISAO_GERAL[0];
-    const PERIODO = periodoAtual.sufixo;
-    const FATOR_PERIODO: Record<PeriodoVisaoGeral, number> = {
-      mes_atual: 1,
-      ultimos_3_meses: 3,
-      ultimos_6_meses: 6,
-      ultimo_ano: 12,
-    };
-    const fator = FATOR_PERIODO[periodoVisaoGeral.value];
+    // As KPIs são apresentadas no contexto das vagas, liberadas por mês
+    // (validado com a Taty) — sempre no recorte do mês atual.
+    const PERIODO = 'no mês atual';
 
     const totalCards = MOCK_FILA_ADMIN.length
       + MOCK_GERENCIAMENTO_ANDAMENTO.length
@@ -104,12 +94,10 @@ export const useAdminStore = defineStore('admin', () => {
 
     const totalFuncionarios = MOCK_FUNCIONARIOS.length;
 
-    // Volume acumulado de cards por funcionário cresce com a janela temporal.
     const mediaCardFuncionario = totalFuncionarios > 0
-      ? +((totalCards * fator) / totalFuncionarios).toFixed(1)
+      ? +(totalCards / totalFuncionarios).toFixed(1)
       : 0;
 
-    // Percentuais são razões — não escalam com a janela.
     const percentProblematicas = totalCards > 0
       ? +((MOCK_PENDENCIAS.length / totalCards) * 100).toFixed(1)
       : 0;
@@ -143,11 +131,6 @@ export const useAdminStore = defineStore('admin', () => {
   function definirIndicadoresVisiveis(ids: string[]) {
     indicadoresVisiveis.value = ids;
     localStorage.setItem(PREFERENCIAS_VISAO_GERAL_KEY, JSON.stringify(ids));
-  }
-
-  async function definirPeriodoVisaoGeral(periodo: PeriodoVisaoGeral) {
-    periodoVisaoGeral.value = periodo;
-    await fetchVisaoGeral();
   }
 
   // Pendências
@@ -300,13 +283,11 @@ export const useAdminStore = defineStore('admin', () => {
     visaoGeral,
     isLoadingVisaoGeral,
     indicadoresVisiveis,
-    periodoVisaoGeral,
     kpisVisiveis,
     graficosVisiveis,
     todosIndicadores,
     fetchVisaoGeral,
     definirIndicadoresVisiveis,
-    definirPeriodoVisaoGeral,
 
     pendencias,
     isLoadingPendencias,
