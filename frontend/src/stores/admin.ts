@@ -123,7 +123,7 @@ export const useAdminStore = defineStore('admin', () => {
   async function fetchVisaoGeral(opcoes: { silencioso?: boolean } = {}) {
     if (!opcoes.silencioso) isLoadingVisaoGeral.value = true;
     await new Promise((r) => setTimeout(r, 300));
-    visaoGeral.value = { kpis: calcularKpis(), graficos: MOCK_GRAFICOS };
+    visaoGeral.value = { kpis: calcularKpis(), graficos: MOCK_VISAO_GERAL.graficos };
     if (!opcoes.silencioso) isLoadingVisaoGeral.value = false;
   }
 
