@@ -9,6 +9,7 @@ export type Kpi = {
   sufixo?: string;
   tendencia?: number;
   categoria: CategoriaIndicador;
+  periodo?: string;
 };
 
 export type SerieBarrasEtapas = {

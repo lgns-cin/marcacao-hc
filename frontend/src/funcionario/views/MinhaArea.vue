@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from 'vue';
+import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { useToast } from 'vue-toastification';
-import { MagnifyingGlassIcon, ClockIcon, CheckCircleIcon, InboxIcon } from '@heroicons/vue/24/outline';
+import { MagnifyingGlassIcon, ClockIcon, CheckCircleIcon, InboxIcon, ChevronDownIcon } from '@heroicons/vue/24/outline';
 import { FunnelIcon } from '@heroicons/vue/20/solid';
 import { useFuncionarioStore } from '../../stores/funcionario';
 import MinhaAreaCard from '../components/MinhaAreaCard.vue';
@@ -18,6 +18,16 @@ const filtrosExpandidos = ref(false);
 const modalAberto = ref(false);
 const itemSelecionado = ref<MinhaAreaItem | null>(null);
 const visaoInicialModal = ref<'detalhes' | 'devolverAFila'>('detalhes');
+
+// Finalizados ocupam muito espaço: recolhidos por padrão e limitados a alguns itens.
+const finalizadosExpandido = ref(false);
+const mostrarTodosFinalizados = ref(false);
+const LIMITE_FINALIZADOS = 10;
+const finalizadosVisiveis = computed(() =>
+  mostrarTodosFinalizados.value
+    ? funcionarioStore.itensFinalizados
+    : funcionarioStore.itensFinalizados.slice(0, LIMITE_FINALIZADOS)
+);
 
 function abrirDetalhes(item: MinhaAreaItem) {
   itemSelecionado.value = item;
@@ -193,24 +203,47 @@ onUnmounted(() => {
       </section>
 
       <section>
-        <div class="flex items-center gap-2 border-b border-govbr-border pb-3">
-          <CheckCircleIcon class="h-5 w-5 text-govbr-primary" />
+        <button
+          type="button"
+          class="flex w-full items-center gap-2 border-b border-govbr-border pb-3 text-left"
+          @click="finalizadosExpandido = !finalizadosExpandido"
+        >
+          <CheckCircleIcon class="h-5 w-5 shrink-0 text-govbr-primary" />
           <h2 class="text-lg font-bold text-govbr-text">Finalizados</h2>
-          <p class="text-sm text-govbr-text-secondary">Solicitações finalizadas, confirmadas ou encerradas.</p>
-        </div>
-
-        <p v-if="funcionarioStore.itensFinalizados.length === 0" class="mt-4 rounded-lg border border-govbr-border bg-white px-5 py-4 text-sm text-govbr-text-secondary">
-          Nenhum exame finalizado.
-        </p>
-        <div v-else class="mt-4 grid gap-4 sm:grid-cols-2">
-          <MinhaAreaCard
-            v-for="item in funcionarioStore.itensFinalizados"
-            :key="item.id"
-            :meuItem="item"
-            @ver-mais="abrirDetalhes"
-            @devolver-a-fila="abrirDevolverAFila"
+          <span class="rounded-full bg-govbr-bg px-2 py-0.5 text-xs font-bold text-govbr-text-secondary">
+            {{ funcionarioStore.itensFinalizados.length }}
+          </span>
+          <p class="hidden text-sm text-govbr-text-secondary sm:block">Solicitações finalizadas, confirmadas ou encerradas.</p>
+          <ChevronDownIcon
+            class="ml-auto h-5 w-5 shrink-0 text-govbr-text-secondary transition-transform"
+            :class="{ 'rotate-180': finalizadosExpandido }"
           />
-        </div>
+        </button>
+
+        <template v-if="finalizadosExpandido">
+          <p v-if="funcionarioStore.itensFinalizados.length === 0" class="mt-4 rounded-lg border border-govbr-border bg-white px-5 py-4 text-sm text-govbr-text-secondary">
+            Nenhum exame finalizado.
+          </p>
+          <template v-else>
+            <div class="mt-4 grid gap-4 sm:grid-cols-2">
+              <MinhaAreaCard
+                v-for="item in finalizadosVisiveis"
+                :key="item.id"
+                :meuItem="item"
+                @ver-mais="abrirDetalhes"
+                @devolver-a-fila="abrirDevolverAFila"
+              />
+            </div>
+            <button
+              v-if="funcionarioStore.itensFinalizados.length > LIMITE_FINALIZADOS"
+              type="button"
+              class="mt-4 text-sm font-bold text-govbr-primary hover:underline"
+              @click="mostrarTodosFinalizados = !mostrarTodosFinalizados"
+            >
+              {{ mostrarTodosFinalizados ? 'Ver menos' : `Ver todos (${funcionarioStore.itensFinalizados.length})` }}
+            </button>
+          </template>
+        </template>
       </section>
     </div>
 

@@ -36,7 +36,9 @@ onUnmounted(() => {
     <div class="flex flex-wrap items-end justify-between gap-4">
       <div>
         <h1 class="text-[2.4rem] text-govbr-text">Central Administrativa</h1>
-        <p class="text-[1.6rem] text-govbr-text-secondary">Visualize os indicadores da instituição</p>
+        <p class="text-[1.6rem] text-govbr-text-secondary">
+          Visualize os indicadores da instituição · <span class="font-semibold">mês atual</span>
+        </p>
       </div>
       <PersonalizarIndicadores
         v-if="adminStore.visaoGeral"

@@ -13,6 +13,7 @@ import {
 import Button from '../../shared/components/Button.vue';
 import SeletorMotivo from '../../funcionario/components/SeletorMotivo.vue';
 import SeletorFuncionario from './SeletorFuncionario.vue';
+import { nomeDoCodigo } from '../../shared/utils/catalogoExames';
 import { MOTIVOS_DEVOLUCAO } from '../../funcionario/types';
 import type { PendenciaItem, Funcionario } from '../types';
 
@@ -80,7 +81,7 @@ function temDetalhesExtras(p: PendenciaItem): boolean {
 
     <!-- Identificação secundária -->
     <p class="mt-1 text-sm text-govbr-text-secondary">
-      Prontuário {{ pendencia.prontuario }} · {{ pendencia.exame }} · há {{ pendencia.diasNaFila }}d
+      Prontuário {{ pendencia.prontuario }} · {{ nomeDoCodigo(pendencia.exame) }} · há {{ pendencia.diasNaFila }}d
     </p>
 
     <!-- O PROBLEMA EM DESTAQUE — visível sem nenhum clique -->

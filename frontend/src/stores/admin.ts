@@ -112,11 +112,21 @@ export const useAdminStore = defineStore('admin', () => {
       ? +(todosItens.reduce((acc, i) => acc + i.diasNaFila, 0) / todosItens.length).toFixed(1)
       : 0;
 
+    // Tempo médio de marcação: tempo até o caso ser efetivamente marcado/concluído.
+    // Aproximado pelos dias na fila dos agendamentos já concluídos.
+    const tempoMedioMarcacao = MOCK_GERENCIAMENTO_CONCLUIDO.length > 0
+      ? +(MOCK_GERENCIAMENTO_CONCLUIDO.reduce((acc, i) => acc + i.diasNaFila, 0) / MOCK_GERENCIAMENTO_CONCLUIDO.length).toFixed(1)
+      : 0;
+
+    // As KPIs são apresentadas no contexto das vagas, que são liberadas por mês (validado com a Taty).
+    const PERIODO = 'no mês atual';
+
     return [
-      { id: 'media_card_funcionario', label: 'Média de Card por Funcionário', valor: mediaCardFuncionario, categoria: 'principal' },
-      { id: 'percent_problematicas', label: 'Solicitações problemáticas', valor: percentProblematicas, sufixo: '%', categoria: 'principal' },
-      { id: 'percent_concluidas', label: 'Solicitações concluídas', valor: percentConcluidas, sufixo: '%', categoria: 'principal' },
-      { id: 'tempo_medio_atendimento', label: 'Tempo médio de atendimento', valor: tempoMedio, sufixo: 'dias', categoria: 'principal' },
+      { id: 'media_card_funcionario', label: 'Média de Card por Funcionário', valor: mediaCardFuncionario, categoria: 'principal', periodo: PERIODO },
+      { id: 'percent_problematicas', label: 'Solicitações problemáticas', valor: percentProblematicas, sufixo: '%', categoria: 'principal', periodo: PERIODO },
+      { id: 'percent_concluidas', label: 'Solicitações concluídas', valor: percentConcluidas, sufixo: '%', categoria: 'principal', periodo: PERIODO },
+      { id: 'tempo_medio_marcacao', label: 'Tempo médio de marcação', valor: tempoMedioMarcacao, sufixo: 'dias', categoria: 'principal', periodo: PERIODO },
+      { id: 'tempo_medio_atendimento', label: 'Tempo médio de atendimento', valor: tempoMedio, sufixo: 'dias', categoria: 'principal', periodo: PERIODO },
     ];
   }
 
