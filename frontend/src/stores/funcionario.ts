@@ -99,9 +99,15 @@ export const useFuncionarioStore = defineStore('funcionario', () => {
     return successful;
   }
 
-  async function puxarAgendamento(id: number) {
-    // Remove localmente (mock)
-    agendamentos.value = agendamentos.value.filter((i) => i.id !== id);
+  async function puxarAgendamento(id: number): Promise<number> {
+    const item = agendamentos.value.find(agendamento => agendamento.id === id);
+    
+    let statusCode = -1;
+    await api.post(`/api/funcionario/agendamentos/${item?.solicitacao}/puxar`)
+      .then(response => statusCode = response.status)
+      .catch(error => statusCode = error.status);
+
+    return statusCode;
   }
 
   function setBusca(busca: string) {
