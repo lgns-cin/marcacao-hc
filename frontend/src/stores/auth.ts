@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
+import axios from 'axios';
 import api from '../services/api';
 
 interface User {
@@ -80,19 +81,33 @@ export const useAuthStore = defineStore('auth', () => {
   }
 
   async function initializeAuth() {
+    // Usa axios diretamente (sem o interceptor de api.ts) para evitar que um
+    // 401 + refresh falho dispare logout(router) enquanto o guard ainda está
+    // aguardando esta promise, o que redirecionaria rotas públicas para /login.
     if (accessToken.value) {
-      // If a token exists in localStorage, validate it by fetching user info
-      await fetchUser();
-    } else {
-      // If no token, try to get a new one using the refresh token cookie
       try {
-        const { data } = await api.post('/api/token/refresh');
+        const { data } = await axios.get('/api/users/me', {
+          headers: { Authorization: `Bearer ${accessToken.value}` },
+        });
+        setUser(data);
+      } catch {
+        clearToken();
+      }
+    } else {
+      try {
+        const { data } = await axios.post('/api/token/refresh');
         if (data.access_token) {
           setToken(data.access_token);
-          await fetchUser(); // Fetch user info with the new token
+          try {
+            const userResp = await axios.get('/api/users/me', {
+              headers: { Authorization: `Bearer ${data.access_token}` },
+            });
+            setUser(userResp.data);
+          } catch {
+            clearToken();
+          }
         }
-      } catch (error) {
-        // It's okay if this fails - it just means the user doesn't have a valid refresh token
+      } catch {
         console.log("No valid refresh token found.");
       }
     }
