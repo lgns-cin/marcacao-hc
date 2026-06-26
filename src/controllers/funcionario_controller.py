@@ -133,12 +133,13 @@ async def listar_minha_area(provider: FuncionarioLocalProvider, username: str, n
     grupos = _agrupar_por_solicitacao(rows)
     items = []
     for grupo_rows in grupos.values():
-        item = _build_item(grupo_rows)
-        primeiro = grupo_rows[0]
-        # Adiciona os campos extras do MinhaAreaItem: estado atual e resultado (se finalizado)
-        item["estado"] = primeiro.status_atribuicao
-        item["resultado"] = primeiro.resultado
-        items.append(item)
+        for exame_solicitado in grupo_rows:
+            item = _build_item(exame_solicitado)
+            primeiro = grupo_rows[0]
+            # Adiciona os campos extras do MinhaAreaItem: estado atual e resultado (se finalizado)
+            item["estado"] = primeiro.status_atribuicao
+            item["resultado"] = primeiro.resultado
+            items.append(item)
     return items
 
 

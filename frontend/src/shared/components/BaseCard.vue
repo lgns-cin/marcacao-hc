@@ -51,9 +51,11 @@ const statusClasses = computed(() => {
             <ClockIcon class="h-4 w-4" />
             há {{ item.diasNaFila }}d
           </span>
-          <span :class="['rounded-full px-2.5 py-1.5 text-xs font-bold', statusClasses]">
-            {{ item.status }}
-          </span>
+          <template v-if="item.status">
+            <span :class="['rounded-full px-2.5 py-1.5 text-xs font-bold', statusClasses]">
+              {{ item.status }}
+            </span>
+          </template>
         </template>
 
         <span
