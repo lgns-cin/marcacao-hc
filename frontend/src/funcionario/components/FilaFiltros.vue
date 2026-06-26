@@ -4,9 +4,9 @@ import { MagnifyingGlassIcon } from '@heroicons/vue/24/outline';
 import type { FiltrosFila } from '../types';
 import Button from '../../shared/components/Button.vue';
 import { useFuncionarioStore } from '../../stores/funcionario';
+import { CATEGORIAS_EXAME } from '../../shared/utils/catalogoExames';
 
 const store = useFuncionarioStore();
-const TIPOS_EXAME = ['Tomografia', 'Ressonância', 'Mamografia', 'Endoscopia', 'Colonoscopia', 'Ultrassonografia', 'Espirometria'];
 const FAIXAS_ETARIAS = [
   { value: 'Todas', label: 'Todas' },
   { value: '0-17', label: '0 a 17 anos' },
@@ -63,7 +63,7 @@ function limpar() {
       <p class="text-[18px] font-semibold text-govbr-text">Tipo de Exame</p>
       <p class="text-[16px] text-govbr-text-secondary">Selecione uma ou mais regiões.</p>
       <div class="mt-3 grid grid-cols-2 gap-2">
-        <label v-for="tipo in TIPOS_EXAME" :key="tipo" class="flex items-center gap-2 text-[16px] text-govbr-text cursor-pointer">
+        <label v-for="tipo in CATEGORIAS_EXAME" :key="tipo" class="flex items-center gap-2 text-[16px] text-govbr-text cursor-pointer">
           <input type="checkbox" :value="tipo" v-model="tiposExameSelecionados" class="h-4 w-4 rounded border-govbr-border text-govbr-primary focus:ring-govbr-primary" />
           {{ tipo }}
         </label>

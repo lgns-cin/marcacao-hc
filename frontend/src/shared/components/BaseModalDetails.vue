@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { ClockIcon } from '@heroicons/vue/24/outline';
+import { nomeDoCodigo } from '../utils/catalogoExames';
 
 const props = defineProps<{
   item: {
@@ -44,7 +45,7 @@ const statusClasses = computed(() => {
     <div class="flex flex-wrap items-center justify-between gap-2">
       <div class="flex flex-wrap gap-2">
         <span class="rounded border border-govbr-border px-3 py-1 text-sm font-semibold text-govbr-text bg-gray-50">
-          {{ item.exame }}
+          {{ nomeDoCodigo(item.exame) }}
         </span>
       </div>
 
@@ -65,7 +66,7 @@ const statusClasses = computed(() => {
     <dl class="space-y-3 text-[16px] pt-2">
       <div>
         <dt class="inline font-semibold text-govbr-text">Exame: </dt>
-        <dd class="inline text-govbr-text-secondary"> {{ item.exame }}</dd>
+        <dd class="inline text-govbr-text-secondary"> {{ nomeDoCodigo(item.exame) }}</dd>
       </div>
       <div v-if="item.responsavel">
         <dt class="inline font-semibold text-govbr-text">Responsável: </dt>

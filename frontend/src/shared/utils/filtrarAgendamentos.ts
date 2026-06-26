@@ -1,4 +1,5 @@
 import type { AgendamentoItem, FiltrosFila } from '../../funcionario/types';
+import { categoriaDoCodigo } from './catalogoExames';
 
 export function filtrarAgendamentos<T extends AgendamentoItem>(lista: T[], filtros: FiltrosFila): T[] {
   const busca = filtros.busca.trim().toLowerCase();
@@ -14,9 +15,10 @@ export function filtrarAgendamentos<T extends AgendamentoItem>(lista: T[], filtr
       filtros.regioes.length === 0 ||
       filtros.regioes.includes(item.regiao);
 
+    const categoria = categoriaDoCodigo(item.exame);
     const correspondeExame =
       filtros.tiposExame.length === 0 ||
-      filtros.tiposExame.includes(item.exame);
+      (categoria !== null && filtros.tiposExame.includes(categoria));
 
     const correspondeMunicipio =
       !municipio || item.localizacao.toLowerCase().includes(municipio);
