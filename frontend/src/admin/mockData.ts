@@ -63,31 +63,13 @@ export const MOCK_VISAO_GERAL: VisaoGeral = {
         { motivo: 'Paciente não respondeu', quantidade: 99 },
         { motivo: 'Dados inconsistentes', quantidade: 74 },
         { motivo: 'Duplicidade', quantidade: 95 },
-        { motivo: 'Erro cadastral', quantidade: 24 },
+        //{ motivo: 'Erro cadastral', quantidade: 24 },
       ],
     },
   ],
 };
 
 export const MOCK_PENDENCIAS: PendenciaItem[] = [
-  {
-    id: 201,
-    nome: 'Everaldo Albuquerque Cavalcanti',
-    prontuario: '000555444',
-    numeroSolicitacao: '0201',
-    exame: 'TCABI',
-    diasNaFila: 15,
-    status: 'ALTA',
-    unidadeSolicitante: 'UBS Centro',
-    dataRetorno: '10/07/2026',
-    localizacao: 'Olinda',
-    regiao: 'Região Metropolitana',
-    idade: 62,
-    telefone: '(81) 99345-6789',
-    problema_motivo: 'Erro cadastral no prontuário do paciente',
-    problema_detalhes: 'CPF diverge do cadastro do AGHU; necessário corrigir antes de agendar.',
-    responsavel: 'fabiana.lopes',
-  },
   {
     id: 202,
     nome: 'Marlene Tavares de Lima',

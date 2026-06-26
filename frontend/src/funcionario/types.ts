@@ -45,6 +45,6 @@ export const MOTIVOS_PROBLEMA = [
   'Paciente não respondeu',
   'Dados inconsistentes',
   'Duplicidade',
-  'Erro cadastral',
+  //'Erro cadastral',
   'Outro',
 ];

@@ -117,7 +117,6 @@ export const useAdminStore = defineStore('admin', () => {
       { id: 'percent_problematicas', label: 'Solicitações problemáticas ', valor: percentProblematicas, sufixo: '%', categoria: 'principal', periodo: PERIODO },
       { id: 'percent_concluidas', label: 'Solicitações concluídas ', valor: percentConcluidas, sufixo: '%', categoria: 'principal', periodo: PERIODO },
       { id: 'tempo_medio_marcacao', label: 'Tempo médio de marcação ', valor: tempoMedioMarcacao, sufixo: 'dias', categoria: 'principal', periodo: PERIODO },
-      { id: 'tempo_medio_atendimento', label: 'Tempo médio de marcação ', valor: tempoMedioMarcacao, sufixo: 'dias', categoria: 'principal', periodo: PERIODO },
     ];
   }
 

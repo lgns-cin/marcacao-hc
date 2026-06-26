@@ -11,7 +11,7 @@ defineProps<{ kpi: Kpi }>();
       {{ kpi.valor }}<span v-if="kpi.sufixo" class="text-lg font-bold"> {{ kpi.sufixo }}</span>
     </span>
     <p class="mt-1 text-sm text-govbr-text-secondary">{{ kpi.label }}</p>
-    <p v-if="kpi.periodo" class="text-xs text-govbr-text-secondary/70">{{ kpi.periodo }}</p>
+    <p v-if="kpi.periodo" class="text-[14px] text-govbr-text-secondary/70">{{ kpi.periodo }}</p>
     <span
       v-if="kpi.tendencia"
       :class="[
