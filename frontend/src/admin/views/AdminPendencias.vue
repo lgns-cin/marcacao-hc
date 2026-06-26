@@ -57,7 +57,6 @@ async function devolverAFila(id: number, motivo: string) {
     await adminStore.devolverAFilaAdmin(id, motivo);
     toast.success('Solicitação devolvida à fila com sucesso.');
     modalAberto.value = false;
-    await carregarPendencias();
   } catch (error) {
     toast.error('Não foi possível devolver esta solicitação à fila.');
   }
@@ -68,7 +67,6 @@ async function reatribuir(id: number, funcionario: string) {
     await adminStore.reatribuirAgendamento(id, funcionario);
     toast.success('Solicitação reatribuída com sucesso.');
     modalAberto.value = false;
-    await carregarPendencias();
   } catch (error) {
     toast.error('Não foi possível reatribuir esta solicitação.');
   }
@@ -131,11 +129,15 @@ onUnmounted(() => {
       Nenhuma pendência encontrada para os filtros selecionados.
     </p>
 
-    <div v-else class="mt-6 grid gap-4 sm:grid-cols-2">
+    <div v-else class="mt-6 grid items-start gap-4 sm:grid-cols-2">
       <PendenciaCard
         v-for="pendencia in adminStore.pendenciasFiltradas"
         :key="pendencia.id"
         :pendencia="pendencia"
+        :funcionarios="adminStore.funcionarios"
+        @resolver="resolverPendencia"
+        @devolver="devolverAFila"
+        @reatribuir="reatribuir"
         @ver-mais="abrirDetalhes"
       />
     </div>

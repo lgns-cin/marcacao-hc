@@ -184,11 +184,45 @@ export const useAdminStore = defineStore('admin', () => {
     const item = agendamentosEmAndamento.value.find((i) => i.id === id);
     if (item) {
       item.responsavel = funcionarioUsername;
+      return;
+    }
+    // Reatribuir uma pendência: o caso passa para o novo funcionário e deixa de estar parado/bloqueado.
+    const pendencia = pendencias.value.find((i) => i.id === id);
+    if (pendencia) {
+      pendencias.value = pendencias.value.filter((i) => i.id !== id);
     }
   }
 
-  async function devolverAFilaAdmin(id: number, _motivo: string) {
+  async function devolverAFilaAdmin(id: number, motivo: string) {
     await new Promise((r) => setTimeout(r, 200));
+    // Localiza o item em qualquer uma das listas para registrar a devolução com o motivo.
+    const item =
+      agendamentosEmAndamento.value.find((i) => i.id === id) ??
+      agendamentosConcluidos.value.find((i) => i.id === id) ??
+      pendencias.value.find((i) => i.id === id);
+    if (item) {
+      // Detalhes originais, caso o item devolvido seja uma pendência já com problema reportado.
+      const detalhesOriginais = (item as PendenciaItem).problema_detalhes ?? null;
+      const removido: AgendamentoRemovido = {
+        id: item.id,
+        nome: item.nome,
+        prontuario: item.prontuario,
+        numeroSolicitacao: item.numeroSolicitacao,
+        exame: item.exame,
+        diasNaFila: item.diasNaFila,
+        status: item.status,
+        unidadeSolicitante: item.unidadeSolicitante,
+        dataRetorno: item.dataRetorno,
+        localizacao: item.localizacao,
+        regiao: item.regiao,
+        idade: item.idade,
+        telefone: item.telefone,
+        responsavel: item.responsavel ?? '',
+        problema_motivo: motivo,
+        problema_detalhes: detalhesOriginais,
+      };
+      agendamentosRemovidos.value = [...agendamentosRemovidos.value, removido];
+    }
     agendamentosEmAndamento.value = agendamentosEmAndamento.value.filter((i) => i.id !== id);
     agendamentosConcluidos.value = agendamentosConcluidos.value.filter((i) => i.id !== id);
     pendencias.value = pendencias.value.filter((i) => i.id !== id);
