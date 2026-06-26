@@ -47,6 +47,7 @@ def _build_item(row) -> dict:
         "solicitacao": row.solicitacao,
         "prontuario": prontuario,
         "nome": f"Paciente #{prontuario}",
+        "telefone": paciente.telefone,
         "exames": [exame_nome],
         "diasNaFila": dias_na_fila,
         "status": _prioridade(sol.unidade_solicitante if sol else ""),
