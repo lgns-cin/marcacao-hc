@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 import {
-  ClockIcon,
   ExclamationTriangleIcon,
   CheckIcon,
   XMarkIcon,
