@@ -1,9 +1,10 @@
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from 'vue';
+import { ref, onMounted } from 'vue';
 import { useToast } from 'vue-toastification';
 import { MagnifyingGlassIcon } from '@heroicons/vue/24/outline';
 import { FunnelIcon } from '@heroicons/vue/20/solid';
 import { useFuncionarioStore } from '../../stores/funcionario';
+import { useAutoRefresh } from '../../composables/useAutoRefresh';
 import PatientQueueCard from '../components/PatientQueueCard.vue';
 import PatientDetailModal from '../components/PatientDetailModal.vue';
 import FilaFiltros from '../components/FilaFiltros.vue';
@@ -57,32 +58,13 @@ async function carregarAgendamentos() {
   }
 }
 
-// Atualização em segundo plano
-const INTERVALO_ATUALIZACAO_MS = 10000;
-let intervaloAtualizacao: ReturnType<typeof setInterval> | undefined;
+onMounted(() => carregarAgendamentos());
 
-async function atualizarEmSegundoPlano() {
-  // Se o usuário estiver trabalhando com o modal aberto, não atualiza para não sumir com o dado na tela dele
-  if (modalAberto.value) return;
-  try {
-    // Executa a busca em modo silencioso (sem disparar telas de loading/espinners pesados)
-    await funcionarioStore.fetchAgendamentos({ silencioso: true });
-  } catch (error) {
-    // Falha silenciosa: a próxima rodada de polling tenta novamente automaticamente.
-  }
-}
-
-// Ciclo de vida do componente
-onMounted(() => {
-  carregarAgendamentos(); // Busca os dados assim que o componente entra na tela
-  // Inicia o contador cíclico para atualizações automatizadas
-  intervaloAtualizacao = setInterval(atualizarEmSegundoPlano, INTERVALO_ATUALIZACAO_MS);
-});
-
-onUnmounted(() => {
-  // Limpa o temporizador da memória quando o usuário muda de página, evitando vazamento de memória (memory leaks)
-  clearInterval(intervaloAtualizacao);
-});
+useAutoRefresh(
+  () => funcionarioStore.fetchAgendamentos({ silencioso: true }),
+  10000,
+  modalAberto,
+);
 </script>
 
 <template>

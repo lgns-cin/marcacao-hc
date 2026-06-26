@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import { onMounted, onUnmounted } from 'vue';
+import { onMounted } from 'vue';
 import { useToast } from 'vue-toastification';
 import { useAdminStore } from '../../stores/admin';
+import { useAutoRefresh } from '../../composables/useAutoRefresh';
 import AdminKpiCard from '../components/AdminKpiCard.vue';
 import BarrasEtapasChart from '../components/BarrasEtapasChart.vue';
 import MotivosDevolucaoChart from '../components/MotivosDevolucaoChart.vue';
@@ -18,17 +19,12 @@ async function carregar() {
   }
 }
 
-const INTERVALO_ATUALIZACAO_MS = 30000;
-let intervaloAtualizacao: ReturnType<typeof setInterval> | undefined;
+onMounted(() => carregar());
 
-onMounted(() => {
-  carregar();
-  intervaloAtualizacao = setInterval(() => adminStore.fetchVisaoGeral({ silencioso: true }), INTERVALO_ATUALIZACAO_MS);
-});
-
-onUnmounted(() => {
-  clearInterval(intervaloAtualizacao);
-});
+useAutoRefresh(
+  () => adminStore.fetchVisaoGeral({ silencioso: true }),
+  30000,
+);
 </script>
 
 <template>

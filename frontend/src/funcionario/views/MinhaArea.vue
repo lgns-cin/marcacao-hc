@@ -1,9 +1,10 @@
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 import { useToast } from 'vue-toastification';
 import { MagnifyingGlassIcon, ClockIcon, CheckCircleIcon, InboxIcon, ChevronDownIcon } from '@heroicons/vue/24/outline';
 import { FunnelIcon } from '@heroicons/vue/20/solid';
 import { useFuncionarioStore } from '../../stores/funcionario';
+import { useAutoRefresh } from '../../composables/useAutoRefresh';
 import MinhaAreaCard from '../components/MinhaAreaCard.vue';
 import MinhaAreaDetailModal from '../components/MinhaAreaDetailModal.vue';
 import FilaFiltros from '../components/FilaFiltros.vue';
@@ -92,26 +93,13 @@ async function carregarMinhaArea() {
   }
 }
 
-const INTERVALO_ATUALIZACAO_MS = 10000;
-let intervaloAtualizacao: ReturnType<typeof setInterval> | undefined;
+onMounted(() => carregarMinhaArea());
 
-async function atualizarEmSegundoPlano() {
-  if (modalAberto.value) return;
-  try {
-    await funcionarioStore.fetchMinhaArea({ silencioso: true });
-  } catch (error) {
-    // Falha silenciosa: a próxima rodada de polling tenta novamente.
-  }
-}
-
-onMounted(() => {
-  carregarMinhaArea();
-  intervaloAtualizacao = setInterval(atualizarEmSegundoPlano, INTERVALO_ATUALIZACAO_MS);
-});
-
-onUnmounted(() => {
-  clearInterval(intervaloAtualizacao);
-});
+useAutoRefresh(
+  () => funcionarioStore.fetchMinhaArea({ silencioso: true }),
+  10000,
+  modalAberto,
+);
 </script>
 
 <template>
