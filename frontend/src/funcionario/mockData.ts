@@ -13,6 +13,7 @@ export const AGENDAMENTOS_MOCK: Omit<AgendamentoItem, 'regiao'>[] = [
     dataRetorno: '15/07/2026',
     localizacao: 'Recife',
     idade: 63,
+    telefone: '(81) 99812-3456',
   },
   {
     id: 2,
@@ -26,6 +27,7 @@ export const AGENDAMENTOS_MOCK: Omit<AgendamentoItem, 'regiao'>[] = [
     dataRetorno: '02/08/2026',
     localizacao: 'Caruaru',
     idade: 47,
+    telefone: '(81) 99734-5678',
   },
   {
     id: 3,
@@ -39,6 +41,7 @@ export const AGENDAMENTOS_MOCK: Omit<AgendamentoItem, 'regiao'>[] = [
     dataRetorno: '20/07/2026',
     localizacao: 'Olinda',
     idade: 52,
+    telefone: '(81) 98645-1234',
   },
   {
     id: 4,
@@ -52,6 +55,7 @@ export const AGENDAMENTOS_MOCK: Omit<AgendamentoItem, 'regiao'>[] = [
     dataRetorno: '28/07/2026',
     localizacao: 'Petrolina',
     idade: 34,
+    telefone: '(87) 99921-7890',
   },
   {
     id: 5,
@@ -65,6 +69,7 @@ export const AGENDAMENTOS_MOCK: Omit<AgendamentoItem, 'regiao'>[] = [
     dataRetorno: '10/08/2026',
     localizacao: 'Carpina',
     idade: 16,
+    telefone: '(81) 99456-3210',
   },
   {
     id: 6,
@@ -78,6 +83,7 @@ export const AGENDAMENTOS_MOCK: Omit<AgendamentoItem, 'regiao'>[] = [
     dataRetorno: '05/08/2026',
     localizacao: 'Vitória de Santo Antão',
     idade: 71,
+    telefone: '(81) 98567-4321',
   },
 ];
 
@@ -94,6 +100,7 @@ export const MINHA_AREA_MOCK: Omit<MinhaAreaItem, 'regiao'>[] = [
     dataRetorno: '18/07/2026',
     localizacao: 'Caruaru',
     idade: 58,
+    telefone: '(81) 99678-5432',
     estado: 'EM_ANDAMENTO',
   },
   {
@@ -108,6 +115,7 @@ export const MINHA_AREA_MOCK: Omit<MinhaAreaItem, 'regiao'>[] = [
     dataRetorno: '22/07/2026',
     localizacao: 'Recife',
     idade: 41,
+    telefone: '(81) 98789-6543',
     estado: 'EM_ANDAMENTO',
   },
   {
@@ -122,6 +130,7 @@ export const MINHA_AREA_MOCK: Omit<MinhaAreaItem, 'regiao'>[] = [
     dataRetorno: '25/07/2026',
     localizacao: 'Serra Talhada',
     idade: 60,
+    telefone: '(87) 99890-7654',
     estado: 'AGUARDANDO_CONFIRMACAO',
   },
   {
@@ -136,6 +145,7 @@ export const MINHA_AREA_MOCK: Omit<MinhaAreaItem, 'regiao'>[] = [
     dataRetorno: '30/07/2026',
     localizacao: 'Nazaré da Mata',
     idade: 49,
+    telefone: '(81) 99901-8765',
     estado: 'AGUARDANDO_CONFIRMACAO',
   },
   {
@@ -150,6 +160,7 @@ export const MINHA_AREA_MOCK: Omit<MinhaAreaItem, 'regiao'>[] = [
     dataRetorno: '12/07/2026',
     localizacao: 'Garanhuns',
     idade: 67,
+    telefone: '(87) 98012-9876',
     estado: 'CONFIRMADO',
   },
   {
@@ -164,6 +175,7 @@ export const MINHA_AREA_MOCK: Omit<MinhaAreaItem, 'regiao'>[] = [
     dataRetorno: '08/07/2026',
     localizacao: 'Vitória de Santo Antão',
     idade: 38,
+    telefone: '(81) 99123-0987',
     estado: 'PROBLEMA_REPORTADO',
   },
 ];

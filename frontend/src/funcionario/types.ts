@@ -13,6 +13,7 @@ export type AgendamentoItem = {
   localizacao: string;
   regiao: string;
   idade: number;
+  telefone: string;
 };
 
 export type FiltrosFila = {

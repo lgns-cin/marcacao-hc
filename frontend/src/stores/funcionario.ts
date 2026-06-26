@@ -118,7 +118,7 @@ export const useFuncionarioStore = defineStore('funcionario', () => {
     minhaArea.value = minhaArea.value.filter((i) => i.id !== id);
   }
 
-  async function reportarProblema(id: number, _motivo: string) {
+  async function reportarProblema(id: number, _motivo: string, _detalhes?: string) {
     const item = minhaArea.value.find((i) => i.id === id);
     if (item) item.estado = 'PROBLEMA_REPORTADO';
   }

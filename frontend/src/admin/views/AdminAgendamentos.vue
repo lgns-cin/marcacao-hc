@@ -8,9 +8,16 @@ import GerenciamentoCard from '../components/GerenciamentoCard.vue';
 import RemovidoCard from '../components/RemovidoCard.vue';
 import AdminAgendamentoModal from '../components/AdminAgendamentoModal.vue';
 import FilaFiltros from '../../funcionario/components/FilaFiltros.vue';
-import type { AgendamentoGerenciamento } from '../types';
+import type { AgendamentoItem } from '../../funcionario/types';
 
 import Button from '../../shared/components/Button.vue';
+
+type ItemComResponsavel = AgendamentoItem & {
+  responsavel: string;
+  estado?: string;
+  problema_motivo?: string | null;
+  problema_detalhes?: string | null;
+};
 
 const adminStore = useAdminStore();
 const toast = useToast();
@@ -18,18 +25,12 @@ const toast = useToast();
 const abaAtiva = ref<'emAndamento' | 'concluido' | 'removido'>('emAndamento');
 const filtrosExpandidos = ref(false);
 const modalAberto = ref(false);
-const itemSelecionado = ref<AgendamentoGerenciamento | null>(null);
+const itemSelecionado = ref<ItemComResponsavel | null>(null);
 const painelInicialModal = ref<'nenhum' | 'devolver'>('nenhum');
 
-function abrirDetalhes(item: AgendamentoGerenciamento) {
+function abrirDetalhes(item: ItemComResponsavel) {
   itemSelecionado.value = item;
   painelInicialModal.value = 'nenhum';
-  modalAberto.value = true;
-}
-
-function abrirDevolverAFila(item: AgendamentoGerenciamento) {
-  itemSelecionado.value = item;
-  painelInicialModal.value = 'devolver';
   modalAberto.value = true;
 }
 
@@ -149,12 +150,6 @@ onUnmounted(() => {
       >
         <ArrowUturnLeftIcon class="h-5 w-5" />
         Removidos
-        <span
-          v-if="adminStore.agendamentosRemovidos.length > 0"
-          class="rounded-full bg-govbr-primary px-2 py-0.5 text-xs text-white"
-        >
-          {{ adminStore.agendamentosRemovidos.length }}
-        </span>
       </button>
     </div>
 
@@ -170,7 +165,6 @@ onUnmounted(() => {
           :key="item.id"
           :item="item"
           @ver-mais="abrirDetalhes"
-          @devolver-a-fila="abrirDevolverAFila"
         />
       </div>
     </template>
@@ -185,7 +179,6 @@ onUnmounted(() => {
           :key="item.id"
           :item="item"
           @ver-mais="abrirDetalhes"
-          @devolver-a-fila="abrirDevolverAFila"
         />
       </div>
     </template>
@@ -199,6 +192,7 @@ onUnmounted(() => {
           v-for="item in adminStore.agendamentosRemovidosFiltrados"
           :key="item.id"
           :item="item"
+          @ver-mais="abrirDetalhes"
         />
       </div>
     </template>
@@ -207,7 +201,7 @@ onUnmounted(() => {
       :show="modalAberto"
       :item="itemSelecionado"
       :funcionarios="adminStore.funcionarios"
-      :permitir-acoes="itemSelecionado?.estado !== 'CONFIRMADO' && itemSelecionado?.estado !== 'PROBLEMA_REPORTADO'"
+      :permitir-acoes="abaAtiva === 'emAndamento'"
       :painel-inicial="painelInicialModal"
       @close="fecharDetalhes"
       @devolver="devolverAFila"

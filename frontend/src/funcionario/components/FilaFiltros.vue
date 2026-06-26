@@ -70,22 +70,24 @@ function limpar() {
       </div>
     </div>
 
-    <div class="relative">
+    <div>
       <label class="mb-1 block text-[18px] font-semibold text-govbr-text">Município</label>
-      <input
-        v-model="municipio"
-        type="text"
-        placeholder="Digite o Município"
-        class="w-full rounded border border-govbr-border px-3 py-2 pr-9 text-[16px] placeholder-govbr-text-secondary focus:outline-none focus:ring-1 focus:ring-govbr-primary"
-      />
-      <MagnifyingGlassIcon class="absolute right-3 top-9 h-4 w-4 text-govbr-text-secondary" />
+      <div class="relative">
+        <input
+          v-model="municipio"
+          type="text"
+          placeholder="Digite o Município"
+          class="h-10 w-full rounded border border-govbr-border px-3 pr-9 text-[16px] placeholder-govbr-text-secondary focus:outline-none focus:ring-1 focus:ring-govbr-primary"
+        />
+        <MagnifyingGlassIcon class="absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-govbr-text-secondary" />
+      </div>
     </div>
 
     <div>
       <label class="mb-1 block text-[18px] font-semibold text-govbr-text">Faixa etária</label>
       <select
         v-model="faixaEtaria"
-        class="w-full rounded border px-3 py-2 text-[16px] text-govbr-text focus:outline-none focus:ring-1 focus:ring-govbr-primary cursor-pointer"
+        class="h-10 w-full rounded border border-govbr-border px-3 text-[16px] text-govbr-text focus:outline-none focus:ring-1 focus:ring-govbr-primary cursor-pointer"
       >
         <option v-for="faixa in FAIXAS_ETARIAS" :key="faixa.value" :value="faixa.value">{{ faixa.label }}</option>
       </select>

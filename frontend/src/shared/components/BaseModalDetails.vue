@@ -13,7 +13,9 @@ const props = defineProps<{
     dataRetorno: string;
     localizacao: string;
     idade: number;
+    telefone?: string;
     estado?: string;
+    responsavel?: string;
   };
 }>();
 
@@ -39,7 +41,7 @@ const statusClasses = computed(() => {
 
 <template>
   <div class="space-y-4">
-    <div class="flex flex-wrap items-center justify-between gap-2">      
+    <div class="flex flex-wrap items-center justify-between gap-2">
       <div class="flex flex-wrap gap-2">
         <span class="rounded border border-govbr-border px-3 py-1 text-sm font-semibold text-govbr-text bg-gray-50">
           {{ item.exame }}
@@ -62,16 +64,24 @@ const statusClasses = computed(() => {
 
     <dl class="space-y-3 text-[16px] pt-2">
       <div>
-        <dt v-if="item.numeroSolicitacao" class="inline font-semibold text-govbr-text">Solicitação: </dt>
-        <dd v-if="item.numeroSolicitacao" class="inline text-govbr-text-secondary"> {{ item.numeroSolicitacao }}</dd>
+        <dt class="inline font-semibold text-govbr-text">Exame: </dt>
+        <dd class="inline text-govbr-text-secondary"> {{ item.exame }}</dd>
+      </div>
+      <div v-if="item.responsavel">
+        <dt class="inline font-semibold text-govbr-text">Responsável: </dt>
+        <dd class="inline text-govbr-text-secondary"> {{ item.responsavel }}</dd>
+      </div>
+      <div v-if="item.telefone">
+        <dt class="inline font-semibold text-govbr-text">Telefone: </dt>
+        <dd class="inline text-govbr-text-secondary"> {{ item.telefone }}</dd>
+      </div>
+      <div v-if="item.numeroSolicitacao">
+        <dt class="inline font-semibold text-govbr-text">Solicitação: </dt>
+        <dd class="inline text-govbr-text-secondary"> {{ item.numeroSolicitacao }}</dd>
       </div>
       <div>
         <dt class="inline font-semibold text-govbr-text">Prontuário: </dt>
         <dd class="inline text-govbr-text-secondary"> {{ item.prontuario }}</dd>
-      </div>
-      <div>
-        <dt class="inline font-semibold text-govbr-text">Exame: </dt>
-        <dd class="inline text-govbr-text-secondary"> {{ item.exame }}</dd>
       </div>
       <div>
         <dt class="inline font-semibold text-govbr-text">Unidade Solicitante: </dt>

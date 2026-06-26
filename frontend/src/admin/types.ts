@@ -60,11 +60,14 @@ export type PendenciaItem = AgendamentoItem & {
 export type AgendamentoGerenciamento = AgendamentoItem & {
   estado: EstadoMinhaArea;
   responsavel: string;
+  problema_motivo?: string | null;
+  problema_detalhes?: string | null;
 };
 
 export type AgendamentoRemovido = AgendamentoItem & {
   responsavel: string;
-  motivoDevolucao: string;
+  problema_motivo: string;
+  problema_detalhes?: string | null;
 };
 
 export type Funcionario = {

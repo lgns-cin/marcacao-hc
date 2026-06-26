@@ -55,9 +55,9 @@ async function devolverAFila(id: number, motivo: string) {
   }
 }
 
-async function reportarProblema(id: number, motivo: string) {
+async function reportarProblema(id: number, motivo: string, detalhes: string) {
   try {
-    await funcionarioStore.reportarProblema(id, motivo);
+    await funcionarioStore.reportarProblema(id, motivo, detalhes);
     toast.success('Problema reportado com sucesso.');
   } catch (error) {
     toast.error('Não foi possível reportar o problema.');

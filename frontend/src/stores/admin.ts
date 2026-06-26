@@ -4,6 +4,15 @@ import type { AgendamentoItem, FiltrosFila } from '../funcionario/types';
 import { filtrarAgendamentos, FILTROS_VAZIOS } from '../shared/utils/filtrarAgendamentos';
 import type { AgendamentoGerenciamento, AgendamentoRemovido, Funcionario, PendenciaItem, VisaoGeral } from '../admin/types';
 import { PREFERENCIAS_VISAO_GERAL_KEY } from '../admin/types';
+import {
+  MOCK_FUNCIONARIOS,
+  MOCK_VISAO_GERAL,
+  MOCK_PENDENCIAS,
+  MOCK_GERENCIAMENTO_ANDAMENTO,
+  MOCK_GERENCIAMENTO_CONCLUIDO,
+  MOCK_REMOVIDOS,
+  MOCK_FILA_ADMIN,
+} from '../admin/mockData';
 
 // isso é só pra funcionar por enquanto ...
 function carregarPreferenciasIniciais(): string[] | null {
@@ -36,145 +45,6 @@ export const useAdminStore = defineStore('admin', () => {
   const filtrosFila = ref<FiltrosFila>({ ...FILTROS_VAZIOS });
 
   const funcionarios = ref<Funcionario[]>([]);
-
-  // Colocamos aqui os dados hardecoded 
-  const MOCK_FUNCIONARIOS: Funcionario[] = [
-    { username: 'fabiana.lopes', nome: 'Fabiana Lopes' },
-    { username: 'joao.silva', nome: 'João Silva' },
-    { username: 'carla.mendes', nome: 'Carla Mendes' },
-    { username: 'ricardo.alves', nome: 'Ricardo Alves' },
-  ];
-
-  const MOCK_VISAO_GERAL: VisaoGeral = {
-    kpis: [
-      { id: 'media_card_funcionario', label: 'Média de Card por Funcionário', valor: 3.5, categoria: 'principal' },
-      { id: 'media_exames_agendados', label: 'Média de Exames Agendados', valor: 4.0, tendencia: 5, categoria: 'principal' },
-      { id: 'quantidade_funcionarios', label: 'Quantidade de Funcionários', valor: 4, categoria: 'principal' },
-      { id: 'total_cards', label: 'Total de Cards', valor: 14, categoria: 'principal' },
-      { id: 'tempo_medio_atendimento', label: 'Tempo médio de atendimento', valor: 3.8, sufixo: 'dias', categoria: 'extra' },
-      { id: 'solicitacoes_atendidas', label: 'Solicitações atendidas', valor: 367, categoria: 'extra' },
-      { id: 'pacientes_devolvidos_fila', label: 'Pacientes devolvidos à fila', valor: 55, tendencia: 15, categoria: 'extra' },
-    ],
-    graficos: [
-      {
-        id: 'por_tipo_exame',
-        titulo: 'Por tipo de exame',
-        subtitulo: 'Acompanhe a distribuição dos exames por tipo',
-        tipo: 'barras_horizontais',
-        categoria: 'principal',
-        dados: [
-          { categoria: 'Colonoscopia', agendados: 8, emAndamento: 2, aAgendar: 0 },
-          { categoria: 'Endoscopia', agendados: 4, emAndamento: 6, aAgendar: 1 },
-          { categoria: 'Ultrassonografia', agendados: 3, emAndamento: 0, aAgendar: 2 },
-          { categoria: 'Mamografia', agendados: 1, emAndamento: 1, aAgendar: 0 },
-          { categoria: 'Espirometria', agendados: 0, emAndamento: 1, aAgendar: 0 },
-        ],
-      },
-      {
-        id: 'por_localidade',
-        titulo: 'Por localidade',
-        subtitulo: 'Entenda como os exames se distribuem por localidade',
-        tipo: 'barras_horizontais',
-        categoria: 'principal',
-        dados: [
-          { categoria: 'Olinda', agendados: 0, emAndamento: 8, aAgendar: 2 },
-          { categoria: 'Recife', agendados: 4, emAndamento: 0, aAgendar: 5 },
-          { categoria: 'Jaboatão dos Guararapes', agendados: 0, emAndamento: 2, aAgendar: 1 },
-          { categoria: 'Caruaru', agendados: 1, emAndamento: 1, aAgendar: 0 },
-          { categoria: 'Petrolina', agendados: 1, emAndamento: 0, aAgendar: 0 },
-        ],
-      },
-      {
-        id: 'motivos_devolucao',
-        titulo: 'Pacientes devolvidos à fila',
-        subtitulo: 'Quantitativo por motivo de devolução',
-        tipo: 'barras_verticais',
-        categoria: 'extra',
-        dados: [
-          { motivo: 'Falha em contato com o paciente', quantidade: 99 },
-          { motivo: 'Pendência Operacional', quantidade: 74 },
-          { motivo: 'Reagendamento', quantidade: 95 },
-          { motivo: 'Outros', quantidade: 24 },
-        ],
-      },
-    ],
-  };
-
-  const MOCK_PENDENCIAS: PendenciaItem[] = [
-    {
-      id: 201,
-      nome: 'Everaldo Albuquerque Cavalcanti',
-      prontuario: '000555444',
-      numeroSolicitacao: '0201',
-      exame: 'Tomografia',
-      diasNaFila: 15,
-      status: 'ALTA',
-      unidadeSolicitante: 'UBS Centro',
-      dataRetorno: '10/07/2026',
-      localizacao: 'Olinda',
-      regiao: 'Região Metropolitana',
-      idade: 62,
-      problema_motivo: 'Erro cadastral no prontuário do paciente',
-      problema_detalhes: 'Erro cadastral no prontuário do paciente',
-      responsavel: 'fabiana.lopes',
-      situacao: 'BLOQUEADO',
-    }
-  ];
-
-  const MOCK_GERENCIAMENTO_ANDAMENTO: AgendamentoGerenciamento[] = [
-    {
-      id: 301,
-      nome: 'Gisela Maria Santos',
-      prontuario: '000333222',
-      numeroSolicitacao: '0301',
-      exame: 'Ressonância',
-      diasNaFila: 22,
-      status: 'MÉDIA',
-      unidadeSolicitante: 'UBS Boa Vista',
-      dataRetorno: '05/08/2026',
-      localizacao: 'Recife',
-      regiao: 'Região Metropolitana',
-      idade: 41,
-      estado: 'EM_ANDAMENTO',
-      responsavel: 'joao.silva',
-    }
-  ];
-
-  const MOCK_GERENCIAMENTO_CONCLUIDO: AgendamentoGerenciamento[] = [
-    {
-      id: 302,
-      nome: 'Severino Ramos da Silva',
-      prontuario: '000111999',
-      numeroSolicitacao: '0302',
-      exame: 'Endoscopia',
-      diasNaFila: 45,
-      status: 'ALTA',
-      unidadeSolicitante: 'UBS Centro - Caruaru',
-      dataRetorno: '12/07/2026',
-      localizacao: 'Caruaru',
-      regiao: 'Agreste',
-      idade: 69,
-      estado: 'CONFIRMADO',
-      responsavel: 'carla.mendes',
-    }
-  ];
-
-  const MOCK_FILA_ADMIN: AgendamentoItem[] = [
-    {
-      id: 1,
-      nome: 'Maria das Graças Oliveira',
-      prontuario: '000123456',
-      numeroSolicitacao: '0401',
-      exame: 'Tomografia',
-      diasNaFila: 42,
-      status: 'ALTA',
-      unidadeSolicitante: 'UBS Centro - Caruaru',
-      dataRetorno: '15/07/2026',
-      localizacao: 'Caruaru',
-      regiao: 'Agreste',
-      idade: 67,
-    }
-  ];
 
   // Computed
   const kpisVisiveis = computed(() => {
@@ -234,6 +104,17 @@ export const useAdminStore = defineStore('admin', () => {
 
   async function resolverPendencia(id: number) {
     await new Promise((r) => setTimeout(r, 200));
+    const item = pendencias.value.find((i) => i.id === id);
+    if (item) {
+      agendamentosRemovidos.value = [
+        ...agendamentosRemovidos.value,
+        {
+          ...item,
+          problema_motivo: item.problema_motivo ?? '',
+          problema_detalhes: item.problema_detalhes,
+        },
+      ];
+    }
     pendencias.value = pendencias.value.filter((i) => i.id !== id);
   }
 
@@ -254,8 +135,9 @@ export const useAdminStore = defineStore('admin', () => {
   async function fetchAgendamentosGerenciamento(opcoes: { silencioso?: boolean } = {}) {
     if (!opcoes.silencioso) isLoadingAgendamentos.value = true;
     await new Promise((r) => setTimeout(r, 300));
-    agendamentosEmAndamento.value = MOCK_GERENCIAMENTO_ANDAMENTO;
-    agendamentosConcluidos.value = MOCK_GERENCIAMENTO_CONCLUIDO;
+    agendamentosEmAndamento.value = [...MOCK_GERENCIAMENTO_ANDAMENTO];
+    agendamentosConcluidos.value = [...MOCK_GERENCIAMENTO_CONCLUIDO];
+    agendamentosRemovidos.value = [...MOCK_REMOVIDOS];
     if (!opcoes.silencioso) isLoadingAgendamentos.value = false;
   }
 
@@ -267,17 +149,21 @@ export const useAdminStore = defineStore('admin', () => {
     }
   }
 
-  async function devolverAFilaAdmin(id: number, motivo: string) {
+  async function devolverAFilaAdmin(id: number, _motivo: string) {
     await new Promise((r) => setTimeout(r, 200));
-    const item = agendamentosEmAndamento.value.find((i) => i.id === id);
-    if (item) {
-      agendamentosRemovidos.value = [
-        ...agendamentosRemovidos.value,
-        { ...item, motivoDevolucao: motivo },
-      ];
-    }
     agendamentosEmAndamento.value = agendamentosEmAndamento.value.filter((i) => i.id !== id);
     agendamentosConcluidos.value = agendamentosConcluidos.value.filter((i) => i.id !== id);
+    pendencias.value = pendencias.value.filter((i) => i.id !== id);
+  }
+
+  async function devolverRemovidoAFila(id: number) {
+    await new Promise((r) => setTimeout(r, 200));
+    agendamentosRemovidos.value = agendamentosRemovidos.value.filter((i) => i.id !== id);
+  }
+
+  async function removerDaFila(id: number) {
+    await new Promise((r) => setTimeout(r, 200));
+    agendamentosRemovidos.value = agendamentosRemovidos.value.filter((i) => i.id !== id);
   }
 
   function setBuscaAgendamentos(busca: string) {
@@ -351,6 +237,8 @@ export const useAdminStore = defineStore('admin', () => {
     fetchAgendamentosGerenciamento,
     reatribuirAgendamento,
     devolverAFilaAdmin,
+    devolverRemovidoAFila,
+    removerDaFila,
     setBuscaAgendamentos,
     aplicarFiltrosAgendamentos,
     limparFiltrosAgendamentos,

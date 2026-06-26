@@ -93,13 +93,8 @@ function handleResolver() {
     </template>
 
     <div v-if="item" class="space-y-4">
-      <p class="text-[16px]">
-        <span class="font-semibold text-govbr-text">Responsável</span>:
-        <span class="text-govbr-text-secondary">{{ item.responsavel }}</span>
-      </p>
-
       <BaseModalDetails :item="item">
-        
+
         <div v-if="item.problema_motivo" class="space-y-2 pt-2">
           <p class="font-semibold text-govbr-text">Informações sobre o Reporte do Problema:</p>
           <ul class="list-disc space-y-1 pl-5 text-[16px]">
@@ -108,16 +103,16 @@ function handleResolver() {
           </ul>
         </div>
 
-        <div v-else-if="painel === 'devolver'" class="space-y-2 rounded border border-govbr-border bg-govbr-bg p-4 mt-4">
+        <div v-if="painel === 'devolver'" class="space-y-2 rounded border border-govbr-border bg-govbr-bg p-4 mt-4">
           <label class="mb-1 block text-sm font-semibold text-govbr-text">Motivo*</label>
           <div class="flex items-center gap-2">
             <div class="flex-1">
               <SeletorMotivo v-model="motivoDevolucao" :opcoes="MOTIVOS_DEVOLUCAO" />
             </div>
-            <Button variant="secondary" @click="fecharPainel">
+            <Button variant="secondary" class="rounded-full! p-2!" @click="fecharPainel">
               <XMarkIcon class="h-5 w-5" />
             </Button>
-            <Button variant="primary" :disabled="!motivoDevolucao" @click="confirmarDevolucao">
+            <Button variant="primary" class="rounded-full! p-2!" :disabled="!motivoDevolucao" @click="confirmarDevolucao">
               <CheckIcon class="h-5 w-5" />
             </Button>
           </div>
@@ -129,10 +124,10 @@ function handleResolver() {
             <div class="flex-1">
               <SeletorFuncionario v-model="funcionarioSelecionado" :opcoes="funcionarios" />
             </div>
-            <Button variant="secondary" @click="fecharPainel">
+            <Button variant="secondary" class="rounded-full! p-2!" @click="fecharPainel">
               <XMarkIcon class="h-5 w-5" />
             </Button>
-            <Button variant="primary" :disabled="!funcionarioSelecionado" @click="confirmarReatribuicao">
+            <Button variant="primary" class="rounded-full! p-2!" :disabled="!funcionarioSelecionado" @click="confirmarReatribuicao">
               <CheckIcon class="h-5 w-5" />
             </Button>
           </div>
@@ -142,10 +137,11 @@ function handleResolver() {
 
     <template #footer>
       <template v-if="item?.problema_motivo">
-        <Button variant="secondary" @click="fechar">Fechar</Button>
-        <Button variant="primary" @click="handleResolver">
-          <CheckIcon class="h-5 w-5" />
-          Resolvido
+        <Button variant="tertiary" @click="abrirPainel('devolver')">
+          Devolver à fila
+        </Button>
+        <Button variant="secondary" @click="handleResolver">
+          Remover da fila
         </Button>
       </template>
       <template v-else-if="permitirAcoes === false">

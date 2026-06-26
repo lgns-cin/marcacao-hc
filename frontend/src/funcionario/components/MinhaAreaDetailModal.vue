@@ -25,12 +25,13 @@ const emit = defineEmits<{
   close: [];
   aguardarConfirmacao: [id: number];
   devolverAFila: [id: number, motivo: string];
-  reportarProblema: [id: number, motivo: string];
+  reportarProblema: [id: number, motivo: string, detalhes: string];
   finalizar: [id: number];
 }>();
 
 const visao = ref<Visao>('detalhes');
 const motivoProblema = ref('');
+const detalhesProblema = ref('');
 const motivoDevolucao = ref('');
 
 watch(
@@ -39,6 +40,7 @@ watch(
     if (aberto) {
       visao.value = props.visaoInicial ?? 'detalhes';
       motivoProblema.value = '';
+      detalhesProblema.value = '';
       motivoDevolucao.value = '';
     }
   }
@@ -58,7 +60,7 @@ function handleAguardarConfirmacao() {
 
 function handleEnviarProblema() {
   if (props.item && motivoProblema.value) {
-    emit('reportarProblema', props.item.id, motivoProblema.value);
+    emit('reportarProblema', props.item.id, motivoProblema.value, detalhesProblema.value);
     voltarParaDetalhes();
   }
 }
@@ -106,6 +108,15 @@ function handleFinalizar() {
           <div>
             <label class="mb-1 block text-[16px] font-semibold text-govbr-text">Descreva qual o problema*</label>
             <SeletorMotivo v-model="motivoProblema" :opcoes="MOTIVOS_PROBLEMA" />
+          </div>
+          <div>
+            <label class="mb-1 block text-[16px] font-semibold text-govbr-text">Detalhamento</label>
+            <textarea
+              v-model="detalhesProblema"
+              rows="3"
+              placeholder="Descreva mais detalhes sobre o problema (opcional)"
+              class="w-full rounded border border-govbr-border px-3 py-2 text-[16px] placeholder-govbr-text-secondary focus:outline-none focus:ring-1 focus:ring-govbr-primary resize-none"
+            />
           </div>
         </div>
 
