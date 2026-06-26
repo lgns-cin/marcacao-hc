@@ -61,6 +61,7 @@ const validationSchema = toTypedSchema(
 );
 
 const onSubmit = async (values: any, _: any) => {
+    formStore.setTelefone(values.telefone);
     formStore.setLocal({
         estado: values.estado,
         cidade: values.cidade

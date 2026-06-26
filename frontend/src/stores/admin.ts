@@ -2,7 +2,7 @@ import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
 import type { AgendamentoItem, FiltrosFila } from '../funcionario/types';
 import { filtrarAgendamentos, FILTROS_VAZIOS } from '../shared/utils/filtrarAgendamentos';
-import type { AgendamentoGerenciamento, AgendamentoRemovido, Funcionario, PendenciaItem, VisaoGeral } from '../admin/types';
+import type { AgendamentoGerenciamento, AgendamentoRemovido, Funcionario, Kpi, PendenciaItem, VisaoGeral } from '../admin/types';
 import { PREFERENCIAS_VISAO_GERAL_KEY } from '../admin/types';
 import {
   MOCK_FUNCIONARIOS,
@@ -82,10 +82,48 @@ export const useAdminStore = defineStore('admin', () => {
   //Ações
 
   // Visão Geral
+  function calcularKpis(): Kpi[] {
+    const totalCards = MOCK_FILA_ADMIN.length
+      + MOCK_GERENCIAMENTO_ANDAMENTO.length
+      + MOCK_GERENCIAMENTO_CONCLUIDO.length
+      + MOCK_PENDENCIAS.length;
+
+    const totalFuncionarios = MOCK_FUNCIONARIOS.length;
+
+    const mediaCardFuncionario = totalFuncionarios > 0
+      ? +(totalCards / totalFuncionarios).toFixed(1)
+      : 0;
+
+    const percentProblematicas = totalCards > 0
+      ? +((MOCK_PENDENCIAS.length / totalCards) * 100).toFixed(1)
+      : 0;
+
+    const percentConcluidas = totalCards > 0
+      ? +((MOCK_GERENCIAMENTO_CONCLUIDO.length / totalCards) * 100).toFixed(1)
+      : 0;
+
+    const todosItens = [
+      ...MOCK_FILA_ADMIN,
+      ...MOCK_GERENCIAMENTO_ANDAMENTO,
+      ...MOCK_GERENCIAMENTO_CONCLUIDO,
+      ...MOCK_PENDENCIAS,
+    ];
+    const tempoMedio = todosItens.length > 0
+      ? +(todosItens.reduce((acc, i) => acc + i.diasNaFila, 0) / todosItens.length).toFixed(1)
+      : 0;
+
+    return [
+      { id: 'media_card_funcionario', label: 'Média de Card por Funcionário', valor: mediaCardFuncionario, categoria: 'principal' },
+      { id: 'percent_problematicas', label: 'Solicitações problemáticas', valor: percentProblematicas, sufixo: '%', categoria: 'principal' },
+      { id: 'percent_concluidas', label: 'Solicitações concluídas', valor: percentConcluidas, sufixo: '%', categoria: 'principal' },
+      { id: 'tempo_medio_atendimento', label: 'Tempo médio de atendimento', valor: tempoMedio, sufixo: 'dias', categoria: 'principal' },
+    ];
+  }
+
   async function fetchVisaoGeral(opcoes: { silencioso?: boolean } = {}) {
     if (!opcoes.silencioso) isLoadingVisaoGeral.value = true;
     await new Promise((r) => setTimeout(r, 300));
-    visaoGeral.value = MOCK_VISAO_GERAL;
+    visaoGeral.value = { kpis: calcularKpis(), graficos: MOCK_GRAFICOS };
     if (!opcoes.silencioso) isLoadingVisaoGeral.value = false;
   }
 
