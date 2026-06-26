@@ -339,3 +339,4 @@ alembic upgrade head
 npm run dev
 npm run build
 ```
+Tudo que você fizer será revisado pelo Codex
