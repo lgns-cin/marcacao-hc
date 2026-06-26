@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from 'vue';
+import { ref, onMounted } from 'vue';
 import { MagnifyingGlassIcon } from '@heroicons/vue/24/outline';
 import type { FiltrosFila } from '../types';
 import Button from '../../shared/components/Button.vue';
@@ -7,6 +7,25 @@ import { useFuncionarioStore } from '../../stores/funcionario';
 import { CATEGORIAS_EXAME } from '../../shared/utils/catalogoExames';
 
 const store = useFuncionarioStore();
+
+// As regiões vêm do IBGE e ficam no store do funcionário. As telas de admin
+// reusam este filtro mas não disparam o carregamento, então garantimos aqui
+// que as regiões são buscadas ao abrir o filtro (o serviço do IBGE tem cache).
+const carregandoRegioes = ref(false);
+const erroRegioes = ref(false);
+
+onMounted(async () => {
+  if (store.regioes.length > 0) return;
+  carregandoRegioes.value = true;
+  erroRegioes.value = false;
+  try {
+    await store.carregarDadosIBGE();
+  } catch {
+    erroRegioes.value = true;
+  } finally {
+    carregandoRegioes.value = false;
+  }
+});
 const FAIXAS_ETARIAS = [
   { value: 'Todas', label: 'Todas' },
   { value: '0-17', label: '0 a 17 anos' },
@@ -56,12 +75,18 @@ function limpar() {
           <input type="checkbox" :value="regiao" v-model="regioesSelecionadas" class="h-4 w-4 rounded border-govbr-border text-govbr-primary focus:ring-govbr-primary" />
           {{ regiao }}
         </label>
+        <p v-if="store.regioes.length === 0 && carregandoRegioes" class="text-[16px] text-govbr-text-secondary">
+          Carregando regiões...
+        </p>
+        <p v-else-if="store.regioes.length === 0 && erroRegioes" class="text-[16px] text-govbr-error">
+          Não foi possível carregar as regiões.
+        </p>
       </div>
     </div>
 
     <div>
       <p class="text-[18px] font-semibold text-govbr-text">Tipo de Exame</p>
-      <p class="text-[16px] text-govbr-text-secondary">Selecione uma ou mais regiões.</p>
+      <p class="text-[16px] text-govbr-text-secondary">Selecione um ou mais tipos de exame.</p>
       <div class="mt-3 grid grid-cols-2 gap-2">
         <label v-for="tipo in CATEGORIAS_EXAME" :key="tipo" class="flex items-center gap-2 text-[16px] text-govbr-text cursor-pointer">
           <input type="checkbox" :value="tipo" v-model="tiposExameSelecionados" class="h-4 w-4 rounded border-govbr-border text-govbr-primary focus:ring-govbr-primary" />

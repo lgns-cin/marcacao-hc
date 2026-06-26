@@ -150,6 +150,7 @@ export const useFuncionarioStore = defineStore('funcionario', () => {
     regioes,
     municipiosIBGE,
     nomesMunicipios,
+    carregarDadosIBGE,
     fetchAgendamentos,
     puxarAgendamento,
     setBusca,
