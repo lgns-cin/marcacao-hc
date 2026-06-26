@@ -92,7 +92,7 @@ onUnmounted(() => {
 
 <template>
   <div>
-    <h1 class="text-[2.4rem] text-govbr-text">Gestão de Pendências</h1>
+    <h1 class="text-[2.4rem] text-govbr-text">Gestão de Problemas</h1>
     <p class="text-[1.6rem] text-govbr-text-secondary">Acompanhe casos que exigem intervenção para evitar atrasos no atendimento</p>
 
     <div class="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -123,10 +123,10 @@ onUnmounted(() => {
       @limpar="adminStore.limparFiltrosPendencias"
     />
 
-    <p v-if="adminStore.isLoadingPendencias" class="mt-8 text-govbr-text-secondary">Carregando pendências...</p>
+    <p v-if="adminStore.isLoadingPendencias" class="mt-8 text-govbr-text-secondary">Carregando problemas...</p>
 
     <p v-else-if="adminStore.pendenciasFiltradas.length === 0" class="mt-8 text-govbr-text-secondary">
-      Nenhuma pendência encontrada para os filtros selecionados.
+      Nenhum problema encontrado para os filtros selecionados.
     </p>
 
     <div v-else class="mt-6 grid items-start gap-4 sm:grid-cols-2">
