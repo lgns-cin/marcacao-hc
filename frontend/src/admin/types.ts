@@ -49,10 +49,10 @@ export type VisaoGeral = {
   graficos: Grafico[];
 };
 
-export type SituacaoPendencia = 'BLOQUEADO' | 'PARADO';
+//export type SituacaoPendencia = 'BLOQUEADO' | 'PARADO';
 
 export type PendenciaItem = AgendamentoItem & {
-  situacao: SituacaoPendencia;
+  //situacao: SituacaoPendencia;
   responsavel: string;
   problema_motivo?: string | null;
   problema_detalhes?: string | null;

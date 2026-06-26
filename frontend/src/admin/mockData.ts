@@ -16,10 +16,10 @@ export const MOCK_FUNCIONARIOS: Funcionario[] = [
 
 export const MOCK_VISAO_GERAL: VisaoGeral = {
   kpis: [
-    { id: 'media_card_funcionario', label: 'Média de Card por Funcionário', valor: 3.5, categoria: 'principal' },
+    { id: 'media_card_funcionario', label: 'Média de Exames por Funcionário', valor: 3.5, categoria: 'principal' },
     { id: 'media_exames_agendados', label: 'Média de Exames Agendados', valor: 4.0, tendencia: 5, categoria: 'principal' },
     { id: 'quantidade_funcionarios', label: 'Quantidade de Funcionários', valor: 4, categoria: 'principal' },
-    { id: 'total_cards', label: 'Total de Cards', valor: 14, categoria: 'principal' },
+    { id: 'total_cards', label: 'Total de Exames', valor: 14, categoria: 'principal' },
     { id: 'tempo_medio_atendimento', label: 'Tempo médio de atendimento', valor: 3.8, sufixo: 'dias', categoria: 'extra' },
     { id: 'solicitacoes_atendidas', label: 'Solicitações atendidas', valor: 367, categoria: 'extra' },
     { id: 'pacientes_devolvidos_fila', label: 'Pacientes devolvidos à fila', valor: 55, tendencia: 15, categoria: 'extra' },
@@ -87,7 +87,6 @@ export const MOCK_PENDENCIAS: PendenciaItem[] = [
     problema_motivo: 'Erro cadastral no prontuário do paciente',
     problema_detalhes: 'CPF diverge do cadastro do AGHU; necessário corrigir antes de agendar.',
     responsavel: 'fabiana.lopes',
-    situacao: 'BLOQUEADO',
   },
   {
     id: 202,
@@ -106,7 +105,6 @@ export const MOCK_PENDENCIAS: PendenciaItem[] = [
     problema_motivo: 'Paciente não respondeu aos contatos',
     problema_detalhes: 'Três tentativas de ligação sem retorno nos últimos 5 dias.',
     responsavel: 'carla.mendes',
-    situacao: 'PARADO',
   },
 ];
 

@@ -1,15 +1,14 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 import {
-  UserGroupIcon,
   ClockIcon,
   ExclamationTriangleIcon,
-  LockClosedIcon,
   CheckIcon,
   XMarkIcon,
   ArrowUturnLeftIcon,
   ArrowsRightLeftIcon,
 } from '@heroicons/vue/24/outline';
+import { TrashIcon, UserGroupIcon } from '@heroicons/vue/20/solid';
 import Button from '../../shared/components/Button.vue';
 import SeletorMotivo from '../../funcionario/components/SeletorMotivo.vue';
 import SeletorFuncionario from './SeletorFuncionario.vue';
@@ -23,7 +22,7 @@ const props = defineProps<{
 }>();
 
 const emit = defineEmits<{
-  resolver: [id: number];
+  remover: [id: number];
   devolver: [id: number, motivo: string];
   reatribuir: [id: number, funcionario: string];
   verMais: [pendencia: PendenciaItem];
@@ -67,7 +66,7 @@ function temDetalhesExtras(p: PendenciaItem): boolean {
         <UserGroupIcon class="h-6 w-6 shrink-0 text-govbr-text" />
         <h3 class="text-lg font-bold text-govbr-text">{{ pendencia.nome }}</h3>
       </div>
-
+      <!-- 
       <span
         class="inline-flex shrink-0 items-center gap-1 whitespace-nowrap rounded-full px-3 py-1 text-xs font-bold"
         :class="pendencia.situacao === 'BLOQUEADO'
@@ -77,6 +76,7 @@ function temDetalhesExtras(p: PendenciaItem): boolean {
         <component :is="pendencia.situacao === 'BLOQUEADO' ? LockClosedIcon : ClockIcon" class="h-3.5 w-3.5" />
         {{ pendencia.situacao === 'BLOQUEADO' ? 'Bloqueado' : 'Parado' }}
       </span>
+      -->
     </div>
 
     <!-- Identificação secundária -->
@@ -97,7 +97,7 @@ function temDetalhesExtras(p: PendenciaItem): boolean {
 
     <!-- Responsável -->
     <p class="mt-3 text-sm text-govbr-text">
-      <span class="font-semibold">Responsável:</span>
+      <span class="font-semibold">Responsável: </span>
       <span class="text-govbr-text-secondary"> {{ pendencia.responsavel }}</span>
     </p>
 
@@ -127,9 +127,9 @@ function temDetalhesExtras(p: PendenciaItem): boolean {
 
     <!-- Ações diretas no card -->
     <div class="mt-4 flex flex-wrap items-center gap-2">
-      <Button variant="primary" @click="emit('resolver', pendencia.id)">
-        <CheckIcon class="h-4 w-4" />
-        Resolver
+      <Button variant="primary" @click="emit('remover', pendencia.id)">
+        <TrashIcon class="h-4 w-4" />
+        Remover
       </Button>
       <Button variant="secondary" @click="abrirPainel('devolver')">
         <ArrowUturnLeftIcon class="h-4 w-4" />

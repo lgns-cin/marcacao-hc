@@ -30,7 +30,7 @@ async function carregarPendencias() {
   try {
     await adminStore.fetchPendencias();
   } catch (error) {
-    toast.error('Não foi possível carregar as pendências.');
+    toast.error('Não foi possível carregar os exames com problemas.');
   }
 }
 
@@ -45,30 +45,30 @@ async function carregarFuncionarios() {
 async function resolverPendencia(id: number) {
   try {
     await adminStore.resolverPendencia(id);
-    toast.success('Pendência resolvida com sucesso.');
+    toast.success('Exame resolvido com sucesso.');
     modalAberto.value = false;
   } catch (error) {
-    toast.error('Não foi possível resolver esta pendência.');
+    toast.error('Não foi possível resolver este exame.');
   }
 }
 
 async function devolverAFila(id: number, motivo: string) {
   try {
     await adminStore.devolverAFilaAdmin(id, motivo);
-    toast.success('Solicitação devolvida à fila com sucesso.');
+    toast.success('Exame devolvido à fila com sucesso.');
     modalAberto.value = false;
   } catch (error) {
-    toast.error('Não foi possível devolver esta solicitação à fila.');
+    toast.error('Não foi possível devolver este exame à fila.');
   }
 }
 
 async function reatribuir(id: number, funcionario: string) {
   try {
     await adminStore.reatribuirAgendamento(id, funcionario);
-    toast.success('Solicitação reatribuída com sucesso.');
+    toast.success('Exame reatribuído com sucesso.');
     modalAberto.value = false;
   } catch (error) {
-    toast.error('Não foi possível reatribuir esta solicitação.');
+    toast.error('Não foi possível reatribuir este exame.');
   }
 }
 
@@ -92,7 +92,7 @@ onUnmounted(() => {
 
 <template>
   <div>
-    <h1 class="text-[2.4rem] text-govbr-text">Gestão de Pendências</h1>
+    <h1 class="text-[2.4rem] text-govbr-text">Gestão de Problemas</h1>
     <p class="text-[1.6rem] text-govbr-text-secondary">Acompanhe casos que exigem intervenção para evitar atrasos no atendimento</p>
 
     <div class="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -123,7 +123,7 @@ onUnmounted(() => {
       @limpar="adminStore.limparFiltrosPendencias"
     />
 
-    <p v-if="adminStore.isLoadingPendencias" class="mt-8 text-govbr-text-secondary">Carregando pendências...</p>
+    <p v-if="adminStore.isLoadingPendencias" class="mt-8 text-govbr-text-secondary">Carregando exames com problemas...</p>
 
     <p v-else-if="adminStore.pendenciasFiltradas.length === 0" class="mt-8 text-govbr-text-secondary">
       Nenhuma pendência encontrada para os filtros selecionados.

@@ -92,9 +92,9 @@ onUnmounted(() => {
 
 <template>
   <div>
-    <h1 class="text-[2.4rem] text-govbr-text">Gerenciamento de Agendamentos</h1>
+    <h1 class="text-[2.4rem] text-govbr-text">Gestão de Agendamentos</h1>
     <p class="text-[1.6rem] text-govbr-text-secondary">
-      Visualize os exames em andamento, concluídos e devolvidos à fila, acompanhando os responsáveis por cada etapa.
+      Visualize os exames em andamento, concluídos e removidos da fila, acompanhando os responsáveis por cada etapa.
     </p>
 
     <div class="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">

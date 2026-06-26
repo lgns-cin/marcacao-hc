@@ -4,8 +4,8 @@ import { ChevronRightIcon } from '@heroicons/vue/24/outline';
 
 const navItems = [
   { name: 'AdminVisaoGeral', label: 'Visão geral' },
-  { name: 'AdminPendencias', label: 'Gestão de Pendências' },
-  { name: 'AdminAgendamentos', label: 'Gerenciamento de Agendamentos' },
+  { name: 'AdminPendencias', label: 'Gestão de Problemas' },
+  { name: 'AdminAgendamentos', label: 'Gestão de Agendamentos' },
 ];
 </script>
 

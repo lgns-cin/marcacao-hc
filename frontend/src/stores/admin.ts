@@ -122,11 +122,11 @@ export const useAdminStore = defineStore('admin', () => {
     const PERIODO = 'no mês atual';
 
     return [
-      { id: 'media_card_funcionario', label: 'Média de Card por Funcionário', valor: mediaCardFuncionario, categoria: 'principal', periodo: PERIODO },
-      { id: 'percent_problematicas', label: 'Solicitações problemáticas', valor: percentProblematicas, sufixo: '%', categoria: 'principal', periodo: PERIODO },
-      { id: 'percent_concluidas', label: 'Solicitações concluídas', valor: percentConcluidas, sufixo: '%', categoria: 'principal', periodo: PERIODO },
-      { id: 'tempo_medio_marcacao', label: 'Tempo médio de marcação', valor: tempoMedioMarcacao, sufixo: 'dias', categoria: 'principal', periodo: PERIODO },
-      { id: 'tempo_medio_atendimento', label: 'Tempo médio de atendimento', valor: tempoMedio, sufixo: 'dias', categoria: 'principal', periodo: PERIODO },
+      { id: 'media_card_funcionario', label: 'Média de Exames por Funcionário ', valor: mediaCardFuncionario, categoria: 'principal', periodo: PERIODO },
+      { id: 'percent_problematicas', label: 'Solicitações problemáticas ', valor: percentProblematicas, sufixo: '%', categoria: 'principal', periodo: PERIODO },
+      { id: 'percent_concluidas', label: 'Solicitações concluídas ', valor: percentConcluidas, sufixo: '%', categoria: 'principal', periodo: PERIODO },
+      { id: 'tempo_medio_marcacao', label: 'Tempo médio de marcação ', valor: tempoMedioMarcacao, sufixo: 'dias', categoria: 'principal', periodo: PERIODO },
+      { id: 'tempo_medio_atendimento', label: 'Tempo médio de marcação ', valor: tempoMedio, sufixo: 'dias', categoria: 'principal', periodo: PERIODO },
     ];
   }
 
