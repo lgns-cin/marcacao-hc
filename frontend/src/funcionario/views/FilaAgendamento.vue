@@ -49,10 +49,8 @@ async function puxarAgendamento(id: number) {
 }
 
 async function carregarAgendamentos() {
-  try {
-    // Faz a busca inicial ou recarregamento completo dos agendamentos
-    await funcionarioStore.fetchAgendamentos();
-  } catch (error) {
+  const successful = await funcionarioStore.fetchAgendamentos();
+  if (!successful) {
     toast.error('Não foi possível carregar a fila de agendamento.');
   }
 }

@@ -207,7 +207,7 @@ export const useAdminStore = defineStore('admin', () => {
         id: item.id,
         nome: item.nome,
         prontuario: item.prontuario,
-        numeroSolicitacao: item.numeroSolicitacao,
+        solicitacao: item.solicitacao,
         exame: item.exame,
         diasNaFila: item.diasNaFila,
         status: item.status,

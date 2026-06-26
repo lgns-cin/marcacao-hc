@@ -7,7 +7,7 @@ const props = defineProps<{
   item: {
     nome: string;
     prontuario: string;
-    numeroSolicitacao: string;
+    solicitacao: string;
     status: string;
     diasNaFila: number;
     exame: string;
@@ -66,7 +66,7 @@ const statusClasses = computed(() => {
     </div>
 
     <p class="mt-1 text-[16px] text-govbr-text-secondary">Prontuário: {{ item.prontuario }}</p>
-    <p class="text-[16px] text-govbr-text-secondary">Solicitação: {{ item.numeroSolicitacao }}</p>
+    <p class="text-[16px] text-govbr-text-secondary">Solicitação: {{ item.solicitacao }}</p>
 
     <div class="mt-3">
       <span class="rounded border border-govbr-border px-3 py-1 text-sm font-semibold text-govbr-text">
