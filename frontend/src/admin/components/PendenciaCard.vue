@@ -125,7 +125,7 @@ function temDetalhesExtras(p: PendenciaItem): boolean {
     </div>
 
     <!-- Ações diretas no card -->
-    <div class="mt-4 flex flex-wrap items-center gap-2">
+    <div class="mt-4 flex flex-wrap items-center gap-4">
       <Button variant="primary" @click="emit('remover', pendencia.id)">
         <TrashIcon class="h-4 w-4" />
         Remover
@@ -137,9 +137,6 @@ function temDetalhesExtras(p: PendenciaItem): boolean {
       <Button variant="secondary" @click="abrirPainel('reatribuir')">
         <ArrowsRightLeftIcon class="h-4 w-4" />
         Reatribuir
-      </Button>
-      <Button variant="tertiary" class="ml-auto" @click="emit('verMais', pendencia)">
-        Ver mais
       </Button>
     </div>
   </div>

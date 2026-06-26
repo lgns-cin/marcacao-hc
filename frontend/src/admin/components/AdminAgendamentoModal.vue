@@ -141,7 +141,7 @@ function handleResolver() {
           Devolver à fila
         </Button>
         <Button variant="secondary" @click="handleResolver">
-          Remover da fila
+          Remover
         </Button>
       </template>
       <template v-else-if="permitirAcoes === false">

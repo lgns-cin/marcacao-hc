@@ -34,15 +34,8 @@ function aplicar() {
 </script>
 
 <template>
+  <!-- TO DO: retirar a personalização de indicadores -->
   <div class="relative">
-    <Button
-      variant="secondary"
-      @click="aberto = !aberto"
-    >
-      <AdjustmentsHorizontalIcon class="h-5 w-5" />
-      Personalizar Indicadores
-    </Button>
-
     <div v-if="aberto" class="fixed inset-0 z-10" @click="aberto = false" />
 
     <div
