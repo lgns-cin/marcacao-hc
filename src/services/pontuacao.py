@@ -3,25 +3,22 @@ src/services/pontuacao.py
 
 Módulo de priorização de solicitações de exame — CORTEx-HC.
 
-Responsabilidade: receber dicionários com dados de paciente e solicitação e retornar uma pontuação numérica (0–100+). Não acessa banco, não faz chamadas HTTP. É chamado pelo controller após os providers buscarem os dados.
+Responsabilidade: receber dicionários com dados da solicitação e retornar uma pontuação numérica (0-100+). Não acessa banco, não faz chamadas HTTP. É chamado pelo controller após os providers buscarem os dados.
 
-Contrato de entrada esperado pelo controller:
-
-    paciente = {
-        "cidade": str,           # ex: "Petrolina"
-    }
+Contrato de entrada esperado pelo controller (dicionário plano):
 
     solicitacao = {
-        "data_retorno": str,          # ex: "2026-07-10" (ISO 8601)
-        "unidade_solicitante": str,   # ex: "UTI ADULTO"
-        "data_solicitacao": str,     # ex: "2026-06-01" (ISO 8601)
+        "cidade": str,                 # ex: "Petrolina"
+        "data_retorno": str | date,    # ex: "2026-07-10" (ISO 8601) ou objeto date
+        "unidade_solicitante": str,    # ex: "UTI ADULTO"
+        "data_solicitacao": str | date # ex: "2026-06-01" (ISO 8601) ou objeto date
     }
 """
 
 from datetime import date, datetime
 
 # ---------------------------------------------------------------------------
-# Pesos — ajustar aqui após validação com a equipe do HC-UFPE
+# Pesos 
 # ---------------------------------------------------------------------------
 
 PESO_DATA_RETORNO      = 40
@@ -59,13 +56,16 @@ DEFAULT_URGENCIA = 0.4  # unidades não mapeadas
 
 # ---------------------------------------------------------------------------
 # Municípios de Pernambuco por faixa de distância ao HC-UFPE (Recife)
-# Fonte: estimativa inicial — validar com equipe do HC.
 # ---------------------------------------------------------------------------
 
 MUNICIPIOS_REGIAO_METROPOLITANA = {
-    "recife", "olinda", "caruaru", "jaboatão", "jaboatão dos guararapes",
+    "recife", "olinda", "virória de santo antão", "jaboatão", "jaboatão dos guararapes",
     "paulista", "camaragibe", "são lourenço da mata", "abreu e lima",
-    "igarassu", "cabo de santo agostinho", "ipojuca", "moreno",
+    "igarassu", "cabo de santo agostinho", "moreno", "ipojuca"
+}
+
+MUNICIPIOS_INTERIOR_PROXIMO = {
+    "ipojuca", "caruaru", "carpina", "feira nova", "gravatá", "limoeiro"
 }
 
 MUNICIPIOS_INTERIOR_DISTANTE = {
@@ -75,16 +75,26 @@ MUNICIPIOS_INTERIOR_DISTANTE = {
 
 # Scores de localidade: quanto mais difícil chegar, menor a prioridade, para ficar para depois
 SCORE_REGIAO_METROPOLITANA = 1.0
-SCORE_INTERIOR_PROXIMO     = 0.6   # municípios do interior não listados acima
+SCORE_INTERIOR_PROXIMO     = 0.6
 SCORE_INTERIOR_DISTANTE    = 0.2
+
+SCORE_DEFAULT = 0.4
 
 # ---------------------------------------------------------------------------
 # Transformacao da string para data
 # ---------------------------------------------------------------------------
 
-def _parse_date(valor: str) -> date:
-    """Converte string ISO 8601 para objeto date."""
-    return datetime.strptime(valor[:10], "%Y-%m-%d").date()
+def _parse_date(valor) -> date:
+    """Converte string ISO 8601 para objeto date, ou retorna o próprio date se já for um."""
+    # Se o Provider já entregou um objeto date (ou datetime), devolvemos direto
+    if isinstance(valor, date):
+        # Apenas uma segurança: se for datetime (com hora), extraímos só a data
+        if isinstance(valor, datetime):
+            return valor.date()
+        return valor
+
+    # Se for string (como nos seus testes originais ou no CSV), mantém a sua lógica original
+    return datetime.strptime(str(valor)[:10], "%Y-%m-%d").date()
 
 # ---------------------------------------------------------------------------
 # Funções auxiliares de score (cada uma retorna valor entre 0.0 e 1.0)
@@ -135,7 +145,9 @@ def score_localidade(cidade: str) -> float:
         return SCORE_REGIAO_METROPOLITANA
     if cidade_normalizada in MUNICIPIOS_INTERIOR_DISTANTE:
         return SCORE_INTERIOR_DISTANTE
-    return SCORE_INTERIOR_PROXIMO
+    if cidade_normalizada in MUNICIPIOS_INTERIOR_PROXIMO:
+        return SCORE_INTERIOR_PROXIMO
+    return SCORE_DEFAULT
 
 
 def bonus_tempo_espera(data_solicitacao: str, hoje: date | None = None) -> float:
@@ -162,9 +174,10 @@ def bonus_tempo_espera(data_solicitacao: str, hoje: date | None = None) -> float
 # Função principal de pontuação
 # ---------------------------------------------------------------------------
 
-def calcular_pontuacao(paciente: dict, solicitacao: dict) -> float:
+def calcular_pontuacao(solicitacao: dict, hoje: date | None = None) -> float:
     """
     Calcula a pontuação de prioridade de uma solicitação.
+    Recebe um dicionário plano (com todos os dados no mesmo nível).
 
     Quanto maior o valor retornado, maior a prioridade na fila.
     Pontuação base: 0-100. Bônus de tempo de espera pode ultrapassar 100.
@@ -177,12 +190,14 @@ def calcular_pontuacao(paciente: dict, solicitacao: dict) -> float:
     Returns:
         float com a pontuação final.
     """
-    hoje = date.today()
+
+    if hoje is None:
+        hoje = date.today()
 
     score_base = (
         score_data_retorno(solicitacao.get("data_retorno", ""), hoje)   * PESO_DATA_RETORNO +
         score_urgencia(solicitacao.get("unidade_solicitante", ""))      * PESO_URGENCIA +
-        score_localidade(paciente.get("cidade", ""))                    * PESO_LOCALIDADE
+        score_localidade(solicitacao.get("cidade", ""))                 * PESO_LOCALIDADE
     )
 
     bonus = bonus_tempo_espera(solicitacao.get("data_solicitacao", ""), hoje)
@@ -196,8 +211,8 @@ def calcular_pontuacao(paciente: dict, solicitacao: dict) -> float:
 
 def ordenar_fila(solicitacoes: list[dict]) -> list[dict]:
     """
-    Recebe lista de solicitações pendentes, calcula a pontuação de cada uma
-    e retorna a lista ordenada por prioridade (maior pontuação primeiro).
+    Recebe lista de solicitações pendentes (dicionários planos),
+    calcula a pontuação e retorna ordenada (maior primeiro).
 
     Cada item da lista deve ter as chaves "paciente" e, no mesmo nível,
     os campos de solicitação esperados por calcular_pontuacao().
@@ -216,7 +231,7 @@ def ordenar_fila(solicitacoes: list[dict]) -> list[dict]:
         }
     """
     for s in solicitacoes:
-        paciente = s.get("paciente", {})
-        s["pontuacao"] = calcular_pontuacao(paciente, s)
+        # Passamos o dicionário inteiro diretamente, sem tentar extrair "paciente"
+        s["pontuacao"] = calcular_pontuacao(s)
 
     return sorted(solicitacoes, key=lambda x: x["pontuacao"], reverse=True)

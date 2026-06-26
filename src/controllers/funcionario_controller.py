@@ -23,8 +23,8 @@ def _prioridade(unidade: str) -> str:
     return "baixa"
 
 
-# Agrupa os registros de ExameSolicitado pelo código da solicitação,
-# pois uma solicitação pode ter múltiplos exames e precisa aparecer como um card só
+# Agrupa os registros de ExameSolicitado pelo código da solicitação
+# Usado em minha-area onde todos os exames de uma solicitação formam um card
 def _agrupar_por_solicitacao(rows) -> dict:
     grupos: dict = {}
     for row in rows:
@@ -32,36 +32,40 @@ def _agrupar_por_solicitacao(rows) -> dict:
     return grupos
 
 
-# Monta o dicionário AgendamentoItem a partir de um grupo de exames da mesma solicitação
-def _build_item(rows: list) -> dict:
-    first = rows[0]
-    paciente = first.paciente
-    sol = first.solicitacao_rel
+# Monta um AgendamentoItem a partir de um único registro de ExameSolicitado
+# Cada exame é um card separado na fila
+def _build_item(row) -> dict:
+    paciente = row.paciente
+    sol = row.solicitacao_rel
 
-    # Dias na fila: diferença entre hoje e a data de entrada mais antiga do grupo
-    datas = [r.data_solicitacao for r in rows if r.data_solicitacao]
-    dias_na_fila = (date.today() - min(datas)).days if datas else 0
+    dias_na_fila = (date.today() - row.data_solicitacao).days if row.data_solicitacao else 0
 
-    # Lista de nomes dos exames do grupo
-    exames = [r.exame_rel.nome if r.exame_rel else r.exame for r in rows]
+    # Um exame por card
+    exame_nome = row.exame_rel.nome if row.exame_rel else row.exame
 
     localizacao = None
     if paciente and paciente.cidade:
         localizacao = f"{paciente.cidade}, {paciente.estado}" if paciente.estado else paciente.cidade
 
-    # Idade calculada a partir de data_nascimento; None se não disponível
-    idade = None
+    # Idade como string; "Não informado" se data_nascimento não estiver disponível
+    idade = "Não informado"
     if paciente and paciente.data_nascimento:
         hoje = date.today()
-        idade = hoje.year - paciente.data_nascimento.year - (
+        anos = hoje.year - paciente.data_nascimento.year - (
             (hoje.month, hoje.day) < (paciente.data_nascimento.month, paciente.data_nascimento.day)
         )
+        idade = f"{anos} anos"
+
+    # nome do paciente vem do AGHU; usa prontuário como fallback
+    prontuario = str(row.paciente_solicitante)
+    nome = f"Paciente #{prontuario}"
 
     return {
-        "id": first.solicitacao,
-        "prontuario": str(first.paciente_solicitante),
-        "nome": None,  # nome do paciente vem do AGHU, não disponível localmente
-        "exames": exames,
+        "id": row.solicitacao,
+        "solicitacao": row.solicitacao,
+        "prontuario": prontuario,
+        "nome": nome,
+        "exames": [exame_nome],
         "diasNaFila": dias_na_fila,
         "status": _prioridade(sol.unidade_solicitante if sol else ""),
         "unidadeSolicitante": sol.unidade_solicitante if sol else None,
@@ -71,27 +75,26 @@ def _build_item(rows: list) -> dict:
     }
 
 
-# Retorna a fila geral: todos os agendamentos com status PENDENTE, ordenados pelo algoritmo de pontuação
-async def listar_agendamentos(provider: FuncionarioLocalProvider) -> List[dict]:
+# Retorna a fila geral: um card por exame, ordenados pelo algoritmo de pontuação
+async def listar_agendamentos(provider: FuncionarioLocalProvider, limit: Optional[int] = None) -> List[dict]:
     rows = await provider.listar_pendentes()
-    grupos = _agrupar_por_solicitacao(rows)
     items = []
-    for grupo_rows in grupos.values():
-        item = _build_item(grupo_rows)
-        first = grupo_rows[0]
-        sol = first.solicitacao_rel
-        paciente = first.paciente
-        # Calcula pontuação usando o serviço da Mirela para ordenar a fila
+    for row in rows:
+        item = _build_item(row)
+        sol = row.solicitacao_rel
+        paciente = row.paciente
         item["_pontuacao"] = calcular_pontuacao(
             {"cidade": paciente.cidade if paciente else ""},
             {
                 "data_retorno": sol.data_retorno.isoformat() if sol and sol.data_retorno else "",
                 "unidade_solicitante": sol.unidade_solicitante if sol else "",
-                "data_solicitacao": first.data_solicitacao.isoformat() if first.data_solicitacao else "",
+                "data_solicitacao": row.data_solicitacao.isoformat() if row.data_solicitacao else "",
             }
         )
         items.append(item)
     items.sort(key=lambda x: x.pop("_pontuacao"), reverse=True)
+    if limit is not None:
+        items = items[:limit]
     return items
 
 
