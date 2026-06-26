@@ -274,9 +274,29 @@ class AdminLocalProvider:
 
 def _agregar_ranking(rows, chave: str, limit: int) -> List[dict]:
     """Pivota linhas (chave, status, quantidade) em um dict por chave com breakdown de status."""
+    
+    # tipos de exame
+    catalogo = {
+        'TCABI': 'Tomografia', 'TCABC': 'Tomografia', 'TCAVT': 'Tomografia', 'TCTX1': 'Tomografia',
+        'RXMM1': 'Mamografia',
+        'RXAB6': 'Raio-X', 'RXPAP': 'Raio-X', 'RXTX1': 'Raio-X', 'RXTX4': 'Raio-X',
+        'EDA': 'Endoscopia',
+        'CLN': 'Colonoscopia',
+        'ECO': 'Ecocardiograma',
+        'USABT': 'Ultrassonografia', 'USTDO': 'Ultrassonografia', 'USIDA': 'Ultrassonografia',
+        'USIDV': 'Ultrassonografia', 'USIEA': 'Ultrassonografia', 'USIEV': 'Ultrassonografia', 'USGOD': 'Ultrassonografia',
+        'ERGO': 'Ergometria',
+        'ESPB': 'Espirometria',    
+    }
+    
     agregado: dict = {}
     for row in rows:
         nome = getattr(row, chave)
+        
+        # Mapeia o código para a categoria se for ranking de exames
+        if chave == "exame":
+            nome = catalogo.get(nome, nome)
+            
         if nome not in agregado:
             agregado[nome] = {"pendentes": 0, "em_agendamento": 0, "concluidos": 0, "total": 0}
         qtd = row.quantidade
