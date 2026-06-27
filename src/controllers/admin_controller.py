@@ -1,4 +1,4 @@
-from services.pontuacao import calcular_pontuacao
+from ..services.pontuacao import calcular_pontuacao
 from sqlalchemy.util.typing import Literal
 from datetime import date
 from typing import List, Optional

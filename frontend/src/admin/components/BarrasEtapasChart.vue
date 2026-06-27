@@ -21,9 +21,9 @@ const props = defineProps<{
 const chartData = computed(() => ({
   labels: props.grafico.dados.map((d) => d.categoria),
   datasets: [
-    { label: 'Agendados', backgroundColor: '#168821', data: props.grafico.dados.map((d) => d.agendados) },
-    { label: 'Em Andamento', backgroundColor: '#FFCD07', data: props.grafico.dados.map((d) => d.emAndamento) },
-    { label: 'A Agendar', backgroundColor: '#E52207', data: props.grafico.dados.map((d) => d.aAgendar) },
+    { label: 'Concluídos', backgroundColor: '#168821', data: props.grafico.dados.map((d) => d.concluidos) },
+    { label: 'Em Andamento', backgroundColor: '#FFCD07', data: props.grafico.dados.map((d) => d.emAgendamento) },
+    { label: 'A agendar', backgroundColor: '#E52207', data: props.grafico.dados.map((d) => d.pendentes) },
   ],
 }));
 
