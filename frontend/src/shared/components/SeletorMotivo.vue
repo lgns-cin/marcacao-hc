@@ -39,11 +39,11 @@ onBeforeUnmount(() => document.removeEventListener('click', fecharSeClicarFora))
 </script>
 
 <template>
-  <div ref="raiz">
-    <Button variant="tertiary" class="border border-govbr-border" @click="aberto = !aberto">
-      <span class="flex items-center gap-2 truncate">
+  <div ref="raiz" class="min-w-0">
+    <Button variant="tertiary" class="w-full justify-between border border-govbr-border overflow-hidden" @click="aberto = !aberto">
+      <span class="flex min-w-0 items-center gap-2">
         <MagnifyingGlassIcon class="h-4 w-4 shrink-0 text-govbr-text-secondary" />
-        <span :class="modelValue ? 'text-govbr-text' : 'italic text-govbr-text-secondary'">
+        <span class="truncate" :class="modelValue ? 'text-govbr-text' : 'italic text-govbr-text-secondary'">
           {{ modelValue || props.placeholder || 'Selecione a opção' }}
         </span>
       </span>

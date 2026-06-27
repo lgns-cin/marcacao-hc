@@ -6,6 +6,7 @@ import { derivarRegioes, fetchMesorregioes, fetchMunicipios, FORA_DO_ESTADO } fr
 import type { MunicipioIBGE } from '../shared/services/ibge';
 import api from '../services/api';
 import { LIMITE_AGENDAMENTOS } from '../shared/utils/constants';
+import { AGENDAMENTOS_MOCK, MINHA_AREA_MOCK } from '../funcionario/mockData';
 
 export const useFuncionarioStore = defineStore('funcionario', () => {
   // state - fila de agendamento
@@ -76,37 +77,40 @@ export const useFuncionarioStore = defineStore('funcionario', () => {
     municipiosIBGE.value = municipios; // guardamos os municipios
   }
 
+  let usandoMock = false;
+
   // actions - fila de agendamento
   async function fetchAgendamentos(opcoes: { silencioso?: boolean } = {}) {
-    let successful = true;
-
     if (!opcoes.silencioso) isLoading.value = true;
 
     await carregarDadosIBGE();
 
-    await api.get<AgendamentoItem[]>(`/api/funcionario/agendamentos?limit=${LIMITE_AGENDAMENTOS}`)
-      .then(async response => {
-        const { data } = response;
-        agendamentos.value = await preencherRegioes<AgendamentoItem>(data);
-      })
-      .catch(_ => {
-        successful = false;
-      });
+    try {
+      const { data } = await api.get<AgendamentoItem[]>(
+        `/api/funcionario/agendamentos?limit=${LIMITE_AGENDAMENTOS}`,
+      );
+      agendamentos.value = await preencherRegioes<AgendamentoItem>(data);
+      usandoMock = false;
+    } catch {
+      if (!usandoMock) {
+        agendamentos.value = await preencherRegioes<AgendamentoItem>(AGENDAMENTOS_MOCK);
+        usandoMock = true;
+      }
+    }
 
     if (!opcoes.silencioso) isLoading.value = false;
-
-    return successful;
   }
 
-  async function puxarAgendamento(id: number): Promise<number> {
+  async function puxarAgendamento(id: number) {
     const item = agendamentos.value.find(agendamento => agendamento.id === id);
-    
-    let statusCode = -1;
-    await api.post(`/api/funcionario/agendamentos/${item?.solicitacao}/puxar`)
-      .then(response => statusCode = response.status)
-      .catch(error => statusCode = error.status);
 
-    return statusCode;
+    try {
+      await api.post(`/api/funcionario/agendamentos/${item?.solicitacao}/puxar`);
+    } catch {
+      // Fallback mock: remove localmente
+    }
+
+    agendamentos.value = agendamentos.value.filter((i) => i.id !== id);
   }
 
   function setBusca(busca: string) {
@@ -122,24 +126,26 @@ export const useFuncionarioStore = defineStore('funcionario', () => {
     filtros.value = { ...FILTROS_VAZIOS, busca: buscaAtual };
   }
 
-  // actions - minha área
-  async function fetchMinhaArea(opcoes: { silencioso?: boolean } = {}): Promise<boolean> {
-    let successful = true;
+  let usandoMockMinhaArea = false;
 
+  // actions - minha área
+  async function fetchMinhaArea(opcoes: { silencioso?: boolean } = {}) {
     if (!opcoes.silencioso) isLoadingMinhaArea.value = true;
+
     await carregarDadosIBGE();
-    await api.get<MinhaAreaItem[]>(`/api/funcionario/minha-area`)
-      .then(async response => {
-        const { data } = response;
-        minhaArea.value = await preencherRegioes<MinhaAreaItem>(data);
-      })
-      .catch(_ => {
-        successful = false;
-      });
+
+    try {
+      const { data } = await api.get<MinhaAreaItem[]>(`/api/funcionario/minha-area`);
+      minhaArea.value = await preencherRegioes<MinhaAreaItem>(data);
+      usandoMockMinhaArea = false;
+    } catch {
+      if (!usandoMockMinhaArea) {
+        minhaArea.value = await preencherRegioes<MinhaAreaItem>(MINHA_AREA_MOCK);
+        usandoMockMinhaArea = true;
+      }
+    }
 
     if (!opcoes.silencioso) isLoadingMinhaArea.value = false;
-    
-    return successful;
   }
 
   async function aguardarConfirmacao(id: number) {

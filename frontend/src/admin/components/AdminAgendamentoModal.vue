@@ -2,8 +2,6 @@
 import { ref, watch } from 'vue';
 import {
   ClockIcon,
-  CheckIcon,
-  XMarkIcon,
   ExclamationCircleIcon,
 } from '@heroicons/vue/24/outline';
 import { UserGroupIcon } from '@heroicons/vue/24/solid';
@@ -103,32 +101,28 @@ function handleResolver() {
           </ul>
         </div>
 
-        <div v-if="painel === 'devolver'" class="space-y-2 rounded border border-govbr-border bg-govbr-bg p-4 mt-4">
-          <label class="mb-1 block text-sm font-semibold text-govbr-text">Motivo*</label>
+        <div v-if="painel === 'devolver'" class="space-y-3 rounded border border-govbr-border bg-govbr-bg p-4 mt-4">
+          <label class="block text-sm font-semibold text-govbr-text">Motivo*</label>
+          <SeletorMotivo v-model="motivoDevolucao" :opcoes="MOTIVOS_DEVOLUCAO" />
           <div class="flex items-center gap-2">
-            <div class="flex-1">
-              <SeletorMotivo v-model="motivoDevolucao" :opcoes="MOTIVOS_DEVOLUCAO" />
-            </div>
-            <Button variant="secondary" class="rounded-full! p-2!" @click="fecharPainel">
-              <XMarkIcon class="h-5 w-5" />
+            <Button variant="secondary" @click="fecharPainel">
+              Cancelar
             </Button>
-            <Button variant="primary" class="rounded-full! p-2!" :disabled="!motivoDevolucao" @click="confirmarDevolucao">
-              <CheckIcon class="h-5 w-5" />
+            <Button variant="primary" :disabled="!motivoDevolucao" @click="confirmarDevolucao">
+              Confirmar
             </Button>
           </div>
         </div>
 
-        <div v-else-if="painel === 'reatribuir'" class="space-y-2 rounded border border-govbr-border bg-govbr-bg p-4 mt-4">
-          <label class="mb-1 block text-sm font-semibold text-govbr-text">Selecionar Funcionário</label>
+        <div v-else-if="painel === 'reatribuir'" class="space-y-3 rounded border border-govbr-border bg-govbr-bg p-4 mt-4">
+          <label class="block text-sm font-semibold text-govbr-text">Selecionar Funcionário</label>
+          <SeletorFuncionario v-model="funcionarioSelecionado" :opcoes="funcionarios" />
           <div class="flex items-center gap-2">
-            <div class="flex-1">
-              <SeletorFuncionario v-model="funcionarioSelecionado" :opcoes="funcionarios" />
-            </div>
-            <Button variant="secondary" class="rounded-full! p-2!" @click="fecharPainel">
-              <XMarkIcon class="h-5 w-5" />
+            <Button variant="secondary" @click="fecharPainel">
+              Cancelar
             </Button>
-            <Button variant="primary" class="rounded-full! p-2!" :disabled="!funcionarioSelecionado" @click="confirmarReatribuicao">
-              <CheckIcon class="h-5 w-5" />
+            <Button variant="primary" :disabled="!funcionarioSelecionado" @click="confirmarReatribuicao">
+              Confirmar
             </Button>
           </div>
         </div>
@@ -136,16 +130,16 @@ function handleResolver() {
     </div>
 
     <template #footer>
-      <template v-if="item?.problema_motivo">
+      <template v-if="permitirAcoes === false">
+        <Button variant="primary" @click="fechar">Fechar</Button>
+      </template>
+      <template v-else-if="item?.problema_motivo">
         <Button variant="tertiary" @click="abrirPainel('devolver')">
           Devolver à fila
         </Button>
         <Button variant="secondary" @click="handleResolver">
           Remover
         </Button>
-      </template>
-      <template v-else-if="permitirAcoes === false">
-        <Button variant="primary" @click="fechar">Fechar</Button>
       </template>
       <template v-else>
         <Button variant="secondary" @click="abrirPainel('devolver')">

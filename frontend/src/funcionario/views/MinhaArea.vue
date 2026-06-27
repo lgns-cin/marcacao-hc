@@ -86,8 +86,9 @@ async function finalizar(id: number) {
 }
 
 async function carregarMinhaArea() {
-  const successful = await funcionarioStore.fetchMinhaArea();
-  if (!successful) {
+  try {
+    await funcionarioStore.fetchMinhaArea();
+  } catch {
     toast.error('Não foi possível carregar a sua área.');
   }
 }

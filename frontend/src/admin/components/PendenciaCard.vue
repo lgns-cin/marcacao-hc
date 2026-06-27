@@ -2,8 +2,6 @@
 import { ref } from 'vue';
 import {
   ExclamationTriangleIcon,
-  CheckIcon,
-  XMarkIcon,
   ArrowUturnLeftIcon,
   ArrowsRightLeftIcon,
 } from '@heroicons/vue/24/outline';
@@ -101,26 +99,22 @@ function temDetalhesExtras(p: PendenciaItem): boolean {
     </p>
 
     <!-- Painel inline de devolução -->
-    <div v-if="painel === 'devolver'" class="mt-3 space-y-2 rounded border border-govbr-border bg-govbr-bg p-3">
+    <div v-if="painel === 'devolver'" class="mt-3 space-y-3 rounded border border-govbr-border bg-govbr-bg p-3">
       <label class="block text-sm font-semibold text-govbr-text">Motivo da devolução*</label>
+      <SeletorMotivo v-model="motivoDevolucao" :opcoes="MOTIVOS_DEVOLUCAO" />
       <div class="flex items-center gap-2">
-        <div class="flex-1">
-          <SeletorMotivo v-model="motivoDevolucao" :opcoes="MOTIVOS_DEVOLUCAO" />
-        </div>
-        <Button variant="secondary" @click="fecharPainel"><XMarkIcon class="h-5 w-5" /></Button>
-        <Button variant="primary" :disabled="!motivoDevolucao" @click="confirmarDevolucao"><CheckIcon class="h-5 w-5" /></Button>
+        <Button variant="secondary" @click="fecharPainel">Cancelar</Button>
+        <Button variant="primary" :disabled="!motivoDevolucao" @click="confirmarDevolucao">Confirmar</Button>
       </div>
     </div>
 
     <!-- Painel inline de reatribuição -->
-    <div v-else-if="painel === 'reatribuir'" class="mt-3 space-y-2 rounded border border-govbr-border bg-govbr-bg p-3">
+    <div v-else-if="painel === 'reatribuir'" class="mt-3 space-y-3 rounded border border-govbr-border bg-govbr-bg p-3">
       <label class="block text-sm font-semibold text-govbr-text">Reatribuir para</label>
+      <SeletorFuncionario v-model="funcionarioSelecionado" :opcoes="funcionarios" />
       <div class="flex items-center gap-2">
-        <div class="flex-1">
-          <SeletorFuncionario v-model="funcionarioSelecionado" :opcoes="funcionarios" />
-        </div>
-        <Button variant="secondary" @click="fecharPainel"><XMarkIcon class="h-5 w-5" /></Button>
-        <Button variant="primary" :disabled="!funcionarioSelecionado" @click="confirmarReatribuicao"><CheckIcon class="h-5 w-5" /></Button>
+        <Button variant="secondary" @click="fecharPainel">Cancelar</Button>
+        <Button variant="primary" :disabled="!funcionarioSelecionado" @click="confirmarReatribuicao">Confirmar</Button>
       </div>
     </div>
 

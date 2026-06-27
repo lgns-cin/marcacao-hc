@@ -43,15 +43,16 @@ onBeforeUnmount(() => document.removeEventListener('click', fecharSeClicarFora))
 </script>
 
 <template>
-  <div ref="raiz">
+  <div ref="raiz" class="min-w-0">
     <Button
       type="button"
       variant="secondary"
+      class="w-full justify-between overflow-hidden"
       @click="aberto = !aberto"
     >
-      <span class="flex items-center gap-2 truncate">
+      <span class="flex min-w-0 items-center gap-2">
         <MagnifyingGlassIcon class="h-4 w-4 shrink-0 text-govbr-text-secondary" />
-        <span :class="nomeSelecionado ? 'text-govbr-text' : 'italic text-govbr-text-secondary'">
+        <span class="truncate" :class="nomeSelecionado ? 'text-govbr-text' : 'italic text-govbr-text-secondary'">
           {{ nomeSelecionado || props.placeholder || 'Selecione um funcionário' }}
         </span>
       </span>
