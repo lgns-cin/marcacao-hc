@@ -1,27 +1,32 @@
 <script setup lang="ts">
-import { ArrowUpIcon, ArrowDownIcon } from '@heroicons/vue/24/outline';
+import { computed } from 'vue';
 import type { Kpi } from '../types';
 
-defineProps<{ kpi: Kpi }>();
+const props = defineProps<{ kpi: Kpi }>();
+
+// formatação baseada no tipo de dado que vem do backend
+const valorFormatado = computed(() => {
+  if (props.kpi.valor === undefined || props.kpi.valor === null) return '0';
+
+  switch (props.kpi.formato) {
+    case 'porcentagem':
+      return `${props.kpi.valor}%`;
+    case 'dias':
+      // Se for 1, exibe no singular "1 dia", se for mais, "X dias"
+      return Number(props.kpi.valor) === 1 ? '1 dia' : `${props.kpi.valor} dias`;
+    case 'numero':
+    default:
+      return props.kpi.valor; // Retorna o número puro (int ou float)
+  }
+});
 </script>
 
 <template>
   <div class="rounded-lg border border-govbr-border bg-white p-5">
     <span class="text-3xl font-extrabold text-govbr-text">
-      {{ kpi.valor }}<span v-if="kpi.sufixo" class="text-lg font-bold"> {{ kpi.sufixo }}</span>
+      {{ valorFormatado }}
     </span>
-    <p class="mt-1 text-sm text-govbr-text-secondary">{{ kpi.label }}</p>
-    <p v-if="kpi.periodo" class="text-[14px] text-govbr-text-secondary/70">{{ kpi.periodo }}</p>
-    <span
-      v-if="kpi.tendencia"
-      :class="[
-        'mt-2 inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-bold',
-        kpi.tendencia >= 0 ? 'bg-green-100 text-green-800' : 'bg-govbr-error-bg text-govbr-error'
-      ]"
-    >
-      <ArrowUpIcon v-if="kpi.tendencia >= 0" class="h-3 w-3" />
-      <ArrowDownIcon v-else class="h-3 w-3" />
-      {{ Math.abs(kpi.tendencia) }}%
-    </span>
+    <p class="mt-1 text-[16px] font-semibold">{{ kpi.titulo }}</p>
+    <p class="text-[14px] text-govbr-text-secondary/70">no mês atual</p>
   </div>
 </template>

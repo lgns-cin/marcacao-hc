@@ -1,7 +1,7 @@
 import { onMounted, onUnmounted, type Ref } from 'vue';
 
 export function useAutoRefresh(
-  callback: () => Promise<void>,
+  callback: () => Promise<unknown>,
   intervalMs: number,
   pauseWhen?: Ref<boolean>,
 ) {

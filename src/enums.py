@@ -11,3 +11,4 @@ class StatusAtribuicao(str, Enum):
 class ResultadoAtribuicao(str, Enum):
     CONFIRMADO = "CONFIRMADO"
     PROBLEMA_REPORTADO = "PROBLEMA_REPORTADO"
+    RESOLVIDO_ADMIN = "RESOLVIDO_ADMIN"

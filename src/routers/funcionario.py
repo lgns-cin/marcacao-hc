@@ -39,12 +39,14 @@ class FinalizarRequest(BaseModel):
 
 
 # Retorna todos os agendamentos com status PENDENTE, ou seja, ainda não assumidos por nenhum funcionário
+# Parâmetro opcional ?limit=N para limitar a quantidade retornada
 @router.get("/agendamentos")
 async def listar_agendamentos(
+    limit: Optional[int] = None,
     provider: FuncionarioLocalProvider = Depends(get_funcionario_provider),
     current_user: dict = Depends(auth_handler.decode_token),
 ):
-    return await funcionario_controller.listar_agendamentos(provider)
+    return await funcionario_controller.listar_agendamentos(provider, limit)
 
 
 # Atribui um agendamento da fila ao funcionário logado, mudando o status para EM_ANDAMENTO

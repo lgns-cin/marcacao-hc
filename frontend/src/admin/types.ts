@@ -1,22 +1,18 @@
 import type { AgendamentoItem, EstadoMinhaArea } from '../funcionario/types';
 
-export type CategoriaIndicador = 'principal' | 'extra';
-
 export type Kpi = {
   id: string;
-  label: string;
-  valor: number;
-  sufixo?: string;
-  tendencia?: number;
-  categoria: CategoriaIndicador;
-  periodo?: string;
+  titulo: string;
+  valor: string;
+  formato: string;
 };
 
 export type SerieBarrasEtapas = {
   categoria: string;
-  agendados: number;
-  emAndamento: number;
-  aAgendar: number;
+  pendentes: number;
+  emAgendamento: number;
+  concluidos: number;
+  total: number;
 };
 
 export type SerieMotivoDevolucao = {
@@ -27,9 +23,8 @@ export type SerieMotivoDevolucao = {
 export type GraficoBarrasEtapas = {
   id: string;
   titulo: string;
-  subtitulo: string;
+  subtitulo?: string;
   tipo: 'barras_horizontais';
-  categoria: CategoriaIndicador;
   dados: SerieBarrasEtapas[];
 };
 
@@ -38,7 +33,6 @@ export type GraficoMotivosDevolucao = {
   titulo: string;
   subtitulo: string;
   tipo: 'barras_verticais';
-  categoria: CategoriaIndicador;
   dados: SerieMotivoDevolucao[];
 };
 
@@ -75,5 +69,3 @@ export type Funcionario = {
   username: string;
   nome: string;
 };
-
-export const PREFERENCIAS_VISAO_GERAL_KEY = 'admin-visao-geral-preferencias';

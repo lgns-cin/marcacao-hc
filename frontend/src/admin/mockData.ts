@@ -4,7 +4,6 @@ import type {
   AgendamentoRemovido,
   Funcionario,
   PendenciaItem,
-  VisaoGeral,
 } from './types';
 
 export const MOCK_FUNCIONARIOS: Funcionario[] = [
@@ -14,67 +13,12 @@ export const MOCK_FUNCIONARIOS: Funcionario[] = [
   { username: 'ricardo.alves', nome: 'Ricardo Alves' },
 ];
 
-export const MOCK_VISAO_GERAL: VisaoGeral = {
-  kpis: [
-    { id: 'media_card_funcionario', label: 'Média de Exames por Funcionário', valor: 3.5, categoria: 'principal' },
-    { id: 'media_exames_agendados', label: 'Média de Exames Agendados', valor: 4.0, tendencia: 5, categoria: 'principal' },
-    { id: 'quantidade_funcionarios', label: 'Quantidade de Funcionários', valor: 4, categoria: 'principal' },
-    { id: 'total_cards', label: 'Total de Exames', valor: 14, categoria: 'principal' },
-    { id: 'tempo_medio_atendimento', label: 'Tempo médio de atendimento', valor: 3.8, sufixo: 'dias', categoria: 'extra' },
-    { id: 'solicitacoes_atendidas', label: 'Solicitações atendidas', valor: 367, categoria: 'extra' },
-    { id: 'pacientes_devolvidos_fila', label: 'Pacientes devolvidos à fila', valor: 55, tendencia: 15, categoria: 'extra' },
-  ],
-  graficos: [
-    {
-      id: 'por_tipo_exame',
-      titulo: 'Por tipo de exame',
-      subtitulo: 'Acompanhe a distribuição dos exames por tipo',
-      tipo: 'barras_horizontais',
-      categoria: 'principal',
-      dados: [
-        { categoria: 'Colonoscopia', agendados: 8, emAndamento: 2, aAgendar: 0 },
-        { categoria: 'Endoscopia', agendados: 4, emAndamento: 6, aAgendar: 1 },
-        { categoria: 'Ultrassonografia', agendados: 3, emAndamento: 0, aAgendar: 2 },
-        { categoria: 'Mamografia', agendados: 1, emAndamento: 1, aAgendar: 0 },
-        { categoria: 'Espirometria', agendados: 0, emAndamento: 1, aAgendar: 0 },
-      ],
-    },
-    {
-      id: 'por_localidade',
-      titulo: 'Por localidade',
-      subtitulo: 'Entenda como os exames se distribuem por localidade',
-      tipo: 'barras_horizontais',
-      categoria: 'principal',
-      dados: [
-        { categoria: 'Olinda', agendados: 0, emAndamento: 8, aAgendar: 2 },
-        { categoria: 'Recife', agendados: 4, emAndamento: 0, aAgendar: 5 },
-        { categoria: 'Jaboatão dos Guararapes', agendados: 0, emAndamento: 2, aAgendar: 1 },
-        { categoria: 'Caruaru', agendados: 1, emAndamento: 1, aAgendar: 0 },
-        { categoria: 'Petrolina', agendados: 1, emAndamento: 0, aAgendar: 0 },
-      ],
-    },
-    {
-      id: 'problemas_reportados',
-      titulo: 'Problemas reportados',
-      subtitulo: 'Quantitativo de problemas reportados',
-      tipo: 'barras_verticais',
-      categoria: 'principal',
-      dados: [
-        { motivo: 'Paciente não respondeu', quantidade: 99 },
-        { motivo: 'Dados inconsistentes', quantidade: 74 },
-        { motivo: 'Duplicidade', quantidade: 95 },
-        //{ motivo: 'Erro cadastral', quantidade: 24 },
-      ],
-    },
-  ],
-};
-
 export const MOCK_PENDENCIAS: PendenciaItem[] = [
   {
     id: 202,
     nome: 'Marlene Tavares de Lima',
     prontuario: '000777888',
-    numeroSolicitacao: '0202',
+    solicitacao: '0202',
     exame: 'USABT',
     diasNaFila: 9,
     status: 'MÉDIA',
@@ -95,7 +39,7 @@ export const MOCK_GERENCIAMENTO_ANDAMENTO: AgendamentoGerenciamento[] = [
     id: 301,
     nome: 'Gisela Maria Santos',
     prontuario: '000333222',
-    numeroSolicitacao: '0301',
+    solicitacao: '0301',
     exame: 'ECO',
     diasNaFila: 22,
     status: 'MÉDIA',
@@ -115,7 +59,7 @@ export const MOCK_GERENCIAMENTO_CONCLUIDO: AgendamentoGerenciamento[] = [
     id: 302,
     nome: 'Severino Ramos da Silva',
     prontuario: '000111999',
-    numeroSolicitacao: '0302',
+    solicitacao: '0302',
     exame: 'EDA',
     diasNaFila: 45,
     status: 'ALTA',
@@ -132,7 +76,7 @@ export const MOCK_GERENCIAMENTO_CONCLUIDO: AgendamentoGerenciamento[] = [
     id: 303,
     nome: 'Lúcia Helena Ferreira',
     prontuario: '000222888',
-    numeroSolicitacao: '0303',
+    solicitacao: '0303',
     exame: 'RXMM1',
     diasNaFila: 28,
     status: 'MÉDIA',
@@ -154,7 +98,7 @@ export const MOCK_REMOVIDOS: AgendamentoRemovido[] = [
     id: 401,
     nome: 'Tereza Cristina Barros',
     prontuario: '000888777',
-    numeroSolicitacao: '0401',
+    solicitacao: '0401',
     exame: 'RXMM1',
     diasNaFila: 30,
     status: 'MÉDIA',
@@ -172,7 +116,7 @@ export const MOCK_REMOVIDOS: AgendamentoRemovido[] = [
     id: 402,
     nome: 'Francisco Almeida Neto',
     prontuario: '000666555',
-    numeroSolicitacao: '0402',
+    solicitacao: '0402',
     exame: 'USABT',
     diasNaFila: 18,
     status: 'BAIXA',
@@ -193,7 +137,7 @@ export const MOCK_FILA_ADMIN: AgendamentoItem[] = [
     id: 501,
     nome: 'Maria das Graças Oliveira',
     prontuario: '000123456',
-    numeroSolicitacao: '0501',
+    solicitacao: '0501',
     exame: 'TCABC',
     diasNaFila: 42,
     status: 'ALTA',

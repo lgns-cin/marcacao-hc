@@ -7,7 +7,7 @@ import { isFinalizado, getEstadoLabel, getStatusClasses } from '../utils/statusF
 const props = defineProps<{
   item: {
     prontuario: string;
-    numeroSolicitacao?: string;
+    solicitacao?: string;
     diasNaFila: number;
     status: string;
     exame: string;
@@ -62,9 +62,9 @@ const statusClasses = computed(() => getStatusClasses(props.item.status));
         <dt class="inline font-semibold text-govbr-text">Telefone: </dt>
         <dd class="inline text-govbr-text-secondary"> {{ item.telefone }}</dd>
       </div>
-      <div v-if="item.numeroSolicitacao">
+      <div v-if="item.solicitacao">
         <dt class="inline font-semibold text-govbr-text">Solicitação: </dt>
-        <dd class="inline text-govbr-text-secondary"> {{ item.numeroSolicitacao }}</dd>
+        <dd class="inline text-govbr-text-secondary"> {{ item.solicitacao }}</dd>
       </div>
       <div>
         <dt class="inline font-semibold text-govbr-text">Prontuário: </dt>
@@ -84,7 +84,7 @@ const statusClasses = computed(() => getStatusClasses(props.item.status));
       </div>
       <div>
         <dt class="inline font-semibold text-govbr-text">Idade: </dt>
-        <dd class="inline text-govbr-text-secondary"> {{ item.idade }} anos</dd>
+        <dd class="inline text-govbr-text-secondary"> {{ item.idade }}</dd>
       </div>
     </dl>
 

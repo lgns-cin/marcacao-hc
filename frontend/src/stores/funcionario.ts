@@ -4,7 +4,8 @@ import type { AgendamentoItem, FiltrosFila, MinhaAreaItem } from '../funcionario
 import { filtrarAgendamentos, FILTROS_VAZIOS } from '../shared/utils/filtrarAgendamentos';
 import { derivarRegioes, fetchMesorregioes, fetchMunicipios, FORA_DO_ESTADO } from '../shared/services/ibge';
 import type { MunicipioIBGE } from '../shared/services/ibge';
-import { AGENDAMENTOS_MOCK, MINHA_AREA_MOCK } from '../funcionario/mockData';
+import api from '../services/api';
+import { LIMITE_AGENDAMENTOS } from '../shared/utils/constants';
 
 export const useFuncionarioStore = defineStore('funcionario', () => {
   // state - fila de agendamento
@@ -77,15 +78,35 @@ export const useFuncionarioStore = defineStore('funcionario', () => {
 
   // actions - fila de agendamento
   async function fetchAgendamentos(opcoes: { silencioso?: boolean } = {}) {
+    let successful = true;
+
     if (!opcoes.silencioso) isLoading.value = true;
+
     await carregarDadosIBGE();
-    agendamentos.value = await preencherRegioes<AgendamentoItem>(AGENDAMENTOS_MOCK);
+
+    await api.get<AgendamentoItem[]>(`/api/funcionario/agendamentos?limit=${LIMITE_AGENDAMENTOS}`)
+      .then(async response => {
+        const { data } = response;
+        agendamentos.value = await preencherRegioes<AgendamentoItem>(data);
+      })
+      .catch(_ => {
+        successful = false;
+      });
+
     if (!opcoes.silencioso) isLoading.value = false;
+
+    return successful;
   }
 
-  async function puxarAgendamento(id: number) {
-    // Remove localmente (mock)
-    agendamentos.value = agendamentos.value.filter((i) => i.id !== id);
+  async function puxarAgendamento(id: number): Promise<number> {
+    const item = agendamentos.value.find(agendamento => agendamento.id === id);
+    
+    let statusCode = -1;
+    await api.post(`/api/funcionario/agendamentos/${item?.solicitacao}/puxar`)
+      .then(response => statusCode = response.status)
+      .catch(error => statusCode = error.status);
+
+    return statusCode;
   }
 
   function setBusca(busca: string) {
@@ -102,11 +123,23 @@ export const useFuncionarioStore = defineStore('funcionario', () => {
   }
 
   // actions - minha área
-  async function fetchMinhaArea(opcoes: { silencioso?: boolean } = {}) {
+  async function fetchMinhaArea(opcoes: { silencioso?: boolean } = {}): Promise<boolean> {
+    let successful = true;
+
     if (!opcoes.silencioso) isLoadingMinhaArea.value = true;
     await carregarDadosIBGE();
-    minhaArea.value = await preencherRegioes<MinhaAreaItem>(MINHA_AREA_MOCK);
+    await api.get<MinhaAreaItem[]>(`/api/funcionario/minha-area`)
+      .then(async response => {
+        const { data } = response;
+        minhaArea.value = await preencherRegioes<MinhaAreaItem>(data);
+      })
+      .catch(_ => {
+        successful = false;
+      });
+
     if (!opcoes.silencioso) isLoadingMinhaArea.value = false;
+    
+    return successful;
   }
 
   async function aguardarConfirmacao(id: number) {

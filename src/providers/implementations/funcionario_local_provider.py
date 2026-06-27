@@ -109,6 +109,8 @@ class FuncionarioLocalProvider:
         for row in rows:
             row.status_atribuicao = novo_status
             row.data_atribuicao = date.today()
+            if novo_status == StatusAtribuicao.FINALIZADO:
+                row.data_conclusao = date.today()
             if resultado is not None:
                 row.resultado = resultado
             if motivo is not None:

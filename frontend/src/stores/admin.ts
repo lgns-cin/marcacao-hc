@@ -2,11 +2,9 @@ import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
 import type { AgendamentoItem, FiltrosFila } from '../funcionario/types';
 import { filtrarAgendamentos, FILTROS_VAZIOS } from '../shared/utils/filtrarAgendamentos';
-import type { AgendamentoGerenciamento, AgendamentoRemovido, Funcionario, Kpi, PendenciaItem, VisaoGeral } from '../admin/types';
-import { PREFERENCIAS_VISAO_GERAL_KEY } from '../admin/types';
+import type { AgendamentoGerenciamento, AgendamentoRemovido, Funcionario, Kpi, PendenciaItem, VisaoGeral, SerieBarrasEtapas } from '../admin/types';
 import {
   MOCK_FUNCIONARIOS,
-  MOCK_VISAO_GERAL,
   MOCK_PENDENCIAS,
   MOCK_GERENCIAMENTO_ANDAMENTO,
   MOCK_GERENCIAMENTO_CONCLUIDO,
@@ -14,22 +12,19 @@ import {
   MOCK_FILA_ADMIN,
 } from '../admin/mockData';
 import { mockDelay } from '../shared/utils/mockDelay';
+import api from '../services/api';
 
-// isso é só pra funcionar por enquanto ...
-function carregarPreferenciasIniciais(): string[] | null {
-  try {
-    const salvas = localStorage.getItem(PREFERENCIAS_VISAO_GERAL_KEY);
-    return salvas ? JSON.parse(salvas) : null;
-  } catch {
-    return null;
-  }
-}
+const TITULOS_KPIS: Record<string, string> = {
+  media_cards_por_funcionario: 'Média de exames por funcionário',
+  pct_problematicas: 'Exames problemáticos',
+  pct_concluidas: 'Exames concluídos',
+  tempo_medio_atendimento_dias: 'Tempo médio de atendimento',
+};
 
 export const useAdminStore = defineStore('admin', () => {
   // Estados
   const visaoGeral = ref<VisaoGeral | null>(null);
   const isLoadingVisaoGeral = ref(false);
-  const indicadoresVisiveis = ref<string[] | null>(carregarPreferenciasIniciais());
 
   const pendencias = ref<PendenciaItem[]>([]);
   const isLoadingPendencias = ref(false);
@@ -47,27 +42,6 @@ export const useAdminStore = defineStore('admin', () => {
 
   const funcionarios = ref<Funcionario[]>([]);
 
-  // Computed
-  const kpisVisiveis = computed(() => {
-    if (!visaoGeral.value) return [];
-    if (!indicadoresVisiveis.value) return visaoGeral.value.kpis;
-    return visaoGeral.value.kpis.filter((kpi) => indicadoresVisiveis.value!.includes(kpi.id));
-  });
-
-  const graficosVisiveis = computed(() => {
-    if (!visaoGeral.value) return [];
-    if (!indicadoresVisiveis.value) return visaoGeral.value.graficos;
-    return visaoGeral.value.graficos.filter((g) => indicadoresVisiveis.value!.includes(g.id));
-  });
-
-  const todosIndicadores = computed(() => {
-    if (!visaoGeral.value) return [];
-    return [
-      ...visaoGeral.value.kpis.map((k) => ({ id: k.id, label: k.label })),
-      ...visaoGeral.value.graficos.map((g) => ({ id: g.id, label: g.titulo })),
-    ];
-  });
-
   const pendenciasFiltradas = computed(() => filtrarAgendamentos(pendencias.value, filtrosPendencias.value));
   const agendamentosEmAndamentoFiltrados = computed(() =>
     filtrarAgendamentos(agendamentosEmAndamento.value, filtrosAgendamentos.value)
@@ -80,57 +54,36 @@ export const useAdminStore = defineStore('admin', () => {
   );
   const filaFiltrada = computed(() => filtrarAgendamentos(fila.value, filtrosFila.value));
 
-  //Ações
 
   // Visão Geral
-  function calcularKpis(): Kpi[] {
-    // As KPIs são apresentadas no contexto das vagas, liberadas por mês
-    // (validado com a Taty) — sempre no recorte do mês atual.
-    const PERIODO = 'no mês atual';
-
-    const totalCards = MOCK_FILA_ADMIN.length
-      + MOCK_GERENCIAMENTO_ANDAMENTO.length
-      + MOCK_GERENCIAMENTO_CONCLUIDO.length
-      + MOCK_PENDENCIAS.length;
-
-    const totalFuncionarios = MOCK_FUNCIONARIOS.length;
-
-    const mediaCardFuncionario = totalFuncionarios > 0
-      ? +(totalCards / totalFuncionarios).toFixed(1)
-      : 0;
-
-    const percentProblematicas = totalCards > 0
-      ? +((MOCK_PENDENCIAS.length / totalCards) * 100).toFixed(1)
-      : 0;
-
-    const percentConcluidas = totalCards > 0
-      ? +((MOCK_GERENCIAMENTO_CONCLUIDO.length / totalCards) * 100).toFixed(1)
-      : 0;
-
-    // Tempo médio de marcação: tempo até o caso ser efetivamente marcado/concluído.
-    // Aproximado pelos dias na fila dos agendamentos já concluídos.
-    const tempoMedioMarcacao = MOCK_GERENCIAMENTO_CONCLUIDO.length > 0
-      ? +(MOCK_GERENCIAMENTO_CONCLUIDO.reduce((acc, i) => acc + i.diasNaFila, 0) / MOCK_GERENCIAMENTO_CONCLUIDO.length).toFixed(1)
-      : 0;
-
-    return [
-      { id: 'media_card_funcionario', label: 'Média de Exames por Funcionário ', valor: mediaCardFuncionario, categoria: 'principal', periodo: PERIODO },
-      { id: 'percent_problematicas', label: 'Solicitações problemáticas ', valor: percentProblematicas, sufixo: '%', categoria: 'principal', periodo: PERIODO },
-      { id: 'percent_concluidas', label: 'Solicitações concluídas ', valor: percentConcluidas, sufixo: '%', categoria: 'principal', periodo: PERIODO },
-      { id: 'tempo_medio_marcacao', label: 'Tempo médio de marcação ', valor: tempoMedioMarcacao, sufixo: 'dias', categoria: 'principal', periodo: PERIODO },
-    ];
-  }
-
   async function fetchVisaoGeral(opcoes: { silencioso?: boolean } = {}) {
     if (!opcoes.silencioso) isLoadingVisaoGeral.value = true;
-    await mockDelay();
-    visaoGeral.value = { kpis: calcularKpis(), graficos: MOCK_VISAO_GERAL.graficos };
-    if (!opcoes.silencioso) isLoadingVisaoGeral.value = false;
-  }
+    try {
+      const [resKpis, resRankingExames, resRankingMunicipios] = await Promise.all([
+        api.get<Kpi[]>(`/api/admin/visao-geral`),
+        api.get<SerieBarrasEtapas[]>(`/api/admin/dashboard/ranking-exames`),
+        api.get<SerieBarrasEtapas[]>(`/api/admin/dashboard/ranking-municipios`)
+      ]);
 
-  function definirIndicadoresVisiveis(ids: string[]) {
-    indicadoresVisiveis.value = ids;
-    localStorage.setItem(PREFERENCIAS_VISAO_GERAL_KEY, JSON.stringify(ids));
+      const kpis: Kpi[] = resKpis.data.map((kpi) => ({
+        id: kpi.id,
+        titulo: TITULOS_KPIS[kpi.id] ?? kpi,
+        valor: kpi.valor,
+        formato: kpi.formato,
+      }));
+
+      visaoGeral.value = {
+        kpis,
+        graficos: [
+          { id: 'ranking-exames', titulo: 'Top 10 - Distribuição por Tipo de Exame', tipo: 'barras_horizontais', dados: resRankingExames.data },
+          { id: 'ranking-municipios', titulo: 'Top 10 - Distribuição por Município', tipo: 'barras_horizontais', dados: resRankingMunicipios.data },
+        ]
+      };
+    } catch (error) {
+      console.error("Erro ao carregar os dados do dashboard do administrador:", error);
+    } finally {
+      if (!opcoes.silencioso) isLoadingVisaoGeral.value = false;
+    }
   }
 
   // Pendências
@@ -208,7 +161,7 @@ export const useAdminStore = defineStore('admin', () => {
         id: item.id,
         nome: item.nome,
         prontuario: item.prontuario,
-        numeroSolicitacao: item.numeroSolicitacao,
+        solicitacao: item.solicitacao,
         exame: item.exame,
         diasNaFila: item.diasNaFila,
         status: item.status,
@@ -282,12 +235,7 @@ export const useAdminStore = defineStore('admin', () => {
   return {
     visaoGeral,
     isLoadingVisaoGeral,
-    indicadoresVisiveis,
-    kpisVisiveis,
-    graficosVisiveis,
-    todosIndicadores,
     fetchVisaoGeral,
-    definirIndicadoresVisiveis,
 
     pendencias,
     isLoadingPendencias,

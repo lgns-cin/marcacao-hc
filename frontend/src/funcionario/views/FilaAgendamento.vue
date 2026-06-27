@@ -30,30 +30,24 @@ function fecharDetalhes() {
   modalAberto.value = false; // Fecha a janela do modal
 }
 
-// Chamadas a API
 async function puxarAgendamento(id: number) {
-  try {
-    // Tenta vincular o paciente ao atendente logado
-    await funcionarioStore.puxarAgendamento(id);
+  const statusCode = await funcionarioStore.puxarAgendamento(id);
+
+  if (statusCode == 200) {
     toast.success('Paciente puxado para agendamento com sucesso.');
-    modalAberto.value = false; // Fecha o modal caso a ação tenha partido de dentro dele
-  } catch (error: any) {
-    // Tratamento de concorrência: Se outra pessoa puxou o paciente ao mesmo tempo (status 409)
-    if (error?.response?.status === 409) {
-      toast.error('Este paciente já foi atribuído a outro atendente.');
-      modalAberto.value = false;
-      await carregarAgendamentos(); // Atualiza a lista imediatamente para refletir a mudança
-    } else {
-      toast.error('Não foi possível puxar este agendamento.');
-    }
+  } else if (statusCode == 409) {
+    toast.error('Este paciente já foi atribuído a outro atendente.');
+  } else {
+    toast.error('Não foi possível puxar este agendamento.');
   }
+
+  modalAberto.value = false;
+  await carregarAgendamentos();
 }
 
 async function carregarAgendamentos() {
-  try {
-    // Faz a busca inicial ou recarregamento completo dos agendamentos
-    await funcionarioStore.fetchAgendamentos();
-  } catch (error) {
+  const successful = await funcionarioStore.fetchAgendamentos();
+  if (!successful) {
     toast.error('Não foi possível carregar a fila de agendamento.');
   }
 }

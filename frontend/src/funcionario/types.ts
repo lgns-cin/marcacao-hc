@@ -4,7 +4,7 @@ export type AgendamentoItem = {
   id: number;
   nome: string;
   prontuario: string;
-  numeroSolicitacao: string;
+  solicitacao: string;
   exame: string;
   diasNaFila: number;
   status: StatusPaciente;
