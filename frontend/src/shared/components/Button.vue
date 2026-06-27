@@ -24,8 +24,9 @@ const props = withDefaults(
 const buttonClass = computed(() => {
   // Tratamento de estado desabilitado global para as variantes
   if (props.disabled || props.loading) {
-    if (props.variant === 'primary') return 'bg-govbr-border text-white cursor-not-allowed';
-    return 'opacity-50 cursor-not-allowed';
+    if (props.variant === 'primary') return 'rounded-full bg-govbr-border px-5 py-2 text-sm text-white cursor-not-allowed';
+    if (props.variant === 'secondary') return 'rounded-full border border-govbr-border px-4 py-1.5 text-sm text-govbr-text-secondary cursor-not-allowed';
+    return 'px-4 py-2 rounded text-sm text-govbr-text-secondary cursor-not-allowed';
   }
 
   // Mapeamento das classes

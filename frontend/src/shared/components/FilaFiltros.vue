@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
 import { MagnifyingGlassIcon } from '@heroicons/vue/24/outline';
-import type { FiltrosFila } from '../types';
-import Button from '../../shared/components/Button.vue';
+import type { FiltrosFila } from '../../funcionario/types';
+import Button from './Button.vue';
 import { useFuncionarioStore } from '../../stores/funcionario';
-import { CATEGORIAS_EXAME } from '../../shared/utils/catalogoExames';
+import { CATEGORIAS_EXAME } from '../utils/catalogoExames';
 
 const store = useFuncionarioStore();
 

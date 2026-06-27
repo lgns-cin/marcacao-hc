@@ -1,13 +1,14 @@
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from 'vue';
+import { ref, onMounted } from 'vue';
 import { useToast } from 'vue-toastification';
 import { MagnifyingGlassIcon, ClockIcon, CheckCircleIcon, ArrowUturnLeftIcon } from '@heroicons/vue/24/outline';
 import { FunnelIcon } from '@heroicons/vue/20/solid';
 import { useAdminStore } from '../../stores/admin';
+import { useAutoRefresh } from '../../composables/useAutoRefresh';
 import GerenciamentoCard from '../components/GerenciamentoCard.vue';
 import RemovidoCard from '../components/RemovidoCard.vue';
 import AdminAgendamentoModal from '../components/AdminAgendamentoModal.vue';
-import FilaFiltros from '../../funcionario/components/FilaFiltros.vue';
+import FilaFiltros from '../../shared/components/FilaFiltros.vue';
 import type { AgendamentoItem } from '../../funcionario/types';
 
 import Button from '../../shared/components/Button.vue';
@@ -74,20 +75,16 @@ async function reatribuir(id: number, funcionario: string) {
   }
 }
 
-const INTERVALO_ATUALIZACAO_MS = 10000;
-let intervaloAtualizacao: ReturnType<typeof setInterval> | undefined;
-
 onMounted(() => {
   carregarAgendamentos();
   carregarFuncionarios();
-  intervaloAtualizacao = setInterval(() => {
-    if (!modalAberto.value) adminStore.fetchAgendamentosGerenciamento({ silencioso: true });
-  }, INTERVALO_ATUALIZACAO_MS);
 });
 
-onUnmounted(() => {
-  clearInterval(intervaloAtualizacao);
-});
+useAutoRefresh(
+  () => adminStore.fetchAgendamentosGerenciamento({ silencioso: true }),
+  10000,
+  modalAberto,
+);
 </script>
 
 <template>

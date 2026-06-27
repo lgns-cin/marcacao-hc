@@ -1,7 +1,5 @@
 <script setup lang="ts">
 import { ref, watch } from 'vue';
-import { AdjustmentsHorizontalIcon } from '@heroicons/vue/24/outline';
-
 import Button from '../../shared/components/Button.vue';
 
 const props = defineProps<{

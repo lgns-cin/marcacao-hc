@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { UserGroupIcon, ClockIcon } from '@heroicons/vue/24/solid';
-import { nomeDoCodigo } from '../utils/catalogoExames';
+import { categoriaDoCodigo } from '../utils/catalogoExames';
+import { isFinalizado, getEstadoLabel, getStatusClasses } from '../utils/statusFormatting';
 
 const props = defineProps<{
   item: {
@@ -15,24 +16,9 @@ const props = defineProps<{
   };
 }>();
 
-const finalizado = computed(() =>
-  props.item.estado === 'CONFIRMADO' || props.item.estado === 'PROBLEMA_REPORTADO'
-);
-
-const estadoLabel = computed(() => {
-  if (props.item.estado === 'CONFIRMADO') return 'Confirmado';
-  if (props.item.estado === 'PROBLEMA_REPORTADO') return 'Encerrado';
-  return '';
-});
-
-const statusClasses = computed(() => {
-  const cores = {
-    ALTA: 'bg-govbr-error-bg text-govbr-error',
-    MÉDIA: 'bg-amber-100 text-amber-800',
-    BAIXA: 'bg-green-100 text-green-800'
-  };
-  return cores[props.item.status as keyof typeof cores] || 'bg-gray-100 text-gray-800';
-});
+const finalizado = computed(() => isFinalizado(props.item.estado));
+const estadoLabel = computed(() => getEstadoLabel(props.item.estado));
+const statusClasses = computed(() => getStatusClasses(props.item.status));
 </script>
 
 <template>
@@ -72,7 +58,7 @@ const statusClasses = computed(() => {
 
     <div class="mt-3">
       <span class="rounded border border-govbr-border px-3 py-1 text-sm font-semibold text-govbr-text">
-        {{ nomeDoCodigo(item.exame) }}
+        {{ categoriaDoCodigo(item.exame) ?? item.exame }}
       </span>
     </div>
 
