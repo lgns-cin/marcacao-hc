@@ -106,3 +106,4 @@ yarn-error.log*
 
 # Gemini-specific files
 GEMINI.md
+.claude
