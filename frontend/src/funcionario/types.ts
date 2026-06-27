@@ -6,6 +6,7 @@ export type AgendamentoItem = {
   prontuario: string;
   solicitacao: string;
   exame: string;
+  exameCodigo: string;
   diasNaFila: number;
   status: StatusPaciente;
   unidadeSolicitante: string;
@@ -24,7 +25,8 @@ export type FiltrosFila = {
   faixaEtaria: string;
 };
 
-export type EstadoMinhaArea = 'EM_ANDAMENTO' | 'AGUARDANDO_CONFIRMACAO' | 'CONFIRMADO' | 'PROBLEMA_REPORTADO';
+export type EstadoMinhaArea = 'EM_ANDAMENTO' | 'AGUARDANDO_CONFIRMACAO' | 'FINALIZADO';
+export type ResultadoMinhaArea = 'CONFIRMADO' | 'PROBLEMA_REPORTADO';
 
 export const LABEL_ESTADO: Record<'CONFIRMADO' | 'PROBLEMA_REPORTADO', string> = {
   CONFIRMADO: 'Confirmado',
@@ -33,6 +35,7 @@ export const LABEL_ESTADO: Record<'CONFIRMADO' | 'PROBLEMA_REPORTADO', string> =
 
 export type MinhaAreaItem = AgendamentoItem & {
   estado: EstadoMinhaArea;
+  resultado: ResultadoMinhaArea;
 };
 
 export { MOTIVOS_DEVOLUCAO, MOTIVOS_PROBLEMA } from '../shared/constants';

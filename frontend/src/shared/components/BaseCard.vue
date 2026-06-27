@@ -13,11 +13,12 @@ const props = defineProps<{
     diasNaFila: number;
     exame: string;
     estado?: string;
+    resultado?: string;
   };
 }>();
 
-const finalizado = computed(() => isFinalizado(props.item.estado));
-const estadoLabel = computed(() => getEstadoLabel(props.item.estado));
+const finalizado = computed(() => props.item.estado === 'FINALIZADO');
+const resultadoLabel = computed(() => props.item.resultado === 'CONFIRMADO' ? 'Confirmado' : 'Problema Reportado' );
 const statusClasses = computed(() => getStatusClasses(props.item.status));
 </script>
 
@@ -48,7 +49,7 @@ const statusClasses = computed(() => getStatusClasses(props.item.status));
           v-else
           class="rounded-full border border-govbr-border px-2.5 py-0.5 text-xs font-bold text-govbr-text-secondary"
         >
-          {{ estadoLabel }}
+          {{ resultadoLabel }}
         </span>
       </div>
     </div>

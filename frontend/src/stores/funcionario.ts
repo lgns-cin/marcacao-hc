@@ -39,9 +39,7 @@ export const useFuncionarioStore = defineStore('funcionario', () => {
   );
 
   const itensFinalizados = computed(() =>
-    minhaAreaFiltrada.value.filter(
-      (item) => item.estado === 'CONFIRMADO' || item.estado === 'PROBLEMA_REPORTADO'
-    )
+    minhaAreaFiltrada.value.filter((item) => item.estado === 'FINALIZADO' && item.resultado)
   );
 
   const nomesMunicipios = computed(() =>
@@ -102,7 +100,7 @@ export const useFuncionarioStore = defineStore('funcionario', () => {
     const item = agendamentos.value.find(agendamento => agendamento.id === id);
     
     let statusCode = -1;
-    await api.post(`/api/funcionario/agendamentos/${item?.solicitacao}/puxar`)
+    await api.post(`/api/funcionario/agendamentos/${item?.solicitacao}/${item?.exameCodigo}/puxar`)
       .then(response => statusCode = response.status)
       .catch(error => statusCode = error.status);
 
@@ -142,23 +140,55 @@ export const useFuncionarioStore = defineStore('funcionario', () => {
     return successful;
   }
 
-  async function aguardarConfirmacao(id: number) {
-    const item = minhaArea.value.find((i) => i.id === id);
-    if (item) item.estado = 'AGUARDANDO_CONFIRMACAO';
+  async function aguardarConfirmacao(id: number): Promise<boolean> {
+    let successful = true;
+    const item = minhaArea.value.find(agendamento => agendamento.id === id);
+
+    await api.post(`/api/funcionario/minha-area/${item?.solicitacao}/${item?.exameCodigo}/aguardar-confirmacao`)
+      .catch(_ => successful = false);
+    
+    return successful;
   }
 
   async function devolverAFila(id: number, _motivo: string) {
-    minhaArea.value = minhaArea.value.filter((i) => i.id !== id);
+    let successful = true;
+    const item = minhaArea.value.find(agendamento => agendamento.id === id);
+
+    await api.post(
+        `/api/funcionario/minha-area/${item?.solicitacao}/${item?.exameCodigo}/devolver`,
+        { motivo: _motivo }
+      ).catch(_ => successful = false);
+    
+    return successful;
   }
 
   async function reportarProblema(id: number, _motivo: string, _detalhes?: string) {
-    const item = minhaArea.value.find((i) => i.id === id);
-    if (item) item.estado = 'PROBLEMA_REPORTADO';
+    let successful = true;
+    console.log(minhaArea.value);
+    const item = minhaArea.value.find(agendamento => agendamento.id === id);
+
+    await api.post(
+        `/api/funcionario/minha-area/${item?.solicitacao}/${item?.exameCodigo}/reportar-problema`,
+        {
+          motivo: _motivo,
+          detalhes: _detalhes
+        }
+      ).catch(_ => successful = false);
+    
+    return successful;
   }
 
   async function finalizarAgendamento(id: number) {
-    const item = minhaArea.value.find((i) => i.id === id);
-    if (item) item.estado = 'CONFIRMADO';
+    let successful = true;
+    const item = minhaArea.value.find(agendamento => agendamento.id === id);
+
+    await api.post(
+        `/api/funcionario/minha-area/${item?.solicitacao}/${item?.exameCodigo}/finalizar`,
+        { resultado: "CONFIRMADO" }
+      )
+      .catch(_ => successful = false);
+    
+    return successful;
   }
 
   function setBuscaMinhaArea(busca: string) {

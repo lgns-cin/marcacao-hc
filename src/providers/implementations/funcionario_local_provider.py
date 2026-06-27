@@ -74,6 +74,7 @@ class FuncionarioLocalProvider:
         solicitacao_id: int,
         funcionario_id: Optional[int] = None,
         status: Optional[StatusAtribuicao] = None,
+        exame: Optional[str] = None
     ) -> List[ExameSolicitado]:
         conditions = [
             ExameSolicitado.solicitacao == solicitacao_id,
@@ -83,6 +84,8 @@ class FuncionarioLocalProvider:
             conditions.append(ExameSolicitado.funcionario_atribuido == funcionario_id)
         if status is not None:
             conditions.append(ExameSolicitado.status_atribuicao == status)
+        if exame is not None:
+            conditions.append(ExameSolicitado.exame == exame)
 
         result = await self.session.execute(
             select(ExameSolicitado).where(*conditions)

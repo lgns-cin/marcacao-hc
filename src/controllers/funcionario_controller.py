@@ -73,12 +73,13 @@ def _build_item(row) -> dict:
         telefone = f"({ddd}) {telefone[2:7]}-{telefone[7:]}"
 
     return {
-        "id": row.solicitacao,
+        "id": row.id,
         "solicitacao": row.solicitacao,
         "prontuario": prontuario,
         "nome": nome,
         "telefone": telefone,
         "exame": exame_nome,
+        "exameCodigo": row.exame,
         "diasNaFila": dias_na_fila,
         "unidadeSolicitante": sol.unidade_solicitante if sol else None,
         "dataRetorno": sol.data_retorno.isoformat() if sol and sol.data_retorno else None,
@@ -115,10 +116,16 @@ async def listar_agendamentos(provider: FuncionarioLocalProvider, limit: Optiona
 
 
 # Atribui um agendamento PENDENTE ao funcionário logado, mudando o status para EM_ANDAMENTO
-async def puxar_agendamento(solicitacao_id: int, provider: FuncionarioLocalProvider, username: str, nome: Optional[str] = None) -> dict:
+async def puxar_agendamento(
+        solicitacao_id: int,
+        exame_codigo: str,
+        provider: FuncionarioLocalProvider,
+        username: str,
+        nome: Optional[str] = None
+    ) -> dict:
     funcionario = await provider.get_or_create_funcionario(username, nome)
     rows = await provider.buscar_por_solicitacao(
-        solicitacao_id, funcionario_id=None, status=StatusAtribuicao.PENDENTE
+        solicitacao_id, funcionario_id=None, status=StatusAtribuicao.PENDENTE, exame=exame_codigo
     )
     if not rows:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Agendamento não encontrado ou já atribuído")
@@ -135,19 +142,24 @@ async def listar_minha_area(provider: FuncionarioLocalProvider, username: str, n
     for grupo_rows in grupos.values():
         for exame_solicitado in grupo_rows:
             item = _build_item(exame_solicitado)
-            primeiro = grupo_rows[0]
             # Adiciona os campos extras do MinhaAreaItem: estado atual e resultado (se finalizado)
-            item["estado"] = primeiro.status_atribuicao
-            item["resultado"] = primeiro.resultado
+            item["estado"] = exame_solicitado.status_atribuicao
+            item["resultado"] = exame_solicitado.resultado
             items.append(item)
     return items
 
 
 # Avança o agendamento de EM_ANDAMENTO para AGUARDANDO_CONFIRMACAO
-async def aguardar_confirmacao(solicitacao_id: int, provider: FuncionarioLocalProvider, username: str, nome: Optional[str] = None) -> dict:
+async def aguardar_confirmacao(
+        solicitacao_id: int,
+        exame_codigo: str,
+        provider: FuncionarioLocalProvider,
+        username: str,
+        nome: Optional[str] = None
+    ) -> dict:
     funcionario = await provider.get_or_create_funcionario(username, nome)
     # Só permite a transição se o agendamento estiver em EM_ANDAMENTO
-    rows = await provider.buscar_por_solicitacao(solicitacao_id, funcionario.id, StatusAtribuicao.EM_ANDAMENTO)
+    rows = await provider.buscar_por_solicitacao(solicitacao_id, funcionario.id, StatusAtribuicao.EM_ANDAMENTO, exame_codigo)
     if not rows:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Agendamento não encontrado em EM_ANDAMENTO")
     await provider.transicionar_status(rows, StatusAtribuicao.AGUARDANDO_CONFIRMACAO)
@@ -155,9 +167,16 @@ async def aguardar_confirmacao(solicitacao_id: int, provider: FuncionarioLocalPr
 
 
 # Remove o agendamento da área do funcionário e o devolve para a fila geral com status PENDENTE
-async def devolver(solicitacao_id: int, motivo: str, provider: FuncionarioLocalProvider, username: str, nome: Optional[str] = None) -> dict:
+async def devolver(
+        solicitacao_id: int,
+        exame_codigo: str,
+        motivo: str,
+        provider: FuncionarioLocalProvider,
+        username: str,
+        nome: Optional[str] = None
+    ) -> dict:
     funcionario = await provider.get_or_create_funcionario(username, nome)
-    rows = await provider.buscar_por_solicitacao(solicitacao_id, funcionario.id)
+    rows = await provider.buscar_por_solicitacao(solicitacao_id, funcionario.id, exame=exame_codigo)
     if not rows:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Agendamento não encontrado na sua área")
     await provider.devolver(rows, motivo)
@@ -165,9 +184,17 @@ async def devolver(solicitacao_id: int, motivo: str, provider: FuncionarioLocalP
 
 
 # Finaliza o agendamento com PROBLEMA_REPORTADO, registrando motivo e detalhes para o administrador
-async def reportar_problema(solicitacao_id: int, motivo: str, detalhes: Optional[str], provider: FuncionarioLocalProvider, username: str, nome: Optional[str] = None) -> dict:
+async def reportar_problema(
+        solicitacao_id: int,
+        exame_codigo: str,
+        motivo: str,
+        detalhes: Optional[str],
+        provider: FuncionarioLocalProvider,
+        username: str,
+        nome: Optional[str] = None
+    ) -> dict:
     funcionario = await provider.get_or_create_funcionario(username, nome)
-    rows = await provider.buscar_por_solicitacao(solicitacao_id, funcionario.id)
+    rows = await provider.buscar_por_solicitacao(solicitacao_id, funcionario.id, exame=exame_codigo)
     if not rows:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Agendamento não encontrado na sua área")
     await provider.transicionar_status(
@@ -179,7 +206,14 @@ async def reportar_problema(solicitacao_id: int, motivo: str, detalhes: Optional
 
 
 # Encerra o ciclo do atendimento com resultado CONFIRMADO ou PROBLEMA_REPORTADO
-async def finalizar(solicitacao_id: int, resultado: str, provider: FuncionarioLocalProvider, username: str, nome: Optional[str] = None) -> dict:
+async def finalizar(
+        solicitacao_id: int,
+        exame_codigo: str,
+        resultado: str,
+        provider: FuncionarioLocalProvider,
+        username: str,
+        nome: Optional[str] = None
+    ) -> dict:
     # Valida se o resultado enviado é um dos valores permitidos pelo enum
     if resultado not in ResultadoAtribuicao._value2member_map_:
         raise HTTPException(
@@ -187,7 +221,7 @@ async def finalizar(solicitacao_id: int, resultado: str, provider: FuncionarioLo
             detail=f"resultado deve ser um de: {[r.value for r in ResultadoAtribuicao]}",
         )
     funcionario = await provider.get_or_create_funcionario(username, nome)
-    rows = await provider.buscar_por_solicitacao(solicitacao_id, funcionario.id)
+    rows = await provider.buscar_por_solicitacao(solicitacao_id, funcionario.id, exame=exame_codigo)
     if not rows:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Agendamento não encontrado na sua área")
     await provider.transicionar_status(rows, StatusAtribuicao.FINALIZADO, resultado=ResultadoAtribuicao(resultado))

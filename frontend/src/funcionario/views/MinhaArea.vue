@@ -47,47 +47,56 @@ function fecharDetalhes() {
 }
 
 async function aguardarConfirmacao(id: number) {
-  try {
-    await funcionarioStore.aguardarConfirmacao(id);
+  const successful = await funcionarioStore.aguardarConfirmacao(id);
+  
+  if (successful) {
     toast.success('Aguardando confirmação do paciente.');
     modalAberto.value = false;
-  } catch (error) {
+    await carregarMinhaArea();
+  } else {
     toast.error('Não foi possível atualizar este agendamento.');
   }
 }
 
 async function devolverAFila(id: number, motivo: string) {
-  try {
-    await funcionarioStore.devolverAFila(id, motivo);
+  const successful = await funcionarioStore.devolverAFila(id, motivo);
+  
+  if (successful) {
     toast.success('Solicitação devolvida à fila com sucesso.');
     modalAberto.value = false;
-  } catch (error) {
+    await carregarMinhaArea();
+  } else {
     toast.error('Não foi possível devolver esta solicitação à fila.');
   }
 }
 
 async function reportarProblema(id: number, motivo: string, detalhes: string) {
-  try {
-    await funcionarioStore.reportarProblema(id, motivo, detalhes);
+  const successful = await funcionarioStore.reportarProblema(id, motivo, detalhes);
+  
+  if (successful) {
     toast.success('Problema reportado com sucesso.');
-  } catch (error) {
+    modalAberto.value = false;
+    await carregarMinhaArea();
+  } else {
     toast.error('Não foi possível reportar o problema.');
   }
 }
 
 async function finalizar(id: number) {
-  try {
-    await funcionarioStore.finalizarAgendamento(id);
+  const successful = await funcionarioStore.finalizarAgendamento(id);
+  
+  if (successful) {
     toast.success('Agendamento finalizado com sucesso.');
     modalAberto.value = false;
-  } catch (error) {
+    await carregarMinhaArea();
+  } else {
     toast.error('Não foi possível finalizar este agendamento.');
   }
 }
 
 async function carregarMinhaArea() {
   const successful = await funcionarioStore.fetchMinhaArea();
-  
+
   if (!successful) {
     toast.error('Não foi possível carregar a sua área.');
   }
