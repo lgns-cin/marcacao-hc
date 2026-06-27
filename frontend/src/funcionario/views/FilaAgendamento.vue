@@ -31,25 +31,24 @@ function fecharDetalhes() {
 }
 
 async function puxarAgendamento(id: number) {
-  try {
-    await funcionarioStore.puxarAgendamento(id);
+  const statusCode = await funcionarioStore.puxarAgendamento(id);
+
+  if (statusCode == 200) {
     toast.success('Paciente puxado para agendamento com sucesso.');
-    modalAberto.value = false;
-  } catch (error: any) {
-    if (error?.response?.status === 409) {
-      toast.error('Este paciente já foi atribuído a outro atendente.');
-      modalAberto.value = false;
-      await carregarAgendamentos();
-    } else {
-      toast.error('Não foi possível puxar este agendamento.');
-    }
+  } else if (statusCode == 409) {
+    toast.error('Este paciente já foi atribuído a outro atendente.');
+  } else {
+    toast.error('Não foi possível puxar este agendamento.');
   }
+
+  modalAberto.value = false;
+  await carregarAgendamentos();
 }
 
 async function carregarAgendamentos() {
-  try {
-    await funcionarioStore.fetchAgendamentos();
-  } catch {
+  const successful = await funcionarioStore.fetchAgendamentos();
+  
+  if (!successful) {
     toast.error('Não foi possível carregar a fila de agendamento.');
   }
 }
