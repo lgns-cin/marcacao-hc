@@ -43,13 +43,13 @@ async function carregarFuncionarios() {
   }
 }
 
-async function resolverPendencia(id: number) {
+async function removerProblema(id: number) {
   try {
-    await adminStore.resolverPendencia(id);
-    toast.success('Exame resolvido com sucesso.');
+    await adminStore.removerProblema(id);
+    toast.success('Exame removido com sucesso.');
     modalAberto.value = false;
   } catch (error) {
-    toast.error('Não foi possível resolver este exame.');
+    toast.error('Não foi possível remover este exame.');
   }
 }
 
@@ -130,7 +130,7 @@ useAutoRefresh(
         :key="pendencia.id"
         :pendencia="pendencia"
         :funcionarios="adminStore.funcionarios"
-        @remover="resolverPendencia"
+        @remover="removerProblema"
         @devolver="devolverAFila"
         @reatribuir="reatribuir"
         @ver-mais="abrirDetalhes"
@@ -142,7 +142,7 @@ useAutoRefresh(
       :item="pendenciaSelecionada"
       :funcionarios="adminStore.funcionarios"
       @close="fecharDetalhes"
-      @resolver="resolverPendencia"
+      @resolver="removerProblema"
       @devolver="devolverAFila"
       @reatribuir="reatribuir"
     />

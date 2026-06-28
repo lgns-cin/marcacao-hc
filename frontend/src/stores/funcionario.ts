@@ -5,7 +5,7 @@ import { filtrarAgendamentos, FILTROS_VAZIOS } from '../shared/utils/filtrarAgen
 import { derivarRegioes, fetchMesorregioes, fetchMunicipios, FORA_DO_ESTADO } from '../shared/services/ibge';
 import type { MunicipioIBGE } from '../shared/services/ibge';
 import api from '../services/api';
-import { LIMITE_AGENDAMENTOS } from '../shared/utils/constants';
+import { LIMITE_AGENDAMENTOS } from '../shared/constants';
 
 export const useFuncionarioStore = defineStore('funcionario', () => {
   // state - fila de agendamento

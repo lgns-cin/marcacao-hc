@@ -48,21 +48,21 @@ export type VisaoGeral = {
 export type PendenciaItem = AgendamentoItem & {
   //situacao: SituacaoPendencia;
   funcionarioAtribuido: string;
-  problema_motivo?: string | null;
-  problema_detalhes?: string | null;
+  motivo: string;
+  detalhes?: string | null;
 };
 
 export type AgendamentoGerenciamento = AgendamentoItem & {
   estado: EstadoMinhaArea;
   funcionarioAtribuido: string;
-  problema_motivo?: string | null;
-  problema_detalhes?: string | null;
+  motivo?: string | null;
+  detalhes?: string | null;
 };
 
 export type AgendamentoRemovido = AgendamentoItem & {
   funcionarioAtribuido: string;
-  problema_motivo: string;
-  problema_detalhes?: string | null;
+  motivo: string;
+  detalhes?: string | null;
 };
 
 export type Funcionario = {

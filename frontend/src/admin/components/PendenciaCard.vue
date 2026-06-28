@@ -51,7 +51,7 @@ function confirmarReatribuicao() {
 
 // Só mostra a linha de detalhes quando ela acrescenta algo ao motivo.
 function temDetalhesExtras(p: PendenciaItem): boolean {
-  return !!p.problema_detalhes && p.problema_detalhes !== p.problema_motivo;
+  return !!p.detalhes && p.detalhes !== p.motivo;
 }
 </script>
 
@@ -63,17 +63,6 @@ function temDetalhesExtras(p: PendenciaItem): boolean {
         <UserGroupIcon class="h-6 w-6 shrink-0 text-govbr-text" />
         <h3 class="text-lg font-bold text-govbr-text">{{ pendencia.nome }}</h3>
       </div>
-      <!-- 
-      <span
-        class="inline-flex shrink-0 items-center gap-1 whitespace-nowrap rounded-full px-3 py-1 text-xs font-bold"
-        :class="pendencia.situacao === 'BLOQUEADO'
-          ? 'bg-govbr-error-bg text-govbr-error'
-          : 'bg-amber-100 text-amber-800'"
-      >
-        <component :is="pendencia.situacao === 'BLOQUEADO' ? LockClosedIcon : ClockIcon" class="h-3.5 w-3.5" />
-        {{ pendencia.situacao === 'BLOQUEADO' ? 'Bloqueado' : 'Parado' }}
-      </span>
-      -->
     </div>
 
     <!-- Identificação secundária -->
@@ -85,9 +74,9 @@ function temDetalhesExtras(p: PendenciaItem): boolean {
     <div class="mt-3 flex items-start gap-2 rounded-md border-l-4 border-govbr-error bg-govbr-error-bg px-3 py-2.5">
       <ExclamationTriangleIcon class="mt-0.5 h-5 w-5 shrink-0 text-govbr-error" />
       <div class="min-w-0">
-        <p class="text-sm font-bold text-govbr-text">{{ pendencia.problema_motivo || 'Problema não especificado' }}</p>
-        <p v-if="temDetalhesExtras(pendencia)" class="mt-0.5 text-xs text-govbr-text-secondary">
-          {{ pendencia.problema_detalhes }}
+        <p class="text-sm font-bold text-govbr-text">{{ pendencia.motivo || 'Problema não especificado' }}</p>
+        <p v-if="temDetalhesExtras(pendencia)" class="mt-0.5 text-[16px] text-govbr-text-secondary">
+          {{ pendencia.detalhes }}
         </p>
       </div>
     </div>
@@ -95,7 +84,7 @@ function temDetalhesExtras(p: PendenciaItem): boolean {
     <!-- Responsável -->
     <p class="mt-3 text-sm text-govbr-text">
       <span class="font-semibold">Responsável: </span>
-      <span class="text-govbr-text-secondary"> {{ pendencia.responsavel }}</span>
+      <span class="text-govbr-text-secondary"> {{ pendencia.funcionarioAtribuido }}</span>
     </p>
 
     <!-- Painel inline de devolução -->

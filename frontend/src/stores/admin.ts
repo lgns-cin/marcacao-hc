@@ -1,21 +1,10 @@
 import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
-import type { AgendamentoItem, FiltrosFila } from '../funcionario/types';
+import type { FiltrosFila } from '../funcionario/types';
 import { filtrarAgendamentos, FILTROS_VAZIOS } from '../shared/utils/filtrarAgendamentos';
 import type { AgendamentoGerenciamento, AgendamentoRemovido, Funcionario, Kpi, PendenciaItem, VisaoGeral, SerieBarrasEtapas } from '../admin/types';
-import {
-  MOCK_PENDENCIAS,
-  MOCK_FILA_ADMIN,
-} from '../admin/mockData';
-import { mockDelay } from '../shared/utils/mockDelay';
 import api from '../services/api';
-
-const TITULOS_KPIS: Record<string, string> = {
-  media_cards_por_funcionario: 'Média de exames por funcionário',
-  pct_problematicas: 'Exames problemáticos',
-  pct_concluidas: 'Exames concluídos',
-  tempo_medio_atendimento_dias: 'Tempo médio de atendimento',
-};
+import { TITULOS_KPIS } from '../shared/constants';
 
 export const useAdminStore = defineStore('admin', () => {
   // Estados
@@ -32,10 +21,6 @@ export const useAdminStore = defineStore('admin', () => {
   const isLoadingAgendamentos = ref(false);
   const filtrosAgendamentos = ref<FiltrosFila>({ ...FILTROS_VAZIOS });
 
-  const fila = ref<AgendamentoItem[]>([]);
-  const isLoadingFila = ref(false);
-  const filtrosFila = ref<FiltrosFila>({ ...FILTROS_VAZIOS });
-
   const funcionarios = ref<Funcionario[]>([]);
 
   const pendenciasFiltradas = computed(() => filtrarAgendamentos(pendencias.value, filtrosPendencias.value));
@@ -48,8 +33,6 @@ export const useAdminStore = defineStore('admin', () => {
   const agendamentosRemovidosFiltrados = computed(() =>
     filtrarAgendamentos(agendamentosRemovidos.value, filtrosAgendamentos.value)
   );
-  const filaFiltrada = computed(() => filtrarAgendamentos(fila.value, filtrosFila.value));
-
 
   // Visão Geral
   async function fetchVisaoGeral(opcoes: { silencioso?: boolean } = {}) {
@@ -85,27 +68,17 @@ export const useAdminStore = defineStore('admin', () => {
   // Pendências
   async function fetchPendencias(opcoes: { silencioso?: boolean } = {}) {
     if (!opcoes.silencioso) isLoadingPendencias.value = true;
-    await mockDelay();
-    pendencias.value = MOCK_PENDENCIAS;
-    if (!opcoes.silencioso) isLoadingPendencias.value = false;
-  }
-
-  async function resolverPendencia(id: number) {
-    await mockDelay('action');
-    const item = pendencias.value.find((i) => i.id === id);
-    if (item) {
-      agendamentosRemovidos.value = [
-        ...agendamentosRemovidos.value,
-        {
-          ...item,
-          problema_motivo: item.problema_motivo ?? '',
-          problema_detalhes: item.problema_detalhes,
-        },
-      ];
+    try {
+      const response = await api.get<PendenciaItem[]>(`/api/admin/pendencias`);
+      pendencias.value = response.data;
+    } catch {
+      pendencias.value = [];
+    } finally {
+      if (!opcoes.silencioso) isLoadingPendencias.value = false;
     }
-    pendencias.value = pendencias.value.filter((i) => i.id !== id);
   }
 
+  // Filtros
   function setBuscaPendencias(busca: string) {
     filtrosPendencias.value.busca = busca;
   }
@@ -183,20 +156,31 @@ export const useAdminStore = defineStore('admin', () => {
       agendamentosEmAndamento.value = agendamentosEmAndamento.value.filter((i) => i.id !== id);
       agendamentosConcluidos.value = agendamentosConcluidos.value.filter((i) => i.id !== id);
       pendencias.value = pendencias.value.filter((i) => i.id !== id);    } catch {
+    }
+  }
+
+  async function removerProblema(id: number) {
+    try {
+      // localiza o item em qualquer uma das listas locais para obter a propriedade 'solicitacao'
+      const item =
+        agendamentosEmAndamento.value.find((i) => i.id === id) ??
+        agendamentosConcluidos.value.find((i) => i.id === id) ??
+        pendencias.value.find((i) => i.id === id);
+        
+      if (!item) return;
+
+      await api.delete(`/api/admin/agendamentos/${item.solicitacao}`);
+
+      // depois do sucesso da API, remove o item localmente das listas do front-end
+      agendamentosEmAndamento.value = agendamentosEmAndamento.value.filter((i) => i.id !== id);
+      agendamentosConcluidos.value = agendamentosConcluidos.value.filter((i) => i.id !== id);
+      pendencias.value = pendencias.value.filter((i) => i.id !== id);    
+    } catch {
       //
     }
   }
 
-  async function devolverRemovidoAFila(id: number) {
-    await mockDelay('action');
-    agendamentosRemovidos.value = agendamentosRemovidos.value.filter((i) => i.id !== id);
-  }
-
-  async function removerDaFila(id: number) {
-    await mockDelay('action');
-    agendamentosRemovidos.value = agendamentosRemovidos.value.filter((i) => i.id !== id);
-  }
-
+  // Filtros
   function setBuscaAgendamentos(busca: string) {
     filtrosAgendamentos.value.busca = busca;
   }
@@ -208,27 +192,6 @@ export const useAdminStore = defineStore('admin', () => {
   function limparFiltrosAgendamentos() {
     const buscaAtual = filtrosAgendamentos.value.busca;
     filtrosAgendamentos.value = { ...FILTROS_VAZIOS, busca: buscaAtual };
-  }
-
-  // Fila Pública (Visão Admin)
-  async function fetchFila(opcoes: { silencioso?: boolean } = {}) {
-    if (!opcoes.silencioso) isLoadingFila.value = true;
-    await mockDelay();
-    fila.value = MOCK_FILA_ADMIN;
-    if (!opcoes.silencioso) isLoadingFila.value = false;
-  }
-
-  function setBuscaFila(busca: string) {
-    filtrosFila.value.busca = busca;
-  }
-
-  function aplicarFiltrosFila(novosFiltros: Partial<FiltrosFila>) {
-    filtrosFila.value = { ...filtrosFila.value, ...novosFiltros };
-  }
-
-  function limparFiltrosFila() {
-    const buscaAtual = filtrosFila.value.busca;
-    filtrosFila.value = { ...FILTROS_VAZIOS, busca: buscaAtual };
   }
 
   // Funcionários
@@ -251,10 +214,10 @@ export const useAdminStore = defineStore('admin', () => {
     filtrosPendencias,
     pendenciasFiltradas,
     fetchPendencias,
-    resolverPendencia,
     setBuscaPendencias,
     aplicarFiltrosPendencias,
     limparFiltrosPendencias,
+    removerProblema,
 
     agendamentosEmAndamento,
     agendamentosConcluidos,
@@ -267,20 +230,9 @@ export const useAdminStore = defineStore('admin', () => {
     fetchAgendamentosGerenciamento,
     reatribuirAgendamento,
     devolverAFilaAdmin,
-    devolverRemovidoAFila,
-    removerDaFila,
     setBuscaAgendamentos,
     aplicarFiltrosAgendamentos,
     limparFiltrosAgendamentos,
-
-    fila,
-    isLoadingFila,
-    filtrosFila,
-    filaFiltrada,
-    fetchFila,
-    setBuscaFila,
-    aplicarFiltrosFila,
-    limparFiltrosFila,
 
     funcionarios,
     fetchFuncionarios,
