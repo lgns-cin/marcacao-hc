@@ -1,7 +1,7 @@
-from ..services.pontuacao import calcular_pontuacao
-from sqlalchemy.util.typing import Literal
 from datetime import date
-from typing import List, Optional
+from typing import List, Literal, Optional
+
+from ..services.pontuacao import calcular_pontuacao
 
 from fastapi import HTTPException, status
 
@@ -57,8 +57,6 @@ def _build_item(row) -> dict:
             (hoje.month, hoje.day) < (paciente.data_nascimento.month, paciente.data_nascimento.day)
         )
         idade = f"{anos} anos"
-
-    prontuario = str(row.paciente_solicitante)
 
     funcionario_username = None
     if row.funcionario:

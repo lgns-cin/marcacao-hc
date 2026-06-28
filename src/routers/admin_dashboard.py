@@ -63,10 +63,11 @@ async def ranking_municipios(
 async def pendencias(
     data_inicio: Optional[date] = None,
     data_fim: Optional[date] = None,
+    busca: Optional[str] = None,
     provider: AdminLocalProvider = Depends(get_admin_provider),
     _: dict = Depends(verify_admin_group),
 ):
-    return await admin_controller.listar_pendencias(provider, data_inicio, data_fim)
+    return await admin_controller.listar_pendencias(provider, data_inicio, data_fim, busca=busca)
 
 
 @router.post("/pendencias/{solicitacao_id}/resolver")
@@ -84,10 +85,11 @@ async def agendamentos(
     estado: str = "em_andamento",
     data_inicio: Optional[date] = None,
     data_fim: Optional[date] = None,
+    busca: Optional[str] = None,
     provider: AdminLocalProvider = Depends(get_admin_provider),
     _: dict = Depends(verify_admin_group),
 ):
-    return await admin_controller.listar_agendamentos(estado, provider, data_inicio, data_fim)
+    return await admin_controller.listar_agendamentos(estado, provider, data_inicio, data_fim, busca=busca)
 
 
 @router.post("/agendamentos/{solicitacao_id}/reatribuir")

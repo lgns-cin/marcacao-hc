@@ -1,10 +1,9 @@
 from datetime import date
 from typing import List, Optional
 
-from sqlalchemy import select
+from sqlalchemy import select, or_, cast, String
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
-from sqlalchemy import select, or_, cast, String # <- ATUALIZAÇÃO DE IMPORTS
 from ...models.paciente import Paciente
 
 from ...models.exame_solicitado import ExameSolicitado

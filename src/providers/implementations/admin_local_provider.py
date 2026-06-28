@@ -2,7 +2,6 @@ from datetime import datetime, date
 from typing import List, Optional
 
 from sqlalchemy import select, func, case, or_, cast, String
-from sqlalchemy import select, func, case
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 

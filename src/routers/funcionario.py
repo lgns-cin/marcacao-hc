@@ -47,7 +47,7 @@ async def listar_agendamentos(
     provider: FuncionarioLocalProvider = Depends(get_funcionario_provider),
     current_user: dict = Depends(auth_handler.decode_token),
 ):
-    return await funcionario_controller.listar_agendamentos(provider, limit)
+    return await funcionario_controller.listar_agendamentos(provider, limit, busca=busca)
 
 
 # Atribui um agendamento da fila ao funcionário logado, mudando o status para EM_ANDAMENTO
