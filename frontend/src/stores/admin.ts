@@ -119,7 +119,7 @@ export const useAdminStore = defineStore('admin', () => {
         pendencias.value.find((i) => i.id === id);
       if (!item) return;
 
-      await api.post(`/api/admin/agendamentos/${item.solicitacao}/reatribuir`, { 
+      await api.post(`/api/admin/agendamentos/${item.solicitacao}/${item.exameCodigo}/reatribuir`, { 
         funcionario: funcionarioUsername
       });
 
@@ -148,7 +148,7 @@ export const useAdminStore = defineStore('admin', () => {
         
       if (!item) return;
 
-      await api.post(`/api/admin/agendamentos/${item.solicitacao}/devolver`, { 
+      await api.post(`/api/admin/agendamentos/${item.solicitacao}/${item.exameCodigo}/devolver`, { 
         motivo: motivo 
       });
 
@@ -169,7 +169,7 @@ export const useAdminStore = defineStore('admin', () => {
         
       if (!item) return;
 
-      await api.delete(`/api/admin/agendamentos/${item.solicitacao}`);
+      await api.delete(`/api/admin/agendamentos/${item.solicitacao}/${item.exameCodigo}`);
 
       // depois do sucesso da API, remove o item localmente das listas do front-end
       agendamentosEmAndamento.value = agendamentosEmAndamento.value.filter((i) => i.id !== id);

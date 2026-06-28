@@ -221,11 +221,12 @@ class AdminLocalProvider:
         result = await self.session.execute(stmt)
         return result.scalars().all()
 
-    async def buscar_por_solicitacao(self, solicitacao_id: int) -> List[ExameSolicitado]:
+    async def buscar_por_solicitacao(self, solicitacao_id: int, exame_codigo: str) -> List[ExameSolicitado]:
         result = await self.session.execute(
             select(ExameSolicitado).where(
                 ExameSolicitado.solicitacao == solicitacao_id,
                 ExameSolicitado.deleted_at == None,
+                ExameSolicitado.exame == exame_codigo
             )
         )
         return result.scalars().all()

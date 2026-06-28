@@ -188,14 +188,19 @@ async def listar_agendamentos(
     return items
 
 
-async def reatribuir(solicitacao_id: int, username_novo: str, provider: AdminLocalProvider) -> dict:
+async def reatribuir(
+        solicitacao_id: int,
+        exame_codigo: str,
+        username_novo: str,
+        provider: AdminLocalProvider
+    ) -> dict:
     funcionario = await provider.buscar_funcionario_por_username(username_novo)
     if not funcionario:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"Funcionário '{username_novo}' não encontrado",
         )
-    rows = await provider.buscar_por_solicitacao(solicitacao_id)
+    rows = await provider.buscar_por_solicitacao(solicitacao_id, exame_codigo)
     if not rows:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -205,8 +210,13 @@ async def reatribuir(solicitacao_id: int, username_novo: str, provider: AdminLoc
     return {"mensagem": f"Agendamento reatribuído para {username_novo}"}
 
 
-async def devolver_admin(solicitacao_id: int, motivo: str, provider: AdminLocalProvider) -> dict:
-    rows = await provider.buscar_por_solicitacao(solicitacao_id)
+async def devolver_admin(
+        solicitacao_id: int,
+        exame_codigo: str,
+        motivo: str,
+        provider: AdminLocalProvider
+    ) -> dict:
+    rows = await provider.buscar_por_solicitacao(solicitacao_id, exame_codigo)
     if not rows:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -216,8 +226,8 @@ async def devolver_admin(solicitacao_id: int, motivo: str, provider: AdminLocalP
     return {"mensagem": "Agendamento devolvido para a fila"}
 
 
-async def excluir(solicitacao_id: int, provider: AdminLocalProvider) -> dict:
-    rows = await provider.buscar_por_solicitacao(solicitacao_id)
+async def excluir(solicitacao_id: int, exame_codigo: str, provider: AdminLocalProvider) -> dict:
+    rows = await provider.buscar_por_solicitacao(solicitacao_id, exame_codigo)
     if not rows:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
