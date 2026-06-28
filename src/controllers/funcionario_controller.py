@@ -58,7 +58,7 @@ def _build_item(row) -> dict:
 
     # nome do paciente vem do AGHU; usa prontuário como fallback
     prontuario = str(row.paciente_solicitante)
-    nome = f"Paciente #{prontuario}"
+    nome = paciente.nome if paciente and paciente.nome else f"Paciente #{prontuario}"
 
     return {
         "id": row.solicitacao,
@@ -76,8 +76,8 @@ def _build_item(row) -> dict:
 
 
 # Retorna a fila geral: um card por exame, ordenados pelo algoritmo de pontuação
-async def listar_agendamentos(provider: FuncionarioLocalProvider, limit: Optional[int] = None) -> List[dict]:
-    rows = await provider.listar_pendentes()
+async def listar_agendamentos(provider: FuncionarioLocalProvider, limit: Optional[int] = None, busca: Optional[str] = None) -> List[dict]:
+    rows = await provider.listar_pendentes(busca=busca)
     items = []
     for row in rows:
         item = _build_item(row)

@@ -43,6 +43,7 @@ class FinalizarRequest(BaseModel):
 @router.get("/agendamentos")
 async def listar_agendamentos(
     limit: Optional[int] = None,
+    busca: Optional[str] = None,
     provider: FuncionarioLocalProvider = Depends(get_funcionario_provider),
     current_user: dict = Depends(auth_handler.decode_token),
 ):

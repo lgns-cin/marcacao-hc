@@ -1,6 +1,7 @@
 from datetime import datetime, date
 from typing import List, Optional
 
+from sqlalchemy import select, func, case, or_, cast, String
 from sqlalchemy import select, func, case
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
@@ -163,6 +164,7 @@ class AdminLocalProvider:
         self,
         data_inicio: Optional[date] = None,
         data_fim: Optional[date] = None,
+        busca: Optional[str] = None,
     ) -> List[ExameSolicitado]:
         temporal = _filtro_temporal(data_inicio, data_fim)
         stmt = (
@@ -173,13 +175,26 @@ class AdminLocalProvider:
                 selectinload(ExameSolicitado.exame_rel),
                 selectinload(ExameSolicitado.funcionario),
             )
-            .where(
-                ExameSolicitado.status_atribuicao == StatusAtribuicao.FINALIZADO,
-                ExameSolicitado.resultado == ResultadoAtribuicao.PROBLEMA_REPORTADO,
-                ExameSolicitado.deleted_at == None,
-                *temporal,
-            )
         )
+
+        conditions = [
+            ExameSolicitado.status_atribuicao == StatusAtribuicao.FINALIZADO,
+            ExameSolicitado.resultado == ResultadoAtribuicao.PROBLEMA_REPORTADO,
+            ExameSolicitado.deleted_at == None,
+            *temporal,
+        ]
+
+        if busca:
+            stmt = stmt.join(ExameSolicitado.paciente)
+            busca_str = f"%{busca}%"
+            conditions.append(
+                or_(
+                    Paciente.nome.ilike(busca_str),
+                    cast(Paciente.prontuario, String).ilike(busca_str)
+                )
+            )
+
+        stmt = stmt.where(*conditions)
         result = await self.session.execute(stmt)
         return result.scalars().all()
 
@@ -188,6 +203,7 @@ class AdminLocalProvider:
         estado: str,
         data_inicio: Optional[date] = None,
         data_fim: Optional[date] = None,
+        busca: Optional[str] = None,
     ) -> List[ExameSolicitado]:
         temporal = _filtro_temporal(data_inicio, data_fim)
         stmt = select(ExameSolicitado).options(
@@ -197,27 +213,37 @@ class AdminLocalProvider:
             selectinload(ExameSolicitado.funcionario),
         )
 
+        conditions = []
+
         if estado == "em_andamento":
-            stmt = stmt.where(
+            conditions.extend([
                 ExameSolicitado.status_atribuicao.in_([
                     StatusAtribuicao.EM_ANDAMENTO,
                     StatusAtribuicao.AGUARDANDO_CONFIRMACAO,
                 ]),
-                ExameSolicitado.deleted_at == None,
-                *temporal,
-            )
+                ExameSolicitado.deleted_at == None
+            ])
         elif estado == "concluidos":
-            stmt = stmt.where(
+            conditions.extend([
                 ExameSolicitado.status_atribuicao == StatusAtribuicao.FINALIZADO,
-                ExameSolicitado.deleted_at == None,
-                *temporal,
-            )
+                ExameSolicitado.deleted_at == None
+            ])
         elif estado == "excluidos":
-            stmt = stmt.where(
-                ExameSolicitado.deleted_at != None,
-                *temporal,
+            conditions.append(ExameSolicitado.deleted_at != None)
+
+        conditions.extend(temporal)
+
+        if busca:
+            stmt = stmt.join(ExameSolicitado.paciente)
+            busca_str = f"%{busca}%"
+            conditions.append(
+                or_(
+                    Paciente.nome.ilike(busca_str),
+                    cast(Paciente.prontuario, String).ilike(busca_str)
+                )
             )
 
+        stmt = stmt.where(*conditions)
         result = await self.session.execute(stmt)
         return result.scalars().all()
 

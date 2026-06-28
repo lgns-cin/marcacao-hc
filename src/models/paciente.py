@@ -7,6 +7,7 @@ class Paciente(Base):
     __tablename__ = "pacientes"
 
     prontuario = Column(Integer, primary_key=True, index=True)
+    nome = Column(String, nullable=True)
     telefone = Column(String)
     cidade = Column(String)
     estado = Column(String)
