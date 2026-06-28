@@ -4,11 +4,7 @@ import type { AgendamentoItem, FiltrosFila } from '../funcionario/types';
 import { filtrarAgendamentos, FILTROS_VAZIOS } from '../shared/utils/filtrarAgendamentos';
 import type { AgendamentoGerenciamento, AgendamentoRemovido, Funcionario, Kpi, PendenciaItem, VisaoGeral, SerieBarrasEtapas } from '../admin/types';
 import {
-  MOCK_FUNCIONARIOS,
   MOCK_PENDENCIAS,
-  MOCK_GERENCIAMENTO_ANDAMENTO,
-  MOCK_GERENCIAMENTO_CONCLUIDO,
-  MOCK_REMOVIDOS,
   MOCK_FILA_ADMIN,
 } from '../admin/mockData';
 import { mockDelay } from '../shared/utils/mockDelay';
@@ -80,40 +76,7 @@ export const useAdminStore = defineStore('admin', () => {
         ]
       };
     } catch {
-      visaoGeral.value = {
-        kpis: [
-          { id: 'media_cards_por_funcionario', titulo: 'Média de exames por funcionário', valor: '3.5', formato: 'numero' },
-          { id: 'porcentagem_problematicas', titulo: 'Solicitações problemáticas', valor: '25', formato: 'porcentagem' },
-          { id: 'porcentagem_concluidas', titulo: 'Solicitações concluídas', valor: '25', formato: 'porcentagem' },
-          { id: 'tempo_medio_marcacao', titulo: 'Tempo médio de marcação', valor: '31', formato: 'dias' },
-        ],
-        graficos: [
-          {
-            id: 'ranking-exames',
-            titulo: 'Top 10 - Distribuição por Tipo de Exame',
-            tipo: 'barras_horizontais',
-            dados: [
-              { categoria: 'Colonoscopia', pendentes: 3, emAgendamento: 2, concluidos: 8, total: 13 },
-              { categoria: 'Endoscopia', pendentes: 1, emAgendamento: 6, concluidos: 4, total: 11 },
-              { categoria: 'Ultrassonografia', pendentes: 2, emAgendamento: 0, concluidos: 3, total: 5 },
-              { categoria: 'Mamografia', pendentes: 0, emAgendamento: 1, concluidos: 1, total: 2 },
-              { categoria: 'Ecocardiograma', pendentes: 0, emAgendamento: 1, concluidos: 0, total: 1 },
-            ],
-          },
-          {
-            id: 'ranking-municipios',
-            titulo: 'Top 10 - Distribuição por Município',
-            tipo: 'barras_horizontais',
-            dados: [
-              { categoria: 'Recife', pendentes: 5, emAgendamento: 3, concluidos: 8, total: 16 },
-              { categoria: 'Olinda', pendentes: 2, emAgendamento: 1, concluidos: 3, total: 6 },
-              { categoria: 'Caruaru', pendentes: 1, emAgendamento: 1, concluidos: 2, total: 4 },
-              { categoria: 'Petrolina', pendentes: 1, emAgendamento: 0, concluidos: 1, total: 2 },
-              { categoria: 'Jaboatão dos Guararapes', pendentes: 0, emAgendamento: 1, concluidos: 1, total: 2 },
-            ],
-          },
-        ],
-      };
+        visaoGeral.value = null;
     } finally {
       if (!opcoes.silencioso) isLoadingVisaoGeral.value = false;
     }
@@ -159,60 +122,69 @@ export const useAdminStore = defineStore('admin', () => {
   // Gerenciamento de Agendamentos
   async function fetchAgendamentosGerenciamento(opcoes: { silencioso?: boolean } = {}) {
     if (!opcoes.silencioso) isLoadingAgendamentos.value = true;
-    await mockDelay();
-    agendamentosEmAndamento.value = [...MOCK_GERENCIAMENTO_ANDAMENTO];
-    agendamentosConcluidos.value = [...MOCK_GERENCIAMENTO_CONCLUIDO];
-    agendamentosRemovidos.value = [...MOCK_REMOVIDOS];
-    if (!opcoes.silencioso) isLoadingAgendamentos.value = false;
+    try {
+      const [resEmAndamento, resConcluidos, resRemovidos] = await Promise.all([
+        api.get<AgendamentoGerenciamento[]>(`/api/admin/agendamentos?estado=em_andamento`),
+        api.get<AgendamentoGerenciamento[]>(`/api/admin/agendamentos?estado=concluidos`),
+        api.get<AgendamentoRemovido[]>(`/api/admin/agendamentos?estado=excluidos`),
+      ]);
+      agendamentosEmAndamento.value = resEmAndamento.data;
+      agendamentosConcluidos.value = resConcluidos.data;
+      agendamentosRemovidos.value = resRemovidos.data;
+    } catch {
+      agendamentosEmAndamento.value = [];
+      agendamentosConcluidos.value = [];
+      agendamentosRemovidos.value = [];
+    } finally {
+      if (!opcoes.silencioso) isLoadingAgendamentos.value = false;
+    }
   }
 
   async function reatribuirAgendamento(id: number, funcionarioUsername: string) {
-    await mockDelay('action');
-    const item = agendamentosEmAndamento.value.find((i) => i.id === id);
-    if (item) {
-      item.responsavel = funcionarioUsername;
-      return;
-    }
-    // Reatribuir uma pendência: o caso passa para o novo funcionário e deixa de estar parado/bloqueado.
-    const pendencia = pendencias.value.find((i) => i.id === id);
-    if (pendencia) {
-      pendencias.value = pendencias.value.filter((i) => i.id !== id);
-    }
+    try {
+      const item = agendamentosEmAndamento.value.find((i) => i.id === id) ??
+        pendencias.value.find((i) => i.id === id);
+      if (!item) return;
+
+      await api.post(`/api/admin/agendamentos/${item.solicitacao}/reatribuir`, { 
+        funcionario: funcionarioUsername
+      });
+
+      // atualiza o estado local reativamente após o sucesso da API
+      if (agendamentosEmAndamento.value.some(i => i.id === id)) {
+        // Se estava em andamento, apenas troca o responsável na tela
+        const emAndamento = agendamentosEmAndamento.value.find((i) => i.id === id);
+        if (emAndamento) emAndamento.funcionarioAtribuido = funcionarioUsername;
+      } else {
+        // Se era uma pendência, ela foi resolvida/reatribuída, então removemos da lista de travados
+        pendencias.value = pendencias.value.filter((i) => i.id !== id);
+      }    
+    } catch (error) {
+      console.error('Erro ao reatribuir agendamento',error);
+      throw error;
+    } 
   }
 
   async function devolverAFilaAdmin(id: number, motivo: string) {
-    await mockDelay('action');
-    // Localiza o item em qualquer uma das listas para registrar a devolução com o motivo.
-    const item =
-      agendamentosEmAndamento.value.find((i) => i.id === id) ??
-      agendamentosConcluidos.value.find((i) => i.id === id) ??
-      pendencias.value.find((i) => i.id === id);
-    if (item) {
-      // Detalhes originais, caso o item devolvido seja uma pendência já com problema reportado.
-      const detalhesOriginais = (item as PendenciaItem).problema_detalhes ?? null;
-      const removido: AgendamentoRemovido = {
-        id: item.id,
-        nome: item.nome,
-        prontuario: item.prontuario,
-        solicitacao: item.solicitacao,
-        exame: item.exame,
-        diasNaFila: item.diasNaFila,
-        status: item.status,
-        unidadeSolicitante: item.unidadeSolicitante,
-        dataRetorno: item.dataRetorno,
-        localizacao: item.localizacao,
-        regiao: item.regiao,
-        idade: item.idade,
-        telefone: item.telefone,
-        responsavel: item.responsavel ?? '',
-        problema_motivo: motivo,
-        problema_detalhes: detalhesOriginais,
-      };
-      agendamentosRemovidos.value = [...agendamentosRemovidos.value, removido];
+    try {
+      // localiza o item em qualquer uma das listas locais para obter a propriedade 'solicitacao'
+      const item =
+        agendamentosEmAndamento.value.find((i) => i.id === id) ??
+        agendamentosConcluidos.value.find((i) => i.id === id) ??
+        pendencias.value.find((i) => i.id === id);
+        
+      if (!item) return;
+
+      await api.post(`/api/admin/agendamentos/${item.solicitacao}/devolver`, { 
+        motivo: motivo 
+      });
+
+      // depois do sucesso da API, remove o item localmente das listas do front-end
+      agendamentosEmAndamento.value = agendamentosEmAndamento.value.filter((i) => i.id !== id);
+      agendamentosConcluidos.value = agendamentosConcluidos.value.filter((i) => i.id !== id);
+      pendencias.value = pendencias.value.filter((i) => i.id !== id);    } catch {
+      //
     }
-    agendamentosEmAndamento.value = agendamentosEmAndamento.value.filter((i) => i.id !== id);
-    agendamentosConcluidos.value = agendamentosConcluidos.value.filter((i) => i.id !== id);
-    pendencias.value = pendencias.value.filter((i) => i.id !== id);
   }
 
   async function devolverRemovidoAFila(id: number) {
@@ -261,9 +233,13 @@ export const useAdminStore = defineStore('admin', () => {
 
   // Funcionários
   async function fetchFuncionarios() {
-    await mockDelay('fast');
-    funcionarios.value = MOCK_FUNCIONARIOS;
-  }
+    try {
+      const response = await api.get<Funcionario[]>('/api/admin/funcionarios');
+      funcionarios.value = response.data;
+    } catch (error) {
+      console.error('Erro ao buscar funcionários', error);
+    }
+  } 
 
   return {
     visaoGeral,

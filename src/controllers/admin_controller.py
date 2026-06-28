@@ -58,9 +58,9 @@ def _build_item(row) -> dict:
 
     prontuario = str(row.paciente_solicitante)
 
-    funcionario_username = None
+    funcionario_nome = None
     if row.funcionario:
-        funcionario_username = row.funcionario.username
+        funcionario_nome = row.funcionario.nome if row.funcionario.nome else row.funcionario.username
 
     return {
         "id": row.id,
@@ -68,13 +68,14 @@ def _build_item(row) -> dict:
         "prontuario": prontuario,
         "nome": f"Paciente #{prontuario}",
         "telefone": paciente.telefone,
-        "exames": [exame_nome],
+        "exame": exame_nome,
+        "exameCodigo": row.exame,
         "diasNaFila": dias_na_fila,
         "unidadeSolicitante": sol.unidade_solicitante if sol else None,
         "dataRetorno": sol.data_retorno.isoformat() if sol and sol.data_retorno else None,
         "localizacao": localizacao,
         "idade": idade,
-        "funcionarioAtribuido": funcionario_username,
+        "funcionarioAtribuido": funcionario_nome,
     }
 
 async def listar_visao_geral(
@@ -228,7 +229,7 @@ async def excluir(solicitacao_id: int, provider: AdminLocalProvider) -> dict:
 
 async def listar_funcionarios(provider: AdminLocalProvider) -> List[dict]:
     funcionarios = await provider.listar_funcionarios()
-    return [{"username": f.username, "nome": f.nome} for f in funcionarios]
+    return [{"username": f.username, "nome": f.nome} for f in funcionarios if f.username is not None]
 
 
 async def resolver_pendencia(solicitacao_id: int, observacao: Optional[str], provider: AdminLocalProvider) -> dict:

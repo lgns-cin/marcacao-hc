@@ -14,7 +14,7 @@ import type { AgendamentoItem } from '../../funcionario/types';
 import Button from '../../shared/components/Button.vue';
 
 type ItemComResponsavel = AgendamentoItem & {
-  responsavel: string;
+  funcionarioAtribuido: string;
   estado?: string;
   problema_motivo?: string | null;
   problema_detalhes?: string | null;

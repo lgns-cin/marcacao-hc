@@ -17,7 +17,7 @@ const props = defineProps<{
     idade: number;
     telefone?: string;
     estado?: string;
-    responsavel?: string;
+    funcionarioAtribuido?: string;
   };
 }>();
 
@@ -54,9 +54,9 @@ const statusClasses = computed(() => getStatusClasses(props.item.status));
         <dt class="inline font-semibold text-govbr-text">Exame: </dt>
         <dd class="inline text-govbr-text-secondary"> {{ nomeDoCodigo(item.exame) }}</dd>
       </div>
-      <div v-if="item.responsavel">
+      <div v-if="item.funcionarioAtribuido">
         <dt class="inline font-semibold text-govbr-text">Responsável: </dt>
-        <dd class="inline text-govbr-text-secondary"> {{ item.responsavel }}</dd>
+        <dd class="inline text-govbr-text-secondary"> {{ item.funcionarioAtribuido }}</dd>
       </div>
       <div v-if="item.telefone">
         <dt class="inline font-semibold text-govbr-text">Telefone: </dt>

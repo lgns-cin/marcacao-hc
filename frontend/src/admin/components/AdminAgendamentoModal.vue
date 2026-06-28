@@ -15,7 +15,7 @@ import type { Funcionario } from '../types';
 import Button from '../../shared/components/Button.vue';
 
 type ItemModal = AgendamentoItem & {
-  responsavel: string;
+  funcionarioAtribuido: string;
   problema_motivo?: string | null;
   problema_detalhes?: string | null;
 };
@@ -92,7 +92,6 @@ function handleResolver() {
 
     <div v-if="item" class="space-y-4">
       <BaseModalDetails :item="item">
-
         <div v-if="item.problema_motivo" class="space-y-2 pt-2">
           <p class="font-semibold text-govbr-text">Informações sobre o Reporte do Problema:</p>
           <ul class="list-disc space-y-1 pl-5 text-[16px]">
