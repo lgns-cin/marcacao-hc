@@ -63,7 +63,7 @@ const statusClasses = computed(() => getStatusClasses(props.item.status));
       </span>
     </div>
 
-    <div class="mt-4">
+    <div class="mt-4 flex items-center gap-2">
       <slot :isFinalizado="finalizado"></slot>
     </div>
 

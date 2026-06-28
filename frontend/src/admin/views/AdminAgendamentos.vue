@@ -16,8 +16,8 @@ import Button from '../../shared/components/Button.vue';
 type ItemComResponsavel = AgendamentoItem & {
   funcionarioAtribuido: string;
   estado?: string;
-  problema_motivo?: string | null;
-  problema_detalhes?: string | null;
+  motivo?: string | null;
+  detalhes?: string | null;
 };
 
 const adminStore = useAdminStore();

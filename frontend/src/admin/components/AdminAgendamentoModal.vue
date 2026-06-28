@@ -16,8 +16,9 @@ import Button from '../../shared/components/Button.vue';
 
 type ItemModal = AgendamentoItem & {
   funcionarioAtribuido: string;
-  problema_motivo?: string | null;
-  problema_detalhes?: string | null;
+  resultado?: 'CONFIRMADO' | 'PROBLEMA_REPORTADO';
+  motivo?: string | null;
+  detalhes?: string | null;
 };
 
 type Painel = 'nenhum' | 'devolver' | 'reatribuir';
@@ -92,11 +93,11 @@ function handleResolver() {
 
     <div v-if="item" class="space-y-4">
       <BaseModalDetails :item="item">
-        <div v-if="item.problema_motivo" class="space-y-2 pt-2">
+        <div v-if="item.motivo && item.resultado == 'PROBLEMA_REPORTADO'" class="space-y-2 pt-2">
           <p class="font-semibold text-govbr-text">Informações sobre o Reporte do Problema:</p>
           <ul class="list-disc space-y-1 pl-5 text-[16px]">
-            <li><span class="font-semibold text-govbr-text">Motivo</span>: <span class="text-govbr-text-secondary">{{ item.problema_motivo }}</span></li>
-            <li v-if="item.problema_detalhes"><span class="font-semibold text-govbr-text">Detalhes</span>: <span class="text-govbr-text-secondary">{{ item.problema_detalhes }}</span></li>
+            <li><span class="font-semibold text-govbr-text">Motivo</span>: <span class="text-govbr-text-secondary">{{ item.motivo }}</span></li>
+            <li v-if="item.detalhes"><span class="font-semibold text-govbr-text">Detalhes</span>: <span class="text-govbr-text-secondary">{{ item.detalhes }}</span></li>
           </ul>
         </div>
 
@@ -132,7 +133,7 @@ function handleResolver() {
       <template v-if="permitirAcoes === false">
         <Button variant="primary" @click="fechar">Fechar</Button>
       </template>
-      <template v-else-if="item?.problema_motivo">
+      <template v-else-if="item?.motivo">
         <Button variant="tertiary" @click="abrirPainel('devolver')">
           Devolver à fila
         </Button>
