@@ -2,7 +2,7 @@
 import { computed } from 'vue';
 import { UserGroupIcon, ClockIcon } from '@heroicons/vue/24/solid';
 import { categoriaDoCodigo } from '../utils/catalogoExames';
-import { isFinalizado, getEstadoLabel, getStatusClasses } from '../utils/statusFormatting';
+import { getStatusClasses } from '../utils/statusFormatting';
 
 const props = defineProps<{
   item: {
@@ -12,12 +12,13 @@ const props = defineProps<{
     status: string;
     diasNaFila: number;
     exame: string;
-    estado?: string;
+    funcionarioAtribuido?: string;
+    estadoAtribuicao?: string;
     resultado?: string;
   };
 }>();
 
-const finalizado = computed(() => props.item.estado === 'FINALIZADO');
+const finalizado = computed(() => props.item.estadoAtribuicao === 'FINALIZADO');
 const resultadoLabel = computed(() => props.item.resultado === 'CONFIRMADO' ? 'Confirmado' : 'Problema Reportado' );
 const statusClasses = computed(() => getStatusClasses(props.item.status));
 </script>
@@ -33,7 +34,7 @@ const statusClasses = computed(() => getStatusClasses(props.item.status));
       </div>
 
       <div class="flex shrink-0 items-center gap-2 whitespace-nowrap">
-        <template v-if="!finalizado">
+        <template v-if="!finalizado || resultadoLabel == 'Problema Reportado'">
           <span class="flex items-center gap-1 text-sm text-govbr-text-secondary">
             <ClockIcon class="h-4 w-4" />
             há {{ item.diasNaFila }}d
@@ -46,7 +47,7 @@ const statusClasses = computed(() => getStatusClasses(props.item.status));
         </template>
 
         <span
-          v-else
+          v-if="finalizado"
           class="rounded-full border border-govbr-border px-2.5 py-0.5 text-xs font-bold text-govbr-text-secondary"
         >
           {{ resultadoLabel }}
@@ -56,14 +57,13 @@ const statusClasses = computed(() => getStatusClasses(props.item.status));
 
     <p class="mt-1 text-[16px] text-govbr-text-secondary">Prontuário: {{ item.prontuario }}</p>
     <p class="text-[16px] text-govbr-text-secondary">Solicitação: {{ item.solicitacao }}</p>
-
     <div class="mt-3">
       <span class="rounded border border-govbr-border px-3 py-1 text-sm font-semibold text-govbr-text">
         {{ categoriaDoCodigo(item.exame) ?? item.exame }}
       </span>
     </div>
 
-    <div class="mt-4 flex items-center gap-6">
+    <div class="mt-4">
       <slot :isFinalizado="finalizado"></slot>
     </div>
 

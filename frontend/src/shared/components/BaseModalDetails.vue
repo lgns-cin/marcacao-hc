@@ -2,7 +2,7 @@
 import { computed } from 'vue';
 import { ClockIcon } from '@heroicons/vue/24/outline';
 import { nomeDoCodigo, categoriaDoCodigo } from '../utils/catalogoExames';
-import { isFinalizado, getEstadoLabel, getStatusClasses } from '../utils/statusFormatting';
+import { getStatusClasses } from '../utils/statusFormatting';
 
 const props = defineProps<{
   item: {
@@ -16,13 +16,14 @@ const props = defineProps<{
     localizacao: string;
     idade: number;
     telefone?: string;
-    estado?: string;
+    estadoAtribuicao?: string;
+    resultado?: string;
     funcionarioAtribuido?: string;
   };
 }>();
 
-const finalizado = computed(() => isFinalizado(props.item.estado));
-const estadoLabel = computed(() => getEstadoLabel(props.item.estado));
+const finalizado = computed(() => props.item.estadoAtribuicao === 'FINALIZADO');
+const resultadoLabel = computed(() => props.item.resultado === 'CONFIRMADO' ? 'Confirmado' : 'Problema Reportado' );
 const statusClasses = computed(() => getStatusClasses(props.item.status));
 </script>
 
@@ -35,7 +36,7 @@ const statusClasses = computed(() => getStatusClasses(props.item.status));
         </span>
       </div>
 
-      <div v-if="!finalizado" class="flex items-center gap-2">
+      <div v-if="!finalizado || resultadoLabel == 'Problema Reportado'" class="flex items-center gap-2">
         <span class="flex items-center gap-1 text-[16px] text-govbr-text-secondary">
           <ClockIcon class="h-4 w-4" />
           há {{ item.diasNaFila }}d
@@ -44,8 +45,10 @@ const statusClasses = computed(() => getStatusClasses(props.item.status));
           {{ item.status }}
         </span>
       </div>
-      <span v-else class="rounded-full border border-govbr-border px-2.5 py-0.5 text-xs font-bold text-govbr-text-secondary">
-        {{ estadoLabel }}
+      <span 
+      v-if="finalizado"
+      class="rounded-full border border-govbr-border px-2.5 py-0.5 text-xs font-bold text-govbr-text-secondary">
+          {{ resultadoLabel }}
       </span>
     </div>
 

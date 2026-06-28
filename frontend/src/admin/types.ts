@@ -53,7 +53,8 @@ export type PendenciaItem = AgendamentoItem & {
 };
 
 export type AgendamentoGerenciamento = AgendamentoItem & {
-  estado: EstadoMinhaArea;
+  estadoAtribuicao: EstadoMinhaArea;
+  resultado: 'PROBLEMA_REPORTADO'| 'CONCLUIDO';
   funcionarioAtribuido: string;
   motivo?: string | null;
   detalhes?: string | null;

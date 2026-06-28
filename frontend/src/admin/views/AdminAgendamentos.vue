@@ -23,7 +23,7 @@ type ItemComResponsavel = AgendamentoItem & {
 const adminStore = useAdminStore();
 const toast = useToast();
 
-const abaAtiva = ref<'emAndamento' | 'concluido' | 'removido'>('emAndamento');
+const abaAtiva = ref<'emAndamento' | 'finalizado' | 'removido'>('emAndamento');
 const filtrosExpandidos = ref(false);
 const modalAberto = ref(false);
 const itemSelecionado = ref<ItemComResponsavel | null>(null);
@@ -125,7 +125,7 @@ useAutoRefresh(
 
     <div class="mt-6 flex items-center gap-6 border-b border-govbr-border">
       <button
-        class="flex items-center gap-2 border-b-2 px-1 pb-3 text-sm font-bold"
+        class="flex items-center gap-2 border-b-2 px-1 pb-3 text-sm font-bold cursor-pointer"
         :class="abaAtiva === 'emAndamento' ? 'border-govbr-primary text-govbr-primary' : 'border-transparent text-govbr-text-secondary'"
         @click="abaAtiva = 'emAndamento'"
       >
@@ -133,15 +133,15 @@ useAutoRefresh(
         Em andamento
       </button>
       <button
-        class="flex items-center gap-2 border-b-2 px-1 pb-3 text-sm font-bold"
-        :class="abaAtiva === 'concluido' ? 'border-govbr-primary text-govbr-primary' : 'border-transparent text-govbr-text-secondary'"
-        @click="abaAtiva = 'concluido'"
+        class="flex items-center gap-2 border-b-2 px-1 pb-3 text-sm font-bold cursor-pointer"
+        :class="abaAtiva === 'finalizado' ? 'border-govbr-primary text-govbr-primary' : 'border-transparent text-govbr-text-secondary'"
+        @click="abaAtiva = 'finalizado'"
       >
         <CheckCircleIcon class="h-5 w-5" />
-        Concluído
+        Finalizados
       </button>
       <button
-        class="flex items-center gap-2 border-b-2 px-1 pb-3 text-sm font-bold"
+        class="flex items-center gap-2 border-b-2 px-1 pb-3 text-sm font-bold cursor-pointer"
         :class="abaAtiva === 'removido' ? 'border-govbr-primary text-govbr-primary' : 'border-transparent text-govbr-text-secondary'"
         @click="abaAtiva = 'removido'"
       >
@@ -166,9 +166,9 @@ useAutoRefresh(
       </div>
     </template>
 
-    <template v-else-if="abaAtiva === 'concluido'">
+    <template v-else-if="abaAtiva === 'finalizado'">
       <p v-if="adminStore.agendamentosConcluidosFiltrados.length === 0" class="mt-8 text-govbr-text-secondary">
-        Nenhum agendamento concluído encontrado.
+        Nenhum agendamento finalizado encontrado.
       </p>
       <div v-else class="mt-6 grid gap-4 sm:grid-cols-2">
         <GerenciamentoCard

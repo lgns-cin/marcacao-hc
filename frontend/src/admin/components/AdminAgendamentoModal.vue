@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { ref, watch } from 'vue';
 import {
-  ClockIcon,
-  ExclamationCircleIcon,
+  ArrowUturnLeftIcon,
+  ArrowsRightLeftIcon,
 } from '@heroicons/vue/24/outline';
 import { UserGroupIcon } from '@heroicons/vue/24/solid';
 import Modal from '../../shared/components/Modal.vue';
@@ -142,11 +142,11 @@ function handleResolver() {
       </template>
       <template v-else>
         <Button variant="secondary" @click="abrirPainel('devolver')">
-          <ClockIcon class="h-4 w-4" />
+          <ArrowUturnLeftIcon class="h-4 w-4" />
           Devolver à fila
         </Button>
         <Button variant="secondary" @click="abrirPainel('reatribuir')">
-          <ExclamationCircleIcon class="h-4 w-4" />
+          <ArrowsRightLeftIcon class="h-4 w-4" />
           Reatribuir
         </Button>
         <Button variant="primary" @click="fechar">Fechar</Button>

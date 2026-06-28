@@ -5,13 +5,13 @@ import {
   ArrowUturnLeftIcon,
   ArrowsRightLeftIcon,
 } from '@heroicons/vue/24/outline';
-import { TrashIcon, UserGroupIcon } from '@heroicons/vue/20/solid';
+import { TrashIcon } from '@heroicons/vue/20/solid';
 import Button from '../../shared/components/Button.vue';
 import SeletorMotivo from '../../shared/components/SeletorMotivo.vue';
 import SeletorFuncionario from '../../shared/components/SeletorFuncionario.vue';
-import { nomeDoCodigo } from '../../shared/utils/catalogoExames';
 import { MOTIVOS_DEVOLUCAO } from '../../shared/constants';
 import type { PendenciaItem, Funcionario } from '../types';
+import BaseCard from '../../shared/components/BaseCard.vue';
 
 const props = defineProps<{
   pendencia: PendenciaItem;
@@ -56,20 +56,7 @@ function temDetalhesExtras(p: PendenciaItem): boolean {
 </script>
 
 <template>
-  <div class="flex flex-col rounded-lg bg-white p-5 shadow-[0_0_7.6px_rgba(0,0,0,0.15)] transition-shadow hover:shadow-xl">
-    <!-- Cabeçalho: paciente + situação -->
-    <div class="flex items-start justify-between gap-3">
-      <div class="flex items-center gap-2">
-        <UserGroupIcon class="h-6 w-6 shrink-0 text-govbr-text" />
-        <h3 class="text-lg font-bold text-govbr-text">{{ pendencia.nome }}</h3>
-      </div>
-    </div>
-
-    <!-- Identificação secundária -->
-    <p class="mt-1 text-sm text-govbr-text-secondary">
-      Prontuário {{ pendencia.prontuario }} · {{ nomeDoCodigo(pendencia.exame) }} · há {{ pendencia.diasNaFila }}d
-    </p>
-
+  <BaseCard :item="pendencia">
     <!-- O PROBLEMA EM DESTAQUE — visível sem nenhum clique -->
     <div class="mt-3 flex items-start gap-2 rounded-md border-l-4 border-govbr-error bg-govbr-error-bg px-3 py-2.5">
       <ExclamationTriangleIcon class="mt-0.5 h-5 w-5 shrink-0 text-govbr-error" />
@@ -80,12 +67,6 @@ function temDetalhesExtras(p: PendenciaItem): boolean {
         </p>
       </div>
     </div>
-
-    <!-- Responsável -->
-    <p class="mt-3 text-sm text-govbr-text">
-      <span class="font-semibold">Responsável: </span>
-      <span class="text-govbr-text-secondary"> {{ pendencia.funcionarioAtribuido }}</span>
-    </p>
 
     <!-- Painel inline de devolução -->
     <div v-if="painel === 'devolver'" class="mt-3 space-y-3 rounded border border-govbr-border bg-govbr-bg p-3">
@@ -122,5 +103,5 @@ function temDetalhesExtras(p: PendenciaItem): boolean {
         Reatribuir
       </Button>
     </div>
-  </div>
+  </BaseCard>
 </template>
