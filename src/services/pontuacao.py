@@ -1,17 +1,24 @@
 """
 src/services/pontuacao.py
 
-Módulo de priorização de solicitações de exame — CORTEx-HC.
+Módulo de priorização de solicitações de exame 
 
-Responsabilidade: receber dicionários com dados da solicitação e retornar uma pontuação numérica (0-100+). Não acessa banco, não faz chamadas HTTP. É chamado pelo controller após os providers buscarem os dados.
+Responsabilidade: receber dicionários com dados do paciente e da solicitação e 
+retornar uma pontuação numérica (0-100+). Não acessa banco, não faz chamadas HTTP. 
 
-Contrato de entrada esperado pelo controller (dicionário plano):
+É chamado pelo controller após os providers buscarem os dados.
+
+Contrato de entrada esperado pelo controller:
+
+    paciente = {
+        "cidade": str,                # ex: "Petrolina"
+        "data_nascimento": str | date # ex: "1980-01-01" ou objeto date
+    }
 
     solicitacao = {
-        "cidade": str,                 # ex: "Petrolina"
-        "data_retorno": str | date,    # ex: "2026-07-10" (ISO 8601) ou objeto date
-        "unidade_solicitante": str,    # ex: "UTI ADULTO"
-        "data_solicitacao": str | date # ex: "2026-06-01" (ISO 8601) ou objeto date
+        "data_retorno": str | date,   # ex: "2026-07-10" ou objeto date
+        "unidade_solicitante": str,   # ex: "UTI ADULTO"
+        "data_solicitacao": str | date # ex: "2026-06-01" ou objeto date
     }
 """
 
