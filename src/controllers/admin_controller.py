@@ -5,7 +5,8 @@ from typing import List, Optional
 
 from fastapi import HTTPException, status
 
-from ..providers.implementations.admin_local_provider import AdminLocalProvider
+from ..helpers.filtros import aplicar_filtros
+from ..providers.implementations.banco_local.admin_local_provider import AdminLocalProvider
 from ..enums import StatusAtribuicao, ResultadoAtribuicao
 
 ESTADOS_VALIDOS = ("em_andamento", "concluidos", "excluidos")
@@ -109,9 +110,15 @@ async def listar_pendencias(
     data_inicio: Optional[date] = None,
     data_fim: Optional[date] = None,
     limite: Optional[int] = None,
+    regioes: Optional[List[str]] = None,
+    municipio: Optional[str] = None,
+    faixa_etaria: Optional[str] = None,
+    tipos_exame: Optional[List[str]] = None,
 ) -> List[dict]:
     _validar_periodo(data_inicio, data_fim)
     rows = await provider.listar_pendencias(data_inicio, data_fim)
+    rows = aplicar_filtros(rows, regioes=regioes, municipio=municipio,
+                           faixa_etaria=faixa_etaria, tipos_exame=tipos_exame)
 
     # aplicar pontuacao e ordenar
     items = []
@@ -148,6 +155,10 @@ async def listar_agendamentos(
     data_inicio: Optional[date] = None,
     data_fim: Optional[date] = None,
     limite: Optional[int] = None,
+    regioes: Optional[List[str]] = None,
+    municipio: Optional[str] = None,
+    faixa_etaria: Optional[str] = None,
+    tipos_exame: Optional[List[str]] = None,
 ) -> List[dict]:
     if estado not in ESTADOS_VALIDOS:
         raise HTTPException(
@@ -156,6 +167,8 @@ async def listar_agendamentos(
         )
     _validar_periodo(data_inicio, data_fim)
     rows = await provider.listar_agendamentos(estado, data_inicio, data_fim)
+    rows = aplicar_filtros(rows, regioes=regioes, municipio=municipio,
+                           faixa_etaria=faixa_etaria, tipos_exame=tipos_exame)
 
     # aplicar pontuacao e ordenar
     items = []

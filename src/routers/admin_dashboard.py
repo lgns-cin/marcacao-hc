@@ -1,13 +1,13 @@
 from datetime import date
 from typing import Optional
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Query
 from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ..resources.database import get_app_db_session
 from ..routers.admin import verify_admin_group
-from ..providers.implementations.admin_local_provider import AdminLocalProvider
+from ..providers.implementations.banco_local.admin_local_provider import AdminLocalProvider
 from ..controllers import admin_controller
 
 router = APIRouter(prefix="/api/admin", tags=["Admin Dashboard"])
@@ -63,10 +63,22 @@ async def ranking_municipios(
 async def pendencias(
     data_inicio: Optional[date] = None,
     data_fim: Optional[date] = None,
+    limite: Optional[int] = None,
+    regioes: Optional[str] = Query(default=None),
+    municipio: Optional[str] = Query(default=None),
+    faixa_etaria: Optional[str] = Query(default=None),
+    tipos_exame: Optional[str] = Query(default=None),
     provider: AdminLocalProvider = Depends(get_admin_provider),
     _: dict = Depends(verify_admin_group),
 ):
-    return await admin_controller.listar_pendencias(provider, data_inicio, data_fim)
+    return await admin_controller.listar_pendencias(
+        provider, data_inicio, data_fim, limite,
+        regioes=regioes.split(",") if regioes else None,
+        municipio=municipio or None,
+        faixa_etaria=faixa_etaria or None,
+        tipos_exame=tipos_exame.split(",") if tipos_exame else None,
+    )
+
 
 
 @router.post("/pendencias/{solicitacao_id}/resolver")
@@ -84,10 +96,22 @@ async def agendamentos(
     estado: str = "em_andamento",
     data_inicio: Optional[date] = None,
     data_fim: Optional[date] = None,
+    limite: Optional[int] = None,
+    regioes: Optional[str] = Query(default=None),
+    municipio: Optional[str] = Query(default=None),
+    faixa_etaria: Optional[str] = Query(default=None),
+    tipos_exame: Optional[str] = Query(default=None),
     provider: AdminLocalProvider = Depends(get_admin_provider),
     _: dict = Depends(verify_admin_group),
 ):
-    return await admin_controller.listar_agendamentos(estado, provider, data_inicio, data_fim)
+    return await admin_controller.listar_agendamentos(
+        estado, provider, data_inicio, data_fim, limite,
+        regioes=regioes.split(",") if regioes else None,
+        municipio=municipio or None,
+        faixa_etaria=faixa_etaria or None,
+        tipos_exame=tipos_exame.split(",") if tipos_exame else None,
+    )
+
 
 
 @router.post("/agendamentos/{solicitacao_id}/reatribuir")

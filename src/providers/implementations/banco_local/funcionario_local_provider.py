@@ -5,9 +5,9 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
-from ...models.exame_solicitado import ExameSolicitado
-from ...models.funcionario import Funcionario
-from ...enums import StatusAtribuicao, ResultadoAtribuicao
+from ....models.exame_solicitado import ExameSolicitado
+from ....models.funcionario import Funcionario
+from ....enums import StatusAtribuicao, ResultadoAtribuicao
 
 
 class FuncionarioLocalProvider:
