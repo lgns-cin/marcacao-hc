@@ -22,9 +22,10 @@ from datetime import date, datetime
 # ---------------------------------------------------------------------------
 
 PESO_DATA_RETORNO      = 40
-PESO_URGENCIA          = 40
-PESO_LOCALIDADE        = 20
+PESO_URGENCIA          = 35
+PESO_LOCALIDADE        = 15
 BONUS_MAXIMO_ESPERA    = 20   # pontos extras máximos por tempo de espera
+PESO_IDADE             = 10
 
 DIAS_ESPERA_MAXIMO     = 60   # dias para atingir o bônus máximo
 
@@ -149,6 +150,33 @@ def score_localidade(cidade: str) -> float:
         return SCORE_INTERIOR_PROXIMO
     return SCORE_DEFAULT
 
+PESO_IDADE = 10 
+
+def score_idade(data_nascimento_str: str, hoje: date | None = None) -> float:
+    """
+    Pacientes mais velhos recebem prioridade maior.
+    A pontuação cresce proporcionalmente até os 80 anos (onde atinge 1.0).
+    """
+    if not data_nascimento_str:
+        return 0.0
+
+    if hoje is None:
+        hoje = date.today()
+
+    try:
+        data_nasc = _parse_date(data_nascimento_str)
+    except (ValueError, TypeError):
+        return 0.0
+
+    # Calcula a idade exata
+    idade = hoje.year - data_nasc.year - (
+        (hoje.month, hoje.day) < (data_nasc.month, data_nasc.day)
+    )
+
+    if idade < 0: return 0.0
+    if idade >= 80: return 1.0
+    
+    return round(idade / 80.0, 2)
 
 def bonus_tempo_espera(data_solicitacao: str, hoje: date | None = None) -> float:
     """
@@ -174,30 +202,28 @@ def bonus_tempo_espera(data_solicitacao: str, hoje: date | None = None) -> float
 # Função principal de pontuação
 # ---------------------------------------------------------------------------
 
-def calcular_pontuacao(solicitacao: dict, hoje: date | None = None) -> float:
+def calcular_pontuacao(paciente: dict, solicitacao: dict) -> float:
     """
     Calcula a pontuação de prioridade de uma solicitação.
-    Recebe um dicionário plano (com todos os dados no mesmo nível).
+    Recebe dois dicionários separados para manter compatibilidade com o Controller.
 
     Quanto maior o valor retornado, maior a prioridade na fila.
     Pontuação base: 0-100. Bônus de tempo de espera pode ultrapassar 100.
 
     Args:
-        paciente:    dict com "cidade"
-        solicitacao: dict com "data_retorno", "unidade_solicitante",
-                    "data_solicitacao"
+        paciente:    dict com "cidade" e "data_nascimento"
+        solicitacao: dict com "data_retorno", "unidade_solicitante", "data_solicitacao"
 
     Returns:
         float com a pontuação final.
     """
-
-    if hoje is None:
-        hoje = date.today()
+    hoje = date.today()
 
     score_base = (
         score_data_retorno(solicitacao.get("data_retorno", ""), hoje)   * PESO_DATA_RETORNO +
         score_urgencia(solicitacao.get("unidade_solicitante", ""))      * PESO_URGENCIA +
-        score_localidade(solicitacao.get("cidade", ""))                 * PESO_LOCALIDADE
+        score_localidade(paciente.get("cidade", ""))                    * PESO_LOCALIDADE +
+        score_idade(paciente.get("data_nascimento", ""), hoje)          * PESO_IDADE
     )
 
     bonus = bonus_tempo_espera(solicitacao.get("data_solicitacao", ""), hoje)
@@ -211,27 +237,26 @@ def calcular_pontuacao(solicitacao: dict, hoje: date | None = None) -> float:
 
 def ordenar_fila(solicitacoes: list[dict]) -> list[dict]:
     """
-    Recebe lista de solicitações pendentes (dicionários planos),
-    calcula a pontuação e retorna ordenada (maior primeiro).
+    Recebe lista de solicitações pendentes, calcula a pontuação de cada uma
+    e retorna a lista ordenada por prioridade (maior pontuação primeiro).
 
-    Cada item da lista deve ter as chaves "paciente" e, no mesmo nível,
-    os campos de solicitação esperados por calcular_pontuacao().
-
-    Adiciona o campo "pontuacao" em cada item da lista.
-
-    Exemplo de item esperado:
+    Exemplo de item esperado na lista:
         {
             "id": 42,
             "data_retorno": "2026-07-10",
             "unidade_solicitante": "UTI ADULTO",
             "data_solicitacao": "2026-06-01",
             "paciente": {
-                "cidade": "Petrolina"
+                "cidade": "Petrolina",
+                "data_nascimento": "1950-05-20"
             }
         }
     """
     for s in solicitacoes:
-        # Passamos o dicionário inteiro diretamente, sem tentar extrair "paciente"
-        s["pontuacao"] = calcular_pontuacao(s)
+        # Extrai o dicionário do paciente de dentro do item, ou cria um vazio caso não exista
+        paciente_dict = s.get("paciente", {})
+        
+        # Passa os dois dicionários separados, respeitando a assinatura da calcular_pontuacao
+        s["pontuacao"] = calcular_pontuacao(paciente_dict, s)
 
     return sorted(solicitacoes, key=lambda x: x["pontuacao"], reverse=True)
