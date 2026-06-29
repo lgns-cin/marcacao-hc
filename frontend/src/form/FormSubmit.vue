@@ -106,8 +106,18 @@ const onSubmit = async () => {
                     <XMarkIcon #icon class="stroke-dark-blue w-32 h-32"/>
                 </div>
                 <h1 class="font-bold text-3xl text-center">Não será possível marcar agora.</h1>
-                <p class="text-center">Devido à falta de vagas, todos os exames da sua solicitação estão <span class="text-light-red underline">indisponíveis</span>.</p>
-                <p class="text-center">Por favor, aguarde a liberação de vagas.</p>
+                <div v-if="exames.filter(v => v.status_vaga != 'DUPLICADO').length > 0" class="text-center">
+                    <p>Exames já enviados:</p>
+                    <ul>
+                        <template v-for="exame in exames">
+                            <p v-if="exame.status_vaga == 'DUPLICADO'" class="font-semibold">
+                                {{ exame.nome_exame }}
+                            </p>
+                        </template>
+                    </ul>
+                </div>
+                <p class="text-center">{{ `Devido à falta de vagas, os ${exames.filter(v => v.status_vaga != 'DUPLICADO').length > 0 ? "outros" : ""} exames da sua solicitação estão ` }}<span class="text-light-red underline">indisponíveis</span>.</p>
+                <p class="text-center">Por favor, aguarde a liberação de vagas ou procure a <span class="underline">Unidade Básica de Saúde</span> mais próxima.</p>
             </template>
 
             <template v-else-if="state == 'DUPLICADO'">
@@ -115,8 +125,8 @@ const onSubmit = async () => {
                     <XMarkIcon #icon class="stroke-dark-blue w-32 h-32"/>
                 </div>
                 <h1 class="font-bold text-3xl text-center">Solicitação inválida.</h1>
-                <p class="text-center">Nenhum <span class="underline">exame de imagem</span> foi solicitado ou seus exames já estão <span class="underline">marcados</span>.</p>
-                <p class="text-center">Se você já preencheu este formulário, por favor, aguarde contato via <span class="underline">WhatsApp</span>.</p>
+                <p class="text-center">Seus exames de imagem já foram <span class="underline">enviados</span>.</p>
+                <p class="text-center">Por favor, aguarde contato via <span class="underline">WhatsApp</span>.</p>
             </template>
 
             <template v-else-if="state == 'SUBMETIDO'">
