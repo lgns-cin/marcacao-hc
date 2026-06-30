@@ -112,33 +112,36 @@ async def agendamentos(
         tipos_exame=tipos_exame.split(",") if tipos_exame else None,
     )
 
-@router.post("/agendamentos/{solicitacao_id}/reatribuir")
+@router.post("/agendamentos/{solicitacao_id}/{exame_codigo}/reatribuir")
 async def reatribuir(
     solicitacao_id: int,
+    exame_codigo: str,
     body: ReatribuirRequest,
     provider: AdminLocalProvider = Depends(get_admin_provider),
     _: dict = Depends(verify_admin_group),
 ):
-    return await admin_controller.reatribuir(solicitacao_id, body.funcionario, provider)
+    return await admin_controller.reatribuir(solicitacao_id, exame_codigo, body.funcionario, provider)
 
 
-@router.post("/agendamentos/{solicitacao_id}/devolver")
+@router.post("/agendamentos/{solicitacao_id}/{exame_codigo}/devolver")
 async def devolver(
     solicitacao_id: int,
+    exame_codigo: str,
     body: DevolverRequest,
     provider: AdminLocalProvider = Depends(get_admin_provider),
     _: dict = Depends(verify_admin_group),
 ):
-    return await admin_controller.devolver_admin(solicitacao_id, body.motivo, provider)
+    return await admin_controller.devolver_admin(solicitacao_id, exame_codigo, body.motivo, provider)
 
 
-@router.delete("/agendamentos/{solicitacao_id}")
+@router.delete("/agendamentos/{solicitacao_id}/{exame_codigo}")
 async def excluir(
     solicitacao_id: int,
+    exame_codigo: str,
     provider: AdminLocalProvider = Depends(get_admin_provider),
     _: dict = Depends(verify_admin_group),
 ):
-    return await admin_controller.excluir(solicitacao_id, provider)
+    return await admin_controller.excluir(solicitacao_id, exame_codigo, provider)
 
 
 @router.get("/funcionarios")

@@ -1,7 +1,6 @@
+from ..services.pontuacao import calcular_pontuacao
 from datetime import date
 from typing import List, Literal, Optional
-
-from ..services.pontuacao import calcular_pontuacao
 
 from fastapi import HTTPException, status
 
@@ -59,9 +58,11 @@ def _build_item(row) -> dict:
         )
         idade = f"{anos} anos"
 
-    funcionario_username = None
+    prontuario = str(row.paciente_solicitante)
+
+    funcionario_nome = None
     if row.funcionario:
-        funcionario_username = row.funcionario.username
+        funcionario_nome = row.funcionario.nome if row.funcionario.nome else row.funcionario.username
 
     return {
         "id": row.id,
@@ -69,13 +70,14 @@ def _build_item(row) -> dict:
         "prontuario": prontuario,
         "nome": nome,
         "telefone": paciente.telefone,
-        "exames": [exame_nome],
+        "exame": exame_nome,
+        "exameCodigo": row.exame,
         "diasNaFila": dias_na_fila,
         "unidadeSolicitante": sol.unidade_solicitante if sol else None,
         "dataRetorno": sol.data_retorno.isoformat() if sol and sol.data_retorno else None,
         "localizacao": localizacao,
         "idade": idade,
-        "funcionarioAtribuido": funcionario_username,
+        "funcionarioAtribuido": funcionario_nome,
     }
 
 async def listar_visao_geral(
@@ -212,14 +214,19 @@ async def listar_agendamentos(
     return items
 
 
-async def reatribuir(solicitacao_id: int, username_novo: str, provider: AdminLocalProvider) -> dict:
+async def reatribuir(
+        solicitacao_id: int,
+        exame_codigo: str,
+        username_novo: str,
+        provider: AdminLocalProvider
+    ) -> dict:
     funcionario = await provider.buscar_funcionario_por_username(username_novo)
     if not funcionario:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"Funcionário '{username_novo}' não encontrado",
         )
-    rows = await provider.buscar_por_solicitacao(solicitacao_id)
+    rows = await provider.buscar_por_solicitacao(solicitacao_id, exame_codigo)
     if not rows:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -229,8 +236,13 @@ async def reatribuir(solicitacao_id: int, username_novo: str, provider: AdminLoc
     return {"mensagem": f"Agendamento reatribuído para {username_novo}"}
 
 
-async def devolver_admin(solicitacao_id: int, motivo: str, provider: AdminLocalProvider) -> dict:
-    rows = await provider.buscar_por_solicitacao(solicitacao_id)
+async def devolver_admin(
+        solicitacao_id: int,
+        exame_codigo: str,
+        motivo: str,
+        provider: AdminLocalProvider
+    ) -> dict:
+    rows = await provider.buscar_por_solicitacao(solicitacao_id, exame_codigo)
     if not rows:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -240,8 +252,8 @@ async def devolver_admin(solicitacao_id: int, motivo: str, provider: AdminLocalP
     return {"mensagem": "Agendamento devolvido para a fila"}
 
 
-async def excluir(solicitacao_id: int, provider: AdminLocalProvider) -> dict:
-    rows = await provider.buscar_por_solicitacao(solicitacao_id)
+async def excluir(solicitacao_id: int, exame_codigo: str, provider: AdminLocalProvider) -> dict:
+    rows = await provider.buscar_por_solicitacao(solicitacao_id, exame_codigo)
     if not rows:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -253,7 +265,7 @@ async def excluir(solicitacao_id: int, provider: AdminLocalProvider) -> dict:
 
 async def listar_funcionarios(provider: AdminLocalProvider) -> List[dict]:
     funcionarios = await provider.listar_funcionarios()
-    return [{"username": f.username, "nome": f.nome} for f in funcionarios]
+    return [{"username": f.username, "nome": f.nome} for f in funcionarios if f.username is not None]
 
 
 async def resolver_pendencia(solicitacao_id: int, observacao: Optional[str], provider: AdminLocalProvider) -> dict:

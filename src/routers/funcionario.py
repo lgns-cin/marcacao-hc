@@ -60,14 +60,15 @@ async def listar_agendamentos(
     )
 
 # Atribui um agendamento da fila ao funcionário logado, mudando o status para EM_ANDAMENTO
-@router.post("/agendamentos/{solicitacao_id}/puxar")
+@router.post("/agendamentos/{solicitacao_id}/{exame_codigo}/puxar")
 async def puxar_agendamento(
     solicitacao_id: int,
+    exame_codigo: str,
     provider: FuncionarioLocalProvider = Depends(get_funcionario_provider),
     current_user: dict = Depends(auth_handler.decode_token),
 ):
     nome = _extrair_nome(current_user)
-    return await funcionario_controller.puxar_agendamento(solicitacao_id, provider, current_user.get("sub"), nome)
+    return await funcionario_controller.puxar_agendamento(solicitacao_id, exame_codigo, provider, current_user.get("sub"), nome)
 
 
 # Retorna todos os agendamentos sob responsabilidade do funcionário logado, em qualquer estado
@@ -90,47 +91,51 @@ async def listar_minha_area(
     )
 
 # Avança o agendamento de EM_ANDAMENTO para AGUARDANDO_CONFIRMACAO, indicando que o agendamento foi feito
-@router.post("/minha-area/{solicitacao_id}/aguardar-confirmacao")
+@router.post("/minha-area/{solicitacao_id}/{exame_codigo}/aguardar-confirmacao")
 async def aguardar_confirmacao(
     solicitacao_id: int,
+    exame_codigo: str,
     provider: FuncionarioLocalProvider = Depends(get_funcionario_provider),
     current_user: dict = Depends(auth_handler.decode_token),
 ):
     nome = _extrair_nome(current_user)
-    return await funcionario_controller.aguardar_confirmacao(solicitacao_id, provider, current_user.get("sub"), nome)
+    return await funcionario_controller.aguardar_confirmacao(solicitacao_id, exame_codigo, provider, current_user.get("sub"), nome)
 
 
 # Devolve o agendamento para a fila geral, tornando-o disponível para outro funcionário
-@router.post("/minha-area/{solicitacao_id}/devolver")
+@router.post("/minha-area/{solicitacao_id}/{exame_codigo}/devolver")
 async def devolver(
     solicitacao_id: int,
+    exame_codigo: str,
     body: DevolverRequest,
     provider: FuncionarioLocalProvider = Depends(get_funcionario_provider),
     current_user: dict = Depends(auth_handler.decode_token),
 ):
     nome = _extrair_nome(current_user)
-    return await funcionario_controller.devolver(solicitacao_id, body.motivo, provider, current_user.get("sub"), nome)
+    return await funcionario_controller.devolver(solicitacao_id, exame_codigo, body.motivo, provider, current_user.get("sub"), nome)
 
 
 # Finaliza o agendamento com PROBLEMA_REPORTADO, passando a responsabilidade para o administrador
-@router.post("/minha-area/{solicitacao_id}/reportar-problema")
+@router.post("/minha-area/{solicitacao_id}/{exame_codigo}/reportar-problema")
 async def reportar_problema(
     solicitacao_id: int,
+    exame_codigo: str,
     body: ReportarProblemaRequest,
     provider: FuncionarioLocalProvider = Depends(get_funcionario_provider),
     current_user: dict = Depends(auth_handler.decode_token),
 ):
     nome = _extrair_nome(current_user)
-    return await funcionario_controller.reportar_problema(solicitacao_id, body.motivo, body.detalhes, provider, current_user.get("sub"), nome)
+    return await funcionario_controller.reportar_problema(solicitacao_id, exame_codigo, body.motivo, body.detalhes, provider, current_user.get("sub"), nome)
 
 
 # Encerra o ciclo do atendimento com resultado CONFIRMADO ou PROBLEMA_REPORTADO
-@router.post("/minha-area/{solicitacao_id}/finalizar")
+@router.post("/minha-area/{solicitacao_id}/{exame_codigo}/finalizar")
 async def finalizar(
     solicitacao_id: int,
+    exame_codigo: str,
     body: FinalizarRequest,
     provider: FuncionarioLocalProvider = Depends(get_funcionario_provider),
     current_user: dict = Depends(auth_handler.decode_token),
 ):
     nome = _extrair_nome(current_user)
-    return await funcionario_controller.finalizar(solicitacao_id, body.resultado, provider, current_user.get("sub"), nome)
+    return await funcionario_controller.finalizar(solicitacao_id, exame_codigo, body.resultado, provider, current_user.get("sub"), nome)

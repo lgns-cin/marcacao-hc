@@ -29,7 +29,7 @@ class AdminLocalProvider:
         self,
         data_inicio: Optional[date] = None,
         data_fim: Optional[date] = None,
-    ) -> dict:
+    ) -> list[dict]:
         temporal = _filtro_temporal(data_inicio, data_fim)
 
         # Total de exames não excluídos
@@ -103,12 +103,12 @@ class AdminLocalProvider:
         pct_problemas = (problemas / total_finalizados * 100) if total_finalizados else 0.0
         pct_concluidos = (confirmados / total * 100) if total else 0.0
 
-        return {
-            "media_cards_por_funcionario": round(media_cards, 1),
-            "pct_problematicas": round(pct_problemas, 1),
-            "pct_concluidas": round(pct_concluidos, 1),
-            "tempo_medio_atendimento_dias": round(tempo_medio, 1),
-        }
+        return [
+            {"id": "media_cards_por_funcionario", "valor": round(media_cards, 1),"formato": "int"},
+            {"id": "pct_problematicas", "valor": round(pct_problemas, 1),"formato": "porcentagem"},
+            {"id": "pct_concluidas", "valor": round(pct_concluidos, 1),"formato": "porcentagem"},
+            {"id": "tempo_medio_atendimento_dias", "valor": round(tempo_medio, 1),"formato": "int"},
+        ]
 
     async def ranking_por_exame(
         self,
@@ -246,11 +246,12 @@ class AdminLocalProvider:
         result = await self.session.execute(stmt)
         return result.scalars().all()
 
-    async def buscar_por_solicitacao(self, solicitacao_id: int) -> List[ExameSolicitado]:
+    async def buscar_por_solicitacao(self, solicitacao_id: int, exame_codigo: str) -> List[ExameSolicitado]:
         result = await self.session.execute(
             select(ExameSolicitado).where(
                 ExameSolicitado.solicitacao == solicitacao_id,
                 ExameSolicitado.deleted_at == None,
+                ExameSolicitado.exame == exame_codigo
             )
         )
         return result.scalars().all()
@@ -333,9 +334,14 @@ def _agregar_ranking(rows, chave: str, limit: int) -> List[dict]:
         elif status == StatusAtribuicao.FINALIZADO:
             agregado[nome]["concluidos"] += qtd
         agregado[nome]["total"] += qtd
-
     ranking = [
-        {chave: nome, **dados}
+        {
+            "categoria": nome,
+            "pendentes": dados["pendentes"],
+            "em_andamento": dados["em_agendamento"],
+            "concluidos": dados["concluidos"],
+            "total": dados["total"]
+        }
         for nome, dados in agregado.items()
     ]
     ranking.sort(key=lambda x: x["total"], reverse=True)
