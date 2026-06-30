@@ -1,12 +1,5 @@
 """
 Helpers de filtragem compartilhados entre FuncionarioController e AdminController.
-
-Todos os filtros operam sobre objetos ExameSolicitado já carregados em memória
-(com seus relacionamentos selectinload'd), portanto não há custo extra de query —
-o custo é apenas de iteração Python, que é negligível para os volumes esperados.
-
-Se no futuro o volume justificar, os filtros de município e faixa-etária podem ser
-empurrados para o WHERE da query SQL sem mudar a assinatura desta API.
 """
 
 import unicodedata
