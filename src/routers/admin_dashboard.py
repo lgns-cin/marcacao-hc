@@ -9,6 +9,7 @@ from ..resources.database import get_app_db_session
 from ..routers.admin import verify_admin_group
 from ..providers.implementations.admin_local_provider import AdminLocalProvider
 from ..controllers import admin_controller
+from ..services.filtros import parse_lista
 
 router = APIRouter(prefix="/api/admin", tags=["Admin Dashboard"])
 
@@ -63,10 +64,28 @@ async def ranking_municipios(
 async def pendencias(
     data_inicio: Optional[date] = None,
     data_fim: Optional[date] = None,
+    limite: Optional[int] = None,
+    limit: Optional[int] = None,
+    regioes: Optional[str] = None,
+    municipio: Optional[str] = None,
+    tipos_exame: Optional[str] = None,
+    faixa_etaria: Optional[str] = None,
+    busca: Optional[str] = None,
     provider: AdminLocalProvider = Depends(get_admin_provider),
     _: dict = Depends(verify_admin_group),
 ):
-    return await admin_controller.listar_pendencias(provider, data_inicio, data_fim)
+    lim = limit if limit is not None else limite
+    return await admin_controller.listar_pendencias(
+        provider,
+        data_inicio,
+        data_fim,
+        limite=lim,
+        regioes=parse_lista(regioes),
+        municipio=municipio,
+        tipos_exame=parse_lista(tipos_exame),
+        faixa_etaria=faixa_etaria,
+        busca=busca,
+    )
 
 
 @router.post("/pendencias/{solicitacao_id}/resolver")
@@ -84,10 +103,29 @@ async def agendamentos(
     estado: str = "em_andamento",
     data_inicio: Optional[date] = None,
     data_fim: Optional[date] = None,
+    limite: Optional[int] = None,
+    limit: Optional[int] = None,
+    regioes: Optional[str] = None,
+    municipio: Optional[str] = None,
+    tipos_exame: Optional[str] = None,
+    faixa_etaria: Optional[str] = None,
+    busca: Optional[str] = None,
     provider: AdminLocalProvider = Depends(get_admin_provider),
     _: dict = Depends(verify_admin_group),
 ):
-    return await admin_controller.listar_agendamentos(estado, provider, data_inicio, data_fim)
+    lim = limit if limit is not None else limite
+    return await admin_controller.listar_agendamentos(
+        estado,
+        provider,
+        data_inicio,
+        data_fim,
+        limite=lim,
+        regioes=parse_lista(regioes),
+        municipio=municipio,
+        tipos_exame=parse_lista(tipos_exame),
+        faixa_etaria=faixa_etaria,
+        busca=busca,
+    )
 
 
 @router.post("/agendamentos/{solicitacao_id}/{exame_codigo}/reatribuir")

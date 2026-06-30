@@ -7,6 +7,7 @@ from fastapi import HTTPException, status
 
 from ..providers.implementations.admin_local_provider import AdminLocalProvider
 from ..enums import StatusAtribuicao, ResultadoAtribuicao
+from ..services.filtros import aplicar_filtros, FAIXAS_ETARIAS
 
 ESTADOS_VALIDOS = ("em_andamento", "concluidos", "excluidos")
 
@@ -110,9 +111,28 @@ async def listar_pendencias(
     data_inicio: Optional[date] = None,
     data_fim: Optional[date] = None,
     limite: Optional[int] = None,
+    regioes: Optional[list[str]] = None,
+    municipio: Optional[str] = None,
+    tipos_exame: Optional[list[str]] = None,
+    faixa_etaria: Optional[str] = None,
+    busca: Optional[str] = None,
 ) -> List[dict]:
+    if faixa_etaria and faixa_etaria not in FAIXAS_ETARIAS:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=f"faixa_etaria deve ser um de: {FAIXAS_ETARIAS}",
+        )
     _validar_periodo(data_inicio, data_fim)
     rows = await provider.listar_pendencias(data_inicio, data_fim)
+
+    rows = aplicar_filtros(
+        rows,
+        regioes=regioes,
+        municipio=municipio,
+        tipos_exame=tipos_exame,
+        faixa_etaria=faixa_etaria,
+        busca=busca,
+    )
 
     # aplicar pontuacao e ordenar
     items = []
@@ -149,14 +169,33 @@ async def listar_agendamentos(
     data_inicio: Optional[date] = None,
     data_fim: Optional[date] = None,
     limite: Optional[int] = None,
+    regioes: Optional[list[str]] = None,
+    municipio: Optional[str] = None,
+    tipos_exame: Optional[list[str]] = None,
+    faixa_etaria: Optional[str] = None,
+    busca: Optional[str] = None,
 ) -> List[dict]:
     if estado not in ESTADOS_VALIDOS:
         raise HTTPException(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
             detail=f"estado deve ser um de: {ESTADOS_VALIDOS}",
         )
+    if faixa_etaria and faixa_etaria not in FAIXAS_ETARIAS:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=f"faixa_etaria deve ser um de: {FAIXAS_ETARIAS}",
+        )
     _validar_periodo(data_inicio, data_fim)
     rows = await provider.listar_agendamentos(estado, data_inicio, data_fim)
+
+    rows = aplicar_filtros(
+        rows,
+        regioes=regioes,
+        municipio=municipio,
+        tipos_exame=tipos_exame,
+        faixa_etaria=faixa_etaria,
+        busca=busca,
+    )
 
     # aplicar pontuacao e ordenar
     items = []

@@ -6,6 +6,7 @@ from fastapi import HTTPException, status
 from ..enums import StatusAtribuicao, ResultadoAtribuicao
 from ..providers.implementations.funcionario_local_provider import FuncionarioLocalProvider
 from ..services.pontuacao import calcular_pontuacao
+from ..services.filtros import aplicar_filtros, FAIXAS_ETARIAS
 
 def _status(idx: int, total: int) -> Literal["ALTA", "MÉDIA", "BAIXA"]:
     """Retorna o status do item da fila de agendamento de índice `idx` dado que a fila tem `total` posições."""
@@ -89,8 +90,31 @@ def _build_item(row) -> dict:
 
 
 # Retorna a fila geral: um card por exame, ordenados pelo algoritmo de pontuação
-async def listar_agendamentos(provider: FuncionarioLocalProvider, limit: Optional[int] = None) -> List[dict]:
+async def listar_agendamentos(
+    provider: FuncionarioLocalProvider,
+    limit: Optional[int] = None,
+    regioes: Optional[list[str]] = None,
+    municipio: Optional[str] = None,
+    tipos_exame: Optional[list[str]] = None,
+    faixa_etaria: Optional[str] = None,
+    busca: Optional[str] = None,
+) -> List[dict]:
+    if faixa_etaria and faixa_etaria not in FAIXAS_ETARIAS:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=f"faixa_etaria deve ser um de: {FAIXAS_ETARIAS}",
+        )
+
     rows = await provider.listar_pendentes()
+    rows = aplicar_filtros(
+        rows,
+        regioes=regioes,
+        municipio=municipio,
+        tipos_exame=tipos_exame,
+        faixa_etaria=faixa_etaria,
+        busca=busca,
+    )
+
     items = []
     for row in rows:
         item = _build_item(row)
@@ -134,9 +158,35 @@ async def puxar_agendamento(
 
 
 # Retorna os agendamentos do funcionário logado em qualquer estado (EM_ANDAMENTO, AGUARDANDO_CONFIRMACAO, FINALIZADO)
-async def listar_minha_area(provider: FuncionarioLocalProvider, username: str, nome: Optional[str] = None) -> List[dict]:
+async def listar_minha_area(
+    provider: FuncionarioLocalProvider,
+    username: str,
+    nome: Optional[str] = None,
+    limit: Optional[int] = None,
+    regioes: Optional[list[str]] = None,
+    municipio: Optional[str] = None,
+    tipos_exame: Optional[list[str]] = None,
+    faixa_etaria: Optional[str] = None,
+    busca: Optional[str] = None,
+) -> List[dict]:
+    if faixa_etaria and faixa_etaria not in FAIXAS_ETARIAS:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=f"faixa_etaria deve ser um de: {FAIXAS_ETARIAS}",
+        )
+
     funcionario = await provider.get_or_create_funcionario(username, nome)
     rows = await provider.listar_por_funcionario(funcionario.id)
+
+    rows = aplicar_filtros(
+        rows,
+        regioes=regioes,
+        municipio=municipio,
+        tipos_exame=tipos_exame,
+        faixa_etaria=faixa_etaria,
+        busca=busca,
+    )
+
     grupos = _agrupar_por_solicitacao(rows)
     items = []
     for grupo_rows in grupos.values():
@@ -146,6 +196,10 @@ async def listar_minha_area(provider: FuncionarioLocalProvider, username: str, n
             item["estado"] = exame_solicitado.status_atribuicao
             item["resultado"] = exame_solicitado.resultado
             items.append(item)
+
+    if limit is not None:
+        items = items[:limit]
+
     return items
 
 
