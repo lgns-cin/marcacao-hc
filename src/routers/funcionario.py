@@ -1,13 +1,13 @@
 from typing import Optional
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Query
 from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ..auth.auth import auth_handler
 from ..resources.database import get_app_db_session
 from ..controllers import funcionario_controller
-from ..providers.implementations.funcionario_local_provider import FuncionarioLocalProvider
+from ..providers.implementations.banco_local.funcionario_local_provider import FuncionarioLocalProvider
 
 router = APIRouter(prefix="/api/funcionario", tags=["Funcionario"])
 
@@ -44,11 +44,20 @@ class FinalizarRequest(BaseModel):
 async def listar_agendamentos(
     limit: Optional[int] = None,
     busca: Optional[str] = None,
+    regioes: Optional[str] = Query(default=None, description="Ex: Agreste,Sertão"),
+    municipio: Optional[str] = Query(default=None),
+    faixa_etaria: Optional[str] = Query(default=None, description="menor_idade | adulto | idoso"),
+    tipos_exame: Optional[str] = Query(default=None, description="Ex: Tomografia,Raio-X"),
     provider: FuncionarioLocalProvider = Depends(get_funcionario_provider),
     current_user: dict = Depends(auth_handler.decode_token),
 ):
-    return await funcionario_controller.listar_agendamentos(provider, limit, busca=busca)
-
+    return await funcionario_controller.listar_agendamentos(
+        provider, limit, busca=busca,
+        regioes=regioes.split(",") if regioes else None,
+        municipio=municipio or None,
+        faixa_etaria=faixa_etaria or None,
+        tipos_exame=tipos_exame.split(",") if tipos_exame else None,
+    )
 
 # Atribui um agendamento da fila ao funcionário logado, mudando o status para EM_ANDAMENTO
 @router.post("/agendamentos/{solicitacao_id}/puxar")
@@ -64,12 +73,21 @@ async def puxar_agendamento(
 # Retorna todos os agendamentos sob responsabilidade do funcionário logado, em qualquer estado
 @router.get("/minha-area")
 async def listar_minha_area(
+    regioes: Optional[str] = Query(default=None, description="Ex: Agreste,Sertão"),
+    municipio: Optional[str] = Query(default=None),
+    faixa_etaria: Optional[str] = Query(default=None, description="menor_idade | adulto | idoso"),
+    tipos_exame: Optional[str] = Query(default=None, description="Ex: Tomografia,Raio-X"),
     provider: FuncionarioLocalProvider = Depends(get_funcionario_provider),
     current_user: dict = Depends(auth_handler.decode_token),
 ):
     nome = _extrair_nome(current_user)
-    return await funcionario_controller.listar_minha_area(provider, current_user.get("sub"), nome)
-
+    return await funcionario_controller.listar_minha_area(
+        provider, current_user.get("sub"), nome,
+        regioes=regioes.split(",") if regioes else None,
+        municipio=municipio or None,
+        faixa_etaria=faixa_etaria or None,
+        tipos_exame=tipos_exame.split(",") if tipos_exame else None,
+    )
 
 # Avança o agendamento de EM_ANDAMENTO para AGUARDANDO_CONFIRMACAO, indicando que o agendamento foi feito
 @router.post("/minha-area/{solicitacao_id}/aguardar-confirmacao")

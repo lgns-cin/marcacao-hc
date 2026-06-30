@@ -4,11 +4,11 @@ from typing import List, Optional
 from sqlalchemy import select, or_, cast, String
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
-from ...models.paciente import Paciente
+from ....models.paciente import Paciente
 
-from ...models.exame_solicitado import ExameSolicitado
-from ...models.funcionario import Funcionario
-from ...enums import StatusAtribuicao, ResultadoAtribuicao
+from ....models.exame_solicitado import ExameSolicitado
+from ....models.funcionario import Funcionario
+from ....enums import StatusAtribuicao, ResultadoAtribuicao
 
 
 class FuncionarioLocalProvider:

@@ -5,10 +5,10 @@ from sqlalchemy import select, func, case, or_, cast, String
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
-from ...models.exame_solicitado import ExameSolicitado
-from ...models.funcionario import Funcionario
-from ...models.paciente import Paciente
-from ...enums import StatusAtribuicao, ResultadoAtribuicao
+from ....models.exame_solicitado import ExameSolicitado
+from ....models.funcionario import Funcionario
+from ....models.paciente import Paciente
+from ....enums import StatusAtribuicao, ResultadoAtribuicao
 
 
 def _filtro_temporal(data_inicio: Optional[date], data_fim: Optional[date]) -> list:
