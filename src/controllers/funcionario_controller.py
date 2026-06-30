@@ -105,10 +105,6 @@ async def listar_agendamentos(
     tipos_exame: Optional[List[str]] = None,
 ) -> List[dict]:
     rows = await provider.listar_pendentes(busca=busca)
-    rows = aplicar_filtros(
-        rows, regioes=regioes, municipio=municipio,
-        faixa_etaria=faixa_etaria, tipos_exame=tipos_exame,
-    )
 
     items = []
     for row in rows:
@@ -126,10 +122,23 @@ async def listar_agendamentos(
                 "data_solicitacao": row.data_solicitacao.isoformat() if row.data_solicitacao else "",
             }
         )
+
+        item["_cidade"] = paciente.cidade if paciente else None
+        item["_data_nascimento"] = paciente.data_nascimento if paciente else None
+        item["_codigo_exame"] = row.exame
         items.append(item)
 
     items.sort(key=lambda x: x.pop("_pontuacao"), reverse=True)
     items = _aplicar_prioridade(items)
+
+    items = aplicar_filtros(
+        items, regioes=regioes, municipio=municipio,
+        faixa_etaria=faixa_etaria, tipos_exame=tipos_exame,
+    )
+    for item in items:
+        item.pop("_cidade", None)
+        item.pop("_data_nascimento", None)
+        item.pop("_codigo_exame", None)
 
     if limit is not None:
         items = items[:limit]
@@ -168,10 +177,6 @@ async def listar_minha_area(
 
     funcionario = await provider.get_or_create_funcionario(username, nome)
     rows = await provider.listar_por_funcionario(funcionario.id)
-    rows = aplicar_filtros(
-        rows, regioes=regioes, municipio=municipio,
-        faixa_etaria=faixa_etaria, tipos_exame=tipos_exame,
-    )
     grupos = _agrupar_por_solicitacao(rows)
     items = []
     for grupo_rows in grupos.values():
@@ -180,7 +185,21 @@ async def listar_minha_area(
             # Adiciona os campos extras do MinhaAreaItem: estado atual e resultado (se finalizado)
             item["estado"] = exame_solicitado.status_atribuicao
             item["resultado"] = exame_solicitado.resultado
+            paciente = exame_solicitado.paciente
+            item["_cidade"] = paciente.cidade if paciente else None
+            item["_data_nascimento"] = paciente.data_nascimento if paciente else None
+            item["_codigo_exame"] = exame_solicitado.exame
             items.append(item)
+
+    items = aplicar_filtros(
+        items, regioes=regioes, municipio=municipio,
+        faixa_etaria=faixa_etaria, tipos_exame=tipos_exame,
+    )
+    for item in items:
+        item.pop("_cidade", None)
+        item.pop("_data_nascimento", None)
+        item.pop("_codigo_exame", None)
+        
     return items
 
 

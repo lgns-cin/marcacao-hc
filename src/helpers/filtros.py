@@ -17,7 +17,7 @@ from ..resources.catalogo_exames import codigos_para_tipos
 from ..resources.regioes_pe import municipio_para_regiao, normalizar
 
 
-# ── Faixa etária ─────────────────────────────────────────────────────────────
+# Faixa etária
 
 FAIXAS_ETARIAS = {
     "menor_idade": (0, 17),
@@ -35,57 +35,79 @@ def _calcular_idade(data_nascimento: date) -> int:
     )
 
 
-def _paciente_na_faixa(paciente, faixa: str) -> bool:
+def _na_faixa(data_nascimento, faixa: str) -> bool:
     """
-    Retorna True se o paciente pertence à faixa etária informada.
-    Pacientes sem data_nascimento são excluídos quando a faixa é especificada.
+    Retorna True se a data de nascimento informada pertence à faixa etária dada.
+    Ausência de data_nascimento exclui o item quando uma faixa é especificada.
     """
-    if not paciente or not paciente.data_nascimento:
+    if not data_nascimento:
         return False
     limites = FAIXAS_ETARIAS.get(faixa)
     if limites is None:
         return True  # faixa desconhecida → não filtra
-    idade = _calcular_idade(paciente.data_nascimento)
+    idade = _calcular_idade(data_nascimento)
     return limites[0] <= idade <= limites[1]
 
 
-# ── Município ─────────────────────────────────────────────────────────────────
+# Município
 
-def _paciente_no_municipio(paciente, municipio_normalizado: str) -> bool:
+def _no_municipio(cidade, municipio_normalizado: str) -> bool:
     """
-    Retorna True se a cidade do paciente começa com o texto informado
+    Retorna True se a cidade informada começa com o texto pedido
     (comparação sem acento, case-insensitive).
     """
-    if not paciente or not paciente.cidade:
+    if not cidade:
         return False
-    return normalizar(paciente.cidade).startswith(municipio_normalizado)
+    return normalizar(cidade).startswith(municipio_normalizado)
 
 
-# ── Região ────────────────────────────────────────────────────────────────────
+# Região
 
-def _paciente_na_regiao(paciente, regioes: set[str]) -> bool:
+def _na_regiao(cidade, regioes: set[str]) -> bool:
     """
-    Retorna True se a região inferida do município do paciente estiver
+    Retorna True se a região inferida da cidade informada estiver
     no conjunto de regiões solicitado.
     """
-    if not paciente or not paciente.cidade:
+    if not cidade:
         # Sem cidade → só inclui se 'Fora do Estado' foi solicitado
         return "Fora do Estado" in regioes
-    regiao = municipio_para_regiao(paciente.cidade)
+    regiao = municipio_para_regiao(cidade)
     return regiao in regioes
 
 
-# ── Tipo de exame ─────────────────────────────────────────────────────────────
+# Tipo de exame
 
-def _row_no_tipo_exame(row, codigos_permitidos: set[str]) -> bool:
-    """Retorna True se o código do exame do row pertence ao conjunto solicitado."""
-    return row.exame in codigos_permitidos
+def _no_tipo_exame(codigo_exame, codigos_permitidos: set[str]) -> bool:
+    """Retorna True se o código de exame informado pertence ao conjunto solicitado."""
+    return codigo_exame in codigos_permitidos
 
 
-# ── Função principal ──────────────────────────────────────────────────────────
+# Extração de dados
+
+def _extrair_dados(item) -> dict:
+    """
+    Extrai cidade, data_nascimento e código do exame de um item,
+    aceitando tanto objetos ExameSolicitado (ORM) quanto dicts já montados
+    (que devem trazer os campos _cidade, _data_nascimento, _codigo_exame).
+    """
+    if isinstance(item, dict):
+        return {
+            "cidade": item.get("_cidade"),
+            "data_nascimento": item.get("_data_nascimento"),
+            "codigo_exame": item.get("_codigo_exame"),
+        }
+    paciente = item.paciente
+    return {
+        "cidade": paciente.cidade if paciente else None,
+        "data_nascimento": paciente.data_nascimento if paciente else None,
+        "codigo_exame": item.exame,
+    }
+
+
+# Função principal
 
 def aplicar_filtros(
-    rows: list,
+    items: list,
     *,
     regioes: Optional[list[str]] = None,
     municipio: Optional[str] = None,
@@ -93,22 +115,24 @@ def aplicar_filtros(
     tipos_exame: Optional[list[str]] = None,
 ) -> list:
     """
-    Filtra uma lista de objetos ExameSolicitado (com relacionamentos carregados)
-    aplicando os critérios fornecidos.
+    Filtra uma lista de itens, tanto objetos ExameSolicitado (ORM) quanto
+    dicts já montados via _build_item (com os campos _cidade, _data_nascimento
+    e _codigo_exame), aplicando os critérios fornecidos.
 
     Cada critério não-nulo reduz o conjunto (AND entre critérios).
     Dentro de regioes e tipos_exame, múltiplos valores são OR.
 
     Parâmetros
     ----------
-    rows          : lista de ExameSolicitado com .paciente e .exame carregados
+    items         : lista de ExameSolicitado (ORM) ou dicts com campos _cidade,
+                     _data_nascimento, _codigo_exame
     regioes       : ex. ['Agreste', 'Sertão']
     municipio     : texto livre (ex. 'Reci') — busca por prefixo, sem acento
     faixa_etaria  : 'menor_idade' | 'adulto' | 'idoso'
     tipos_exame   : ex. ['Tomografia', 'Raio-X']
     """
 
-    # Pré-computar valores normalizados / conjuntos para evitar recalcular por row
+    # Pré-computar valores normalizados / conjuntos para evitar recalcular por item
 
     regioes_set: Optional[set[str]] = set(regioes) if regioes else None
 
@@ -119,25 +143,25 @@ def aplicar_filtros(
     )
 
     resultado = []
-    for row in rows:
-        paciente = row.paciente
+    for item in items:
+        dados = _extrair_dados(item)
 
         if regioes_set is not None:
-            if not _paciente_na_regiao(paciente, regioes_set):
+            if not _na_regiao(dados["cidade"], regioes_set):
                 continue
 
         if municipio_norm is not None:
-            if not _paciente_no_municipio(paciente, municipio_norm):
+            if not _no_municipio(dados["cidade"], municipio_norm):
                 continue
 
         if faixa_etaria is not None:
-            if not _paciente_na_faixa(paciente, faixa_etaria):
+            if not _na_faixa(dados["data_nascimento"], faixa_etaria):
                 continue
 
         if codigos_exame is not None:
-            if not _row_no_tipo_exame(row, codigos_exame):
+            if not _no_tipo_exame(dados["codigo_exame"], codigos_exame):
                 continue
 
-        resultado.append(row)
+        resultado.append(item)
 
     return resultado
