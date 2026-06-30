@@ -45,18 +45,31 @@ DIAS_ESPERA_MAXIMO     = 60   # dias para atingir o bônus máximo
 # ---------------------------------------------------------------------------
 
 MAPA_URGENCIA: dict[str, float] = {
-    "UTI ADULTO":                  1.0,
-    "UTI PEDIÁTRICA":              1.0,
-    "CENTRO OBSTÉTRICO":           0.9,
-    "PRONTO-SOCORRO":              0.9,
-    "EMERGÊNCIA":                  0.9,
-    "VASCULAR":                    0.8,
-    "ONCOLOGIA":                   0.8,
-    "NEFROLOGIA (AMBULATÓRIO)":    0.7,
-    "CARDIOLOGIA (AMBULATÓRIO)":   0.65,
-    "PNEUMOLOGIA (AMBULATÓRIO)":   0.55,
-    "GINECOLOGIA (AMBULATÓRIO)":   0.5,
-    "ORTOPEDIA (AMBULATÓRIO)":     0.5,
+    "UDI: RESSONÂNIA MAGNÉTICA":       0.6,   # typo do banco — "RESSONÂNIA" em vez de "RESSONÂNCIA"
+    "UDI: TOMOGRAFIA COMPUTADORIZADA": 0.6,
+    "UDI: MEDICINA NUCLEAR":           0.6,
+    "UDI: ULTRASSONOGRAFIA":           0.5,
+    "UDI: MAMOGRAFIA":                 0.5,
+    "UDI: RADIOLOGIA CONVENCIONAL":    0.45,
+    "UDI: DENSITOMETRIA ÓSSEA":        0.4,
+
+    # Especialidades clínicas
+    "CIRURGIA GERAL (AMBULATÓRIO)":    0.65,
+    "CIRURGIA BARIATRICA":             0.6,
+    "OBSTETRÍCIA (AMBULATÓRIO)":       0.6,
+    "FONOAUDIOLOGIA":                  0.35,
+    "UTI ADULTO":                      1.0,
+    "UTI PEDIÁTRICA":                  1.0,
+    "CENTRO OBSTETRICO":               0.9,
+    "PRONTO-SOCORRO":                  0.9,
+    "EMERGÊNCIA":                      0.9,
+    "VASCULAR":                        0.8,
+    "ONCOLOGIA":                       0.8,
+    "NEFROLOGIA (AMBULATÓRIO)":        0.7,
+    "CARDIOLOGIA (AMBULATÓRIO)":       0.65,
+    "PNEUMOLOGIA (AMBULATÓRIO)":       0.55,
+    "GINECOLOGIA (AMBULATÓRIO)":       0.5,
+    "ORTOPEDIA (AMBULATÓRIO)":         0.5,
 }
 
 DEFAULT_URGENCIA = 0.4  # unidades não mapeadas
