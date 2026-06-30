@@ -129,9 +129,9 @@ export const useAdminStore = defineStore('admin', () => {
         api.get<AgendamentoGerenciamento[]>(`/api/admin/agendamentos?estado=concluidos${suffix}`),
         api.get<AgendamentoRemovido[]>(`/api/admin/agendamentos?estado=excluidos${suffix}`),
       ]);
-      agendamentosEmAndamento.value = resEmAndamento.data.map((value) => { value.status = ''; return value; });
-      agendamentosConcluidos.value = resConcluidos.data.map((value) => { value.status = ''; return value; });;
-      agendamentosRemovidos.value = resRemovidos.data.map((value) => { value.status = ''; return value; });;
+      agendamentosEmAndamento.value = resEmAndamento.data;
+      agendamentosConcluidos.value = resConcluidos.data;
+      agendamentosRemovidos.value = resRemovidos.data;
     } catch {
       agendamentosEmAndamento.value = [];
       agendamentosConcluidos.value = [];
