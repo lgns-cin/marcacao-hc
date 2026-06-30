@@ -70,7 +70,7 @@ export const useAdminStore = defineStore('admin', () => {
     if (!opcoes.silencioso) isLoadingPendencias.value = true;
     try {
       const response = await api.get<PendenciaItem[]>(`/api/admin/pendencias`);
-      pendencias.value = response.data;
+      pendencias.value = response.data.map((value) => { value.status = ''; return value; });;
     } catch {
       pendencias.value = [];
     } finally {
@@ -101,9 +101,9 @@ export const useAdminStore = defineStore('admin', () => {
         api.get<AgendamentoGerenciamento[]>(`/api/admin/agendamentos?estado=concluidos`),
         api.get<AgendamentoRemovido[]>(`/api/admin/agendamentos?estado=excluidos`),
       ]);
-      agendamentosEmAndamento.value = resEmAndamento.data;
-      agendamentosConcluidos.value = resConcluidos.data;
-      agendamentosRemovidos.value = resRemovidos.data;
+      agendamentosEmAndamento.value = resEmAndamento.data.map((value) => { value.status = ''; return value; });
+      agendamentosConcluidos.value = resConcluidos.data.map((value) => { value.status = ''; return value; });;
+      agendamentosRemovidos.value = resRemovidos.data.map((value) => { value.status = ''; return value; });;
     } catch {
       agendamentosEmAndamento.value = [];
       agendamentosConcluidos.value = [];
