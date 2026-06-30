@@ -5,12 +5,7 @@ export type CategoriaExame =
   | 'Endoscopia'
   | 'Colonoscopia'
   | 'Ecocardiograma'
-  | 'Ultrassonografia'
-  // Funcionais: o backend os aceita na whitelist (EXAMES_IMAGEM), então precisam
-  // existir no catálogo para exibir o nome legível. NÃO entram em CATEGORIAS_EXAME
-  // (não viram filtro) — decisão do time de 25/06 de não filtrar exames funcionais.
-  | 'Ergometria'
-  | 'Espirometria';
+  | 'Ultrassonografia';
 
 type ExameCatalogo = {
   codigo: string;
@@ -44,11 +39,6 @@ export const CATALOGO_EXAMES: ExameCatalogo[] = [
   { codigo: 'USIEA', nome: 'USG Doppler do Membro Inferior Esquerdo Arterial', categoria: 'Ultrassonografia' },
   { codigo: 'USIEV', nome: 'USG Doppler do Membro Inferior Esquerdo Venoso', categoria: 'Ultrassonografia' },
   { codigo: 'USGOD', nome: 'USG Obstétrica com Dopplerfluxometria Colorida', categoria: 'Ultrassonografia' },
-
-  // Exames funcionais (não-imagem) que o backend aceita na whitelist EXAMES_IMAGEM.
-  // Ficam aqui só para exibir o nome legível nos cards; não são oferecidos como filtro.
-  { codigo: 'ERGO', nome: 'Ergometria', categoria: 'Ergometria' },
-  { codigo: 'ESPB', nome: 'Espirometria com Prova Farmacodinâmica', categoria: 'Espirometria' },
 ];
 
 const mapaCodigoCategoria = new Map<string, CategoriaExame>(
