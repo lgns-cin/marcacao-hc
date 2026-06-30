@@ -98,7 +98,10 @@ async def listar_agendamentos(
         sol = row.solicitacao_rel
         paciente = row.paciente
         item["_pontuacao"] = calcular_pontuacao(
-            {"cidade": paciente.cidade if paciente else ""},
+            {
+                "cidade": paciente.cidade if paciente else "",
+                "data_nascimento": paciente.data_nascimento.isoformat() if paciente and paciente.data_nascimento else "",
+            },
             {
                 "data_retorno": sol.data_retorno.isoformat() if sol and sol.data_retorno else "",
                 "unidade_solicitante": sol.unidade_solicitante if sol else "",
