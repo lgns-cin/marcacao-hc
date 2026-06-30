@@ -8,15 +8,20 @@ from ..providers.implementations.banco_local.funcionario_local_provider import F
 from ..services.pontuacao import calcular_pontuacao
 from ..helpers.filtros import aplicar_filtros
 
+STATUSES = ["ALTA", "MÉDIA", "BAIXA"]
+
 def _status(idx: int, total: int) -> Literal["ALTA", "MÉDIA", "BAIXA"]:
     """Retorna o status do item da fila de agendamento de índice `idx` dado que a fila tem `total` posições."""
 
+    if total < 4: # lista muito pequena
+        return STATUSES[idx]
+    
     if idx in range(0, total // 4): # 0 a 25% da lista
-        return "ALTA"
+        return STATUSES[0]
     if idx in range(total // 4, 3 * total // 4): # 25% a 75% da lista
-        return "MÉDIA"
+        return STATUSES[1]
     if idx in range(3 * total // 4, total): # 75% a 100% da lista
-        return "BAIXA"
+        return STATUSES[2]
 
 def _aplicar_prioridade(items: list[dict]) -> list[dict]:
     """Atribui o status de cada item da fila de agendamento com base na sua posição."""
