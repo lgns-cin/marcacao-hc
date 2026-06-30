@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
 import type { AgendamentoItem, FiltrosFila, MinhaAreaItem } from '../funcionario/types';
-import { filtrarAgendamentos, FILTROS_VAZIOS } from '../shared/utils/filtrarAgendamentos';
+import { FILTROS_VAZIOS } from '../shared/utils/filtrarAgendamentos';
 import { derivarRegioes, fetchMesorregioes, fetchMunicipios, FORA_DO_ESTADO } from '../shared/services/ibge';
 import type { MunicipioIBGE } from '../shared/services/ibge';
 import api from '../services/api';
@@ -25,10 +25,10 @@ export const useFuncionarioStore = defineStore('funcionario', () => {
   // computed - fila de agendamento
   const totalAgendamentos = computed(() => agendamentos.value.length);
 
-  const agendamentosFiltrados = computed(() => filtrarAgendamentos(agendamentos.value, filtros.value));
+  const agendamentosFiltrados = computed(() => agendamentos.value);
 
   // computed - minha área
-  const minhaAreaFiltrada = computed(() => filtrarAgendamentos(minhaArea.value, filtrosMinhaArea.value));
+  const minhaAreaFiltrada = computed(() => minhaArea.value);
 
   const itensEmAndamento = computed(() =>
     minhaAreaFiltrada.value.filter((item) => item.estado === 'EM_ANDAMENTO')
@@ -82,7 +82,21 @@ export const useFuncionarioStore = defineStore('funcionario', () => {
 
     await carregarDadosIBGE();
 
-    await api.get<AgendamentoItem[]>(`/api/funcionario/agendamentos?limit=${LIMITE_AGENDAMENTOS}`)
+    const params = new URLSearchParams();
+    params.append('limit', String(LIMITE_AGENDAMENTOS));
+    if (filtros.value.busca) params.append('busca', filtros.value.busca);
+    if (filtros.value.regioes.length > 0) params.append('regioes', filtros.value.regioes.join(','));
+    if (filtros.value.municipio) params.append('municipio', filtros.value.municipio);
+    if (filtros.value.tiposExame.length > 0) params.append('tipos_exame', filtros.value.tiposExame.join(','));
+    if (filtros.value.faixaEtaria && filtros.value.faixaEtaria !== 'Todas') {
+      let faixa = '';
+      if (filtros.value.faixaEtaria === '0-17') faixa = 'menor_idade';
+      else if (filtros.value.faixaEtaria === '18-59') faixa = 'adulto';
+      else if (filtros.value.faixaEtaria === '60+') faixa = 'idoso';
+      if (faixa) params.append('faixa_etaria', faixa);
+    }
+
+    await api.get<AgendamentoItem[]>(`/api/funcionario/agendamentos?${params.toString()}`)
       .then(async response => {
         const { data } = response;
         agendamentos.value = await preencherRegioes<AgendamentoItem>(data);
@@ -109,15 +123,18 @@ export const useFuncionarioStore = defineStore('funcionario', () => {
 
   function setBusca(busca: string) {
     filtros.value.busca = busca;
+    fetchAgendamentos({ silencioso: true });
   }
 
   function aplicarFiltros(novosFiltros: Partial<FiltrosFila>) {
     filtros.value = { ...filtros.value, ...novosFiltros };
+    fetchAgendamentos();
   }
 
   function limparFiltros() {
     const buscaAtual = filtros.value.busca;
     filtros.value = { ...FILTROS_VAZIOS, busca: buscaAtual };
+    fetchAgendamentos();
   }
 
   // actions - minha área
@@ -126,7 +143,21 @@ export const useFuncionarioStore = defineStore('funcionario', () => {
 
     if (!opcoes.silencioso) isLoadingMinhaArea.value = true;
     await carregarDadosIBGE();
-    await api.get<MinhaAreaItem[]>(`/api/funcionario/minha-area`)
+
+    const params = new URLSearchParams();
+    if (filtrosMinhaArea.value.busca) params.append('busca', filtrosMinhaArea.value.busca);
+    if (filtrosMinhaArea.value.regioes.length > 0) params.append('regioes', filtrosMinhaArea.value.regioes.join(','));
+    if (filtrosMinhaArea.value.municipio) params.append('municipio', filtrosMinhaArea.value.municipio);
+    if (filtrosMinhaArea.value.tiposExame.length > 0) params.append('tipos_exame', filtrosMinhaArea.value.tiposExame.join(','));
+    if (filtrosMinhaArea.value.faixaEtaria && filtrosMinhaArea.value.faixaEtaria !== 'Todas') {
+      let faixa = '';
+      if (filtrosMinhaArea.value.faixaEtaria === '0-17') faixa = 'menor_idade';
+      else if (filtrosMinhaArea.value.faixaEtaria === '18-59') faixa = 'adulto';
+      else if (filtrosMinhaArea.value.faixaEtaria === '60+') faixa = 'idoso';
+      if (faixa) params.append('faixa_etaria', faixa);
+    }
+
+    await api.get<MinhaAreaItem[]>(`/api/funcionario/minha-area?${params.toString()}`)
       .then(async response => {
         const { data } = response;
         minhaArea.value = await preencherRegioes<MinhaAreaItem>(data);
@@ -193,15 +224,18 @@ export const useFuncionarioStore = defineStore('funcionario', () => {
 
   function setBuscaMinhaArea(busca: string) {
     filtrosMinhaArea.value.busca = busca;
+    fetchMinhaArea({ silencioso: true });
   }
 
   function aplicarFiltrosMinhaArea(novosFiltros: Partial<FiltrosFila>) {
     filtrosMinhaArea.value = { ...filtrosMinhaArea.value, ...novosFiltros };
+    fetchMinhaArea();
   }
 
   function limparFiltrosMinhaArea() {
     const buscaAtual = filtrosMinhaArea.value.busca;
     filtrosMinhaArea.value = { ...FILTROS_VAZIOS, busca: buscaAtual };
+    fetchMinhaArea();
   }
 
   return {

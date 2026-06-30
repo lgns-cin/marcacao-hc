@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
 import type { FiltrosFila } from '../funcionario/types';
-import { filtrarAgendamentos, FILTROS_VAZIOS } from '../shared/utils/filtrarAgendamentos';
+import { FILTROS_VAZIOS } from '../shared/utils/filtrarAgendamentos';
 import type { AgendamentoGerenciamento, AgendamentoRemovido, Funcionario, Kpi, PendenciaItem, VisaoGeral, SerieBarrasEtapas } from '../admin/types';
 import api from '../services/api';
 import { TITULOS_KPIS } from '../shared/constants';
@@ -23,16 +23,10 @@ export const useAdminStore = defineStore('admin', () => {
 
   const funcionarios = ref<Funcionario[]>([]);
 
-  const pendenciasFiltradas = computed(() => filtrarAgendamentos(pendencias.value, filtrosPendencias.value));
-  const agendamentosEmAndamentoFiltrados = computed(() =>
-    filtrarAgendamentos(agendamentosEmAndamento.value, filtrosAgendamentos.value)
-  );
-  const agendamentosConcluidosFiltrados = computed(() =>
-    filtrarAgendamentos(agendamentosConcluidos.value, filtrosAgendamentos.value)
-  );
-  const agendamentosRemovidosFiltrados = computed(() =>
-    filtrarAgendamentos(agendamentosRemovidos.value, filtrosAgendamentos.value)
-  );
+  const pendenciasFiltradas = computed(() => pendencias.value);
+  const agendamentosEmAndamentoFiltrados = computed(() => agendamentosEmAndamento.value);
+  const agendamentosConcluidosFiltrados = computed(() => agendamentosConcluidos.value);
+  const agendamentosRemovidosFiltrados = computed(() => agendamentosRemovidos.value);
 
   // Visão Geral
   async function fetchVisaoGeral(opcoes: { silencioso?: boolean } = {}) {
@@ -69,7 +63,20 @@ export const useAdminStore = defineStore('admin', () => {
   async function fetchPendencias(opcoes: { silencioso?: boolean } = {}) {
     if (!opcoes.silencioso) isLoadingPendencias.value = true;
     try {
-      const response = await api.get<PendenciaItem[]>(`/api/admin/pendencias`);
+      const params = new URLSearchParams();
+      if (filtrosPendencias.value.busca) params.append('busca', filtrosPendencias.value.busca);
+      if (filtrosPendencias.value.regioes.length > 0) params.append('regioes', filtrosPendencias.value.regioes.join(','));
+      if (filtrosPendencias.value.municipio) params.append('municipio', filtrosPendencias.value.municipio);
+      if (filtrosPendencias.value.tiposExame.length > 0) params.append('tipos_exame', filtrosPendencias.value.tiposExame.join(','));
+      if (filtrosPendencias.value.faixaEtaria && filtrosPendencias.value.faixaEtaria !== 'Todas') {
+        let faixa = '';
+        if (filtrosPendencias.value.faixaEtaria === '0-17') faixa = 'menor_idade';
+        else if (filtrosPendencias.value.faixaEtaria === '18-59') faixa = 'adulto';
+        else if (filtrosPendencias.value.faixaEtaria === '60+') faixa = 'idoso';
+        if (faixa) params.append('faixa_etaria', faixa);
+      }
+
+      const response = await api.get<PendenciaItem[]>(`/api/admin/pendencias?${params.toString()}`);
       pendencias.value = response.data;
     } catch {
       pendencias.value = [];
@@ -78,28 +85,47 @@ export const useAdminStore = defineStore('admin', () => {
     }
   }
 
-  // Filtros
+  // Filtros Pendencias
   function setBuscaPendencias(busca: string) {
     filtrosPendencias.value.busca = busca;
+    fetchPendencias({ silencioso: true });
   }
 
   function aplicarFiltrosPendencias(novosFiltros: Partial<FiltrosFila>) {
     filtrosPendencias.value = { ...filtrosPendencias.value, ...novosFiltros };
+    fetchPendencias();
   }
 
   function limparFiltrosPendencias() {
     const buscaAtual = filtrosPendencias.value.busca;
     filtrosPendencias.value = { ...FILTROS_VAZIOS, busca: buscaAtual };
+    fetchPendencias();
   }
 
   // Gerenciamento de Agendamentos
   async function fetchAgendamentosGerenciamento(opcoes: { silencioso?: boolean } = {}) {
     if (!opcoes.silencioso) isLoadingAgendamentos.value = true;
     try {
+      const params = new URLSearchParams();
+      if (filtrosAgendamentos.value.busca) params.append('busca', filtrosAgendamentos.value.busca);
+      if (filtrosAgendamentos.value.regioes.length > 0) params.append('regioes', filtrosAgendamentos.value.regioes.join(','));
+      if (filtrosAgendamentos.value.municipio) params.append('municipio', filtrosAgendamentos.value.municipio);
+      if (filtrosAgendamentos.value.tiposExame.length > 0) params.append('tipos_exame', filtrosAgendamentos.value.tiposExame.join(','));
+      if (filtrosAgendamentos.value.faixaEtaria && filtrosAgendamentos.value.faixaEtaria !== 'Todas') {
+        let faixa = '';
+        if (filtrosAgendamentos.value.faixaEtaria === '0-17') faixa = 'menor_idade';
+        else if (filtrosAgendamentos.value.faixaEtaria === '18-59') faixa = 'adulto';
+        else if (filtrosAgendamentos.value.faixaEtaria === '60+') faixa = 'idoso';
+        if (faixa) params.append('faixa_etaria', faixa);
+      }
+
+      const q = params.toString();
+      const suffix = q ? `&${q}` : '';
+
       const [resEmAndamento, resConcluidos, resRemovidos] = await Promise.all([
-        api.get<AgendamentoGerenciamento[]>(`/api/admin/agendamentos?estado=em_andamento`),
-        api.get<AgendamentoGerenciamento[]>(`/api/admin/agendamentos?estado=concluidos`),
-        api.get<AgendamentoRemovido[]>(`/api/admin/agendamentos?estado=excluidos`),
+        api.get<AgendamentoGerenciamento[]>(`/api/admin/agendamentos?estado=em_andamento${suffix}`),
+        api.get<AgendamentoGerenciamento[]>(`/api/admin/agendamentos?estado=concluidos${suffix}`),
+        api.get<AgendamentoRemovido[]>(`/api/admin/agendamentos?estado=excluidos${suffix}`),
       ]);
       agendamentosEmAndamento.value = resEmAndamento.data;
       agendamentosConcluidos.value = resConcluidos.data;
@@ -180,18 +206,21 @@ export const useAdminStore = defineStore('admin', () => {
     }
   }
 
-  // Filtros
+  // Filtros Agendamentos
   function setBuscaAgendamentos(busca: string) {
     filtrosAgendamentos.value.busca = busca;
+    fetchAgendamentosGerenciamento({ silencioso: true });
   }
 
   function aplicarFiltrosAgendamentos(novosFiltros: Partial<FiltrosFila>) {
     filtrosAgendamentos.value = { ...filtrosAgendamentos.value, ...novosFiltros };
+    fetchAgendamentosGerenciamento();
   }
 
   function limparFiltrosAgendamentos() {
     const buscaAtual = filtrosAgendamentos.value.busca;
     filtrosAgendamentos.value = { ...FILTROS_VAZIOS, busca: buscaAtual };
+    fetchAgendamentosGerenciamento();
   }
 
   // Funcionários
