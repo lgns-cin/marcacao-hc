@@ -78,7 +78,7 @@ export const useAdminStore = defineStore('admin', () => {
       }
 
       const response = await api.get<PendenciaItem[]>(`/api/admin/pendencias?${params.toString()}`);
-      pendencias.value = response.data.map((value) => { value.status = ''; return value; });;
+      pendencias.value = response.data.map((value) => { value.status = ''; return value; });
     } catch {
       pendencias.value = [];
     } finally {
@@ -129,9 +129,9 @@ export const useAdminStore = defineStore('admin', () => {
         api.get<AgendamentoGerenciamento[]>(`/api/admin/agendamentos?estado=concluidos${suffix}`),
         api.get<AgendamentoRemovido[]>(`/api/admin/agendamentos?estado=excluidos${suffix}`),
       ]);
-      agendamentosEmAndamento.value = resEmAndamento.data;
-      agendamentosConcluidos.value = resConcluidos.data;
-      agendamentosRemovidos.value = resRemovidos.data;
+      agendamentosEmAndamento.value = resEmAndamento.data.map((value) => { value.status = ''; return value; });
+      agendamentosConcluidos.value = resConcluidos.data.map((value) => { value.status = ''; return value; });
+      agendamentosRemovidos.value = resRemovidos.data.map((value) => { value.status = ''; return value; });
     } catch {
       agendamentosEmAndamento.value = [];
       agendamentosConcluidos.value = [];
