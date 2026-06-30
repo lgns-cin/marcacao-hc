@@ -1,13 +1,14 @@
 from datetime import date
 from typing import List, Optional
 
-from sqlalchemy import select
+from sqlalchemy import select, or_, cast, String
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
+from ....models.paciente import Paciente
 
-from ...models.exame_solicitado import ExameSolicitado
-from ...models.funcionario import Funcionario
-from ...enums import StatusAtribuicao, ResultadoAtribuicao
+from ....models.exame_solicitado import ExameSolicitado
+from ....models.funcionario import Funcionario
+from ....enums import StatusAtribuicao, ResultadoAtribuicao
 
 
 class FuncionarioLocalProvider:
@@ -34,7 +35,7 @@ class FuncionarioLocalProvider:
 
     # Retorna todos os exames sem funcionário atribuído e com status PENDENTE
     # Carrega paciente, solicitação e exame junto para evitar queries extras no controller
-    async def listar_pendentes(self) -> List[ExameSolicitado]:
+    async def listar_pendentes(self, busca: Optional[str] = None) -> List[ExameSolicitado]:
         stmt = (
             select(ExameSolicitado)
             .options(
@@ -42,12 +43,25 @@ class FuncionarioLocalProvider:
                 selectinload(ExameSolicitado.solicitacao_rel),
                 selectinload(ExameSolicitado.exame_rel),
             )
-            .where(
-                ExameSolicitado.funcionario_atribuido == None,
-                ExameSolicitado.status_atribuicao == StatusAtribuicao.PENDENTE,
-                ExameSolicitado.deleted_at == None,
-            )
         )
+
+        conditions = [
+            ExameSolicitado.funcionario_atribuido == None,
+            ExameSolicitado.status_atribuicao == StatusAtribuicao.PENDENTE,
+            ExameSolicitado.deleted_at == None,
+        ]
+
+        if busca:
+            stmt = stmt.join(ExameSolicitado.paciente)
+            busca_str = f"%{busca}%"
+            conditions.append(
+                or_(
+                    Paciente.nome.ilike(busca_str),
+                    cast(Paciente.prontuario, String).ilike(busca_str)
+                )
+            )
+
+        stmt = stmt.where(*conditions)
         result = await self.session.execute(stmt)
         return result.scalars().all()
 

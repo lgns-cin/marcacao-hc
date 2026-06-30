@@ -1,17 +1,24 @@
 """
 src/services/pontuacao.py
 
-Módulo de priorização de solicitações de exame — CORTEx-HC.
+Módulo de priorização de solicitações de exame
 
-Responsabilidade: receber dicionários com dados da solicitação e retornar uma pontuação numérica (0-100+). Não acessa banco, não faz chamadas HTTP. É chamado pelo controller após os providers buscarem os dados.
+Responsabilidade: receber dicionários com dados do paciente e da solicitação e
+retornar uma pontuação numérica (0-100+). Não acessa banco, não faz chamadas HTTP.
 
-Contrato de entrada esperado pelo controller (dicionário plano):
+É chamado pelo controller após os providers buscarem os dados.
+
+Contrato de entrada esperado pelo controller:
+
+    paciente = {
+        "cidade": str,                # ex: "Petrolina"
+        "data_nascimento": str | date # ex: "1980-01-01" ou objeto date
+    }
 
     solicitacao = {
-        "cidade": str,                 # ex: "Petrolina"
-        "data_retorno": str | date,    # ex: "2026-07-10" (ISO 8601) ou objeto date
-        "unidade_solicitante": str,    # ex: "UTI ADULTO"
-        "data_solicitacao": str | date # ex: "2026-06-01" (ISO 8601) ou objeto date
+        "data_retorno": str | date,   # ex: "2026-07-10" ou objeto date
+        "unidade_solicitante": str,   # ex: "UTI ADULTO"
+        "data_solicitacao": str | date # ex: "2026-06-01" ou objeto date
     }
 """
 
@@ -22,8 +29,9 @@ from datetime import date, datetime
 # ---------------------------------------------------------------------------
 
 PESO_DATA_RETORNO      = 40
-PESO_URGENCIA          = 40
-PESO_LOCALIDADE        = 20
+PESO_URGENCIA          = 35
+PESO_LOCALIDADE        = 15
+PESO_IDADE             = 10
 BONUS_MAXIMO_ESPERA    = 20   # pontos extras máximos por tempo de espera
 
 DIAS_ESPERA_MAXIMO     = 60   # dias para atingir o bônus máximo
@@ -150,6 +158,20 @@ def score_localidade(cidade: str) -> float:
     return SCORE_DEFAULT
 
 
+def score_idade(data_nascimento_str: str, hoje: date | None = None) -> float:
+    """Pacientes mais velhos têm maior prioridade. ≥80 anos → 1.0, inválido → 0.0."""
+    if hoje is None:
+        hoje = date.today()
+    try:
+        data_nascimento = _parse_date(data_nascimento_str)
+    except (ValueError, TypeError):
+        return 0.0
+    anos = hoje.year - data_nascimento.year - (
+        (hoje.month, hoje.day) < (data_nascimento.month, data_nascimento.day)
+    )
+    return min(1.0, max(0.0, anos / 80))
+
+
 def bonus_tempo_espera(data_solicitacao: str, hoje: date | None = None) -> float:
     """
     Bônus adicional (não normalizado) que cresce com o tempo de espera.
@@ -174,30 +196,24 @@ def bonus_tempo_espera(data_solicitacao: str, hoje: date | None = None) -> float
 # Função principal de pontuação
 # ---------------------------------------------------------------------------
 
-def calcular_pontuacao(solicitacao: dict, hoje: date | None = None) -> float:
+def calcular_pontuacao(paciente: dict, solicitacao: dict) -> float:
     """
     Calcula a pontuação de prioridade de uma solicitação.
-    Recebe um dicionário plano (com todos os dados no mesmo nível).
-
-    Quanto maior o valor retornado, maior a prioridade na fila.
-    Pontuação base: 0-100. Bônus de tempo de espera pode ultrapassar 100.
 
     Args:
-        paciente:    dict com "cidade"
-        solicitacao: dict com "data_retorno", "unidade_solicitante",
-                    "data_solicitacao"
+        paciente:    dict com "cidade" e "data_nascimento"
+        solicitacao: dict com "data_retorno", "unidade_solicitante", "data_solicitacao"
 
     Returns:
-        float com a pontuação final.
+        float com a pontuação final (maior = maior prioridade).
     """
-
-    if hoje is None:
-        hoje = date.today()
+    hoje = date.today()
 
     score_base = (
         score_data_retorno(solicitacao.get("data_retorno", ""), hoje)   * PESO_DATA_RETORNO +
         score_urgencia(solicitacao.get("unidade_solicitante", ""))      * PESO_URGENCIA +
-        score_localidade(solicitacao.get("cidade", ""))                 * PESO_LOCALIDADE
+        score_localidade(paciente.get("cidade", ""))                    * PESO_LOCALIDADE +
+        score_idade(paciente.get("data_nascimento", ""), hoje)          * PESO_IDADE
     )
 
     bonus = bonus_tempo_espera(solicitacao.get("data_solicitacao", ""), hoje)
@@ -211,27 +227,23 @@ def calcular_pontuacao(solicitacao: dict, hoje: date | None = None) -> float:
 
 def ordenar_fila(solicitacoes: list[dict]) -> list[dict]:
     """
-    Recebe lista de solicitações pendentes (dicionários planos),
-    calcula a pontuação e retorna ordenada (maior primeiro).
+    Recebe lista de solicitações pendentes, calcula a pontuação de cada uma
+    e retorna a lista ordenada por prioridade (maior pontuação primeiro).
 
-    Cada item da lista deve ter as chaves "paciente" e, no mesmo nível,
-    os campos de solicitação esperados por calcular_pontuacao().
-
-    Adiciona o campo "pontuacao" em cada item da lista.
-
-    Exemplo de item esperado:
+    Exemplo de item esperado na lista:
         {
             "id": 42,
             "data_retorno": "2026-07-10",
             "unidade_solicitante": "UTI ADULTO",
             "data_solicitacao": "2026-06-01",
             "paciente": {
-                "cidade": "Petrolina"
+                "cidade": "Petrolina",
+                "data_nascimento": "1950-05-20"
             }
         }
     """
     for s in solicitacoes:
-        # Passamos o dicionário inteiro diretamente, sem tentar extrair "paciente"
-        s["pontuacao"] = calcular_pontuacao(s)
+        paciente_dict = s.get("paciente", {})
+        s["pontuacao"] = calcular_pontuacao(paciente_dict, s)
 
     return sorted(solicitacoes, key=lambda x: x["pontuacao"], reverse=True)

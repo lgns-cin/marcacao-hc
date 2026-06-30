@@ -1,12 +1,12 @@
 from ..services.pontuacao import calcular_pontuacao
-from sqlalchemy.util.typing import Literal
 from datetime import date
-from typing import List, Optional
+from typing import List, Literal, Optional
 
 from fastapi import HTTPException, status
 
-from ..providers.implementations.admin_local_provider import AdminLocalProvider
+from ..providers.implementations.banco_local.admin_local_provider import AdminLocalProvider
 from ..enums import StatusAtribuicao, ResultadoAtribuicao
+from ..helpers.filtros import aplicar_filtros
 
 ESTADOS_VALIDOS = ("em_andamento", "concluidos", "excluidos")
 
@@ -40,10 +40,12 @@ def _aplicar_prioridade(items: list[dict]) -> list[dict]:
 def _build_item(row) -> dict:
     paciente = row.paciente
     sol = row.solicitacao_rel
-
+    prontuario = str(row.paciente_solicitante)
+    
     dias_na_fila = (date.today() - row.data_solicitacao).days if row.data_solicitacao else 0
     exame_nome = row.exame_rel.nome if row.exame_rel else row.exame
-
+    nome = paciente.nome if paciente and paciente.nome else f"Paciente #{prontuario}"
+    
     localizacao = None
     if paciente and paciente.cidade:
         localizacao = f"{paciente.cidade}, {paciente.estado}" if paciente.estado else paciente.cidade
@@ -66,7 +68,7 @@ def _build_item(row) -> dict:
         "id": row.id,
         "solicitacao": row.solicitacao,
         "prontuario": prontuario,
-        "nome": f"Paciente #{prontuario}",
+        "nome": nome,
         "telefone": paciente.telefone,
         "exame": exame_nome,
         "exameCodigo": row.exame,
@@ -110,9 +112,18 @@ async def listar_pendencias(
     data_inicio: Optional[date] = None,
     data_fim: Optional[date] = None,
     limite: Optional[int] = None,
+    busca: Optional[str] = None,
+    regioes: Optional[List[str]] = None,
+    municipio: Optional[str] = None,
+    faixa_etaria: Optional[str] = None,
+    tipos_exame: Optional[List[str]] = None,
 ) -> List[dict]:
     _validar_periodo(data_inicio, data_fim)
-    rows = await provider.listar_pendencias(data_inicio, data_fim)
+    rows = await provider.listar_pendencias(data_inicio, data_fim, busca=busca)
+    rows = aplicar_filtros(
+        rows, regioes=regioes, municipio=municipio,
+        faixa_etaria=faixa_etaria, tipos_exame=tipos_exame,
+    )
 
     # aplicar pontuacao e ordenar
     items = []
@@ -121,7 +132,10 @@ async def listar_pendencias(
         sol = row.solicitacao_rel
         paciente = row.paciente
         item["_pontuacao"] = calcular_pontuacao(
-            {"cidade": paciente.cidade if paciente else ""},
+            {
+                "cidade": paciente.cidade if paciente else "",
+                "data_nascimento": paciente.data_nascimento.isoformat() if paciente and paciente.data_nascimento else "",
+            },
             {
                 "data_retorno": sol.data_retorno.isoformat() if sol and sol.data_retorno else "",
                 "unidade_solicitante": sol.unidade_solicitante if sol else "",
@@ -149,6 +163,11 @@ async def listar_agendamentos(
     data_inicio: Optional[date] = None,
     data_fim: Optional[date] = None,
     limite: Optional[int] = None,
+    busca: Optional[str] = None,
+    regioes: Optional[List[str]] = None,
+    municipio: Optional[str] = None,
+    faixa_etaria: Optional[str] = None,
+    tipos_exame: Optional[List[str]] = None,
 ) -> List[dict]:
     if estado not in ESTADOS_VALIDOS:
         raise HTTPException(
@@ -156,7 +175,11 @@ async def listar_agendamentos(
             detail=f"estado deve ser um de: {ESTADOS_VALIDOS}",
         )
     _validar_periodo(data_inicio, data_fim)
-    rows = await provider.listar_agendamentos(estado, data_inicio, data_fim)
+    rows = await provider.listar_agendamentos(estado, data_inicio, data_fim, busca=busca)
+    rows = aplicar_filtros(
+        rows, regioes=regioes, municipio=municipio,
+        faixa_etaria=faixa_etaria, tipos_exame=tipos_exame,
+    )
 
     # aplicar pontuacao e ordenar
     items = []
@@ -165,7 +188,10 @@ async def listar_agendamentos(
         sol = row.solicitacao_rel
         paciente = row.paciente
         item["_pontuacao"] = calcular_pontuacao(
-            {"cidade": paciente.cidade if paciente else ""},
+            {
+                "cidade": paciente.cidade if paciente else "",
+                "data_nascimento": paciente.data_nascimento.isoformat() if paciente and paciente.data_nascimento else "",
+            },
             {
                 "data_retorno": sol.data_retorno.isoformat() if sol and sol.data_retorno else "",
                 "unidade_solicitante": sol.unidade_solicitante if sol else "",

@@ -68,10 +68,14 @@ async def ingerir_dados_se_vazio(db_url: str, project_root: str):
     hoje = datetime.now().date()
 
     # Mapeamento
-    pacientes_records = df_raw[['prontuario', 'telefone', 'cidade', 'estado']].drop_duplicates(subset=['prontuario']).dropna(subset=['prontuario']).to_dict(orient='records')
+    if 'nome' not in df_raw.columns:
+        df_raw['nome'] = None
+
+    pacientes_records = df_raw[['prontuario', 'nome', 'telefone', 'cidade', 'estado']].drop_duplicates(subset=['prontuario']).dropna(subset=['prontuario']).to_dict(orient='records')
     exames_records = df_raw[['codigo_exame', 'nome_exame']].drop_duplicates(subset=['codigo_exame']).dropna(subset=['codigo_exame']).rename(columns={'codigo_exame': 'codigo', 'nome_exame': 'nome'}).to_dict(orient='records')
     funcionarios_records = df_raw[['id_funcionario']].drop_duplicates(subset=['id_funcionario']).dropna(subset=['id_funcionario']).rename(columns={'id_funcionario': 'id'}).to_dict(orient='records')
     solicitacoes_records = df_raw[['codigo_solicitacao', 'data_retorno', 'unidade_solicitante']].drop_duplicates(subset=['codigo_solicitacao']).dropna(subset=['codigo_solicitacao']).rename(columns={'codigo_solicitacao': 'codigo'}).to_dict(orient='records')
+
 
     df_fatos = df_raw[['codigo_solicitacao', 'codigo_exame', 'prontuario', 'id_funcionario']].copy()
     df_fatos = df_fatos.dropna(subset=['codigo_solicitacao', 'codigo_exame', 'prontuario'])

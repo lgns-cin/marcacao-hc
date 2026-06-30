@@ -4,8 +4,9 @@ from typing import List, Optional, Literal
 from fastapi import HTTPException, status
 
 from ..enums import StatusAtribuicao, ResultadoAtribuicao
-from ..providers.implementations.funcionario_local_provider import FuncionarioLocalProvider
+from ..providers.implementations.banco_local.funcionario_local_provider import FuncionarioLocalProvider
 from ..services.pontuacao import calcular_pontuacao
+from ..helpers.filtros import aplicar_filtros
 
 def _status(idx: int, total: int) -> Literal["ALTA", "MÉDIA", "BAIXA"]:
     """Retorna o status do item da fila de agendamento de índice `idx` dado que a fila tem `total` posições."""
@@ -63,7 +64,7 @@ def _build_item(row) -> dict:
 
     # nome do paciente vem do AGHU; usa prontuário como fallback
     prontuario = str(row.paciente_solicitante)
-    nome = f"Paciente #{prontuario}"
+    nome = paciente.nome if paciente and paciente.nome else f"Paciente #{prontuario}"
 
     # consulta e formatação do telefone
     telefone = "Não informado"
@@ -89,15 +90,31 @@ def _build_item(row) -> dict:
 
 
 # Retorna a fila geral: um card por exame, ordenados pelo algoritmo de pontuação
-async def listar_agendamentos(provider: FuncionarioLocalProvider, limit: Optional[int] = None) -> List[dict]:
-    rows = await provider.listar_pendentes()
+async def listar_agendamentos(
+    provider: FuncionarioLocalProvider,
+    limit: Optional[int] = None,
+    busca: Optional[str] = None,
+    regioes: Optional[List[str]] = None,
+    municipio: Optional[str] = None,
+    faixa_etaria: Optional[str] = None,
+    tipos_exame: Optional[List[str]] = None,
+) -> List[dict]:
+    rows = await provider.listar_pendentes(busca=busca)
+    rows = aplicar_filtros(
+        rows, regioes=regioes, municipio=municipio,
+        faixa_etaria=faixa_etaria, tipos_exame=tipos_exame,
+    )
+
     items = []
     for row in rows:
         item = _build_item(row)
         sol = row.solicitacao_rel
         paciente = row.paciente
         item["_pontuacao"] = calcular_pontuacao(
-            {"cidade": paciente.cidade if paciente else ""},
+            {
+                "cidade": paciente.cidade if paciente else "",
+                "data_nascimento": paciente.data_nascimento.isoformat() if paciente and paciente.data_nascimento else "",
+            },
             {
                 "data_retorno": sol.data_retorno.isoformat() if sol and sol.data_retorno else "",
                 "unidade_solicitante": sol.unidade_solicitante if sol else "",
@@ -134,9 +151,22 @@ async def puxar_agendamento(
 
 
 # Retorna os agendamentos do funcionário logado em qualquer estado (EM_ANDAMENTO, AGUARDANDO_CONFIRMACAO, FINALIZADO)
-async def listar_minha_area(provider: FuncionarioLocalProvider, username: str, nome: Optional[str] = None) -> List[dict]:
+async def listar_minha_area(
+    provider: FuncionarioLocalProvider,
+    username: str,
+    nome: Optional[str] = None,
+    regioes: Optional[List[str]] = None,
+    municipio: Optional[str] = None,
+    faixa_etaria: Optional[str] = None,
+    tipos_exame: Optional[List[str]] = None,
+) -> List[dict]:
+
     funcionario = await provider.get_or_create_funcionario(username, nome)
     rows = await provider.listar_por_funcionario(funcionario.id)
+    rows = aplicar_filtros(
+        rows, regioes=regioes, municipio=municipio,
+        faixa_etaria=faixa_etaria, tipos_exame=tipos_exame,
+    )
     grupos = _agrupar_por_solicitacao(rows)
     items = []
     for grupo_rows in grupos.values():
