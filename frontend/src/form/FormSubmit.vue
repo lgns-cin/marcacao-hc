@@ -84,7 +84,10 @@ const onSubmit = async () => {
                 <p>Sua <span class="underline">solicitação</span> se refere aos seguintes <span class="underline">exames</span>:</p>
                 
                 <template v-for="exame in exames">
-                    <div class="flex flex-row gap-2" v-if="exame.status_vaga != 'DUPLICADO'">
+                    <div
+                        class="grid grid-cols-none grid-flow-col auto-cols-auto gap-2 justify-start text-start text-xl"
+                        v-if="exame.status_vaga != 'DUPLICADO'"
+                    >
                         <template v-if="exame.status_vaga == 'DISPONÍVEL'">
                             <CheckCircleIcon #icon class="w-8 h-8 stroke-dark-green" />
                             <p class="text-dark-green">{{ exame.nome_exame }}</p>
@@ -106,13 +109,17 @@ const onSubmit = async () => {
                     <XMarkIcon #icon class="stroke-dark-blue w-32 h-32"/>
                 </div>
                 <h1 class="font-bold text-3xl text-center">Não será possível marcar agora.</h1>
-                <div v-if="exames.filter(v => v.status_vaga != 'DUPLICADO').length > 0" class="text-center">
+                <div class="flex flex-col align-items justify-center-safe text-center" v-if="exames.filter(v => v.status_vaga == 'DUPLICADO').length > 0">
                     <p>Exames já enviados:</p>
-                    <ul>
+                    <ul class="px-8 flex flex-col justify-center align-middle">
                         <template v-for="exame in exames">
-                            <p v-if="exame.status_vaga == 'DUPLICADO'" class="font-semibold">
-                                {{ exame.nome_exame }}
-                            </p>
+                            <li 
+                                class="grid grid-cols-none grid-flow-col auto-cols-auto gap-2 justify-start text-start text-xl"
+                                v-if="exame.status_vaga == 'DUPLICADO'"
+                            >
+                                <CheckCircleIcon #icon class="w-8 h-8 stroke-dark-blue" />
+                                <p class="font-semibold text-xl">{{ exame.nome_exame }}</p>
+                            </li>
                         </template>
                     </ul>
                 </div>
