@@ -169,6 +169,7 @@ async def listar_minha_area(
     provider: FuncionarioLocalProvider,
     username: str,
     nome: Optional[str] = None,
+    busca: Optional[str] = None,
     regioes: Optional[List[str]] = None,
     municipio: Optional[str] = None,
     faixa_etaria: Optional[str] = None,
@@ -192,7 +193,7 @@ async def listar_minha_area(
             items.append(item)
 
     items = aplicar_filtros(
-        items, regioes=regioes, municipio=municipio,
+        items, busca=busca or None, regioes=regioes, municipio=municipio,
         faixa_etaria=faixa_etaria, tipos_exame=tipos_exame,
     )
     for item in items:
