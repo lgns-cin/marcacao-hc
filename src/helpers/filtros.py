@@ -102,6 +102,7 @@ def _extrair_dados(item) -> dict:
 def aplicar_filtros(
     items: list,
     *,
+    busca: Optional[str] = None,
     regioes: Optional[list[str]] = None,
     municipio: Optional[str] = None,
     faixa_etaria: Optional[str] = None,
@@ -138,6 +139,10 @@ def aplicar_filtros(
     resultado = []
     for item in items:
         dados = _extrair_dados(item)
+
+        if busca is not None:
+            if busca.lower() not in item["nome"].lower() and busca.lower() not in item["prontuario"].lower():
+                continue
 
         if regioes_set is not None:
             if not _na_regiao(dados["cidade"], regioes_set):

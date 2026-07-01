@@ -119,7 +119,7 @@ async def listar_pendencias(
     tipos_exame: Optional[List[str]] = None,
 ) -> List[dict]:
     _validar_periodo(data_inicio, data_fim)
-    rows = await provider.listar_pendencias(data_inicio, data_fim, busca=busca)
+    rows = await provider.listar_pendencias(data_inicio, data_fim)
 
     # aplicar pontuacao e ordenar
     items = []
@@ -151,7 +151,7 @@ async def listar_pendencias(
     items = _aplicar_prioridade(items)
 
     items = aplicar_filtros(
-        items, regioes=regioes, municipio=municipio,
+        items, busca=busca, regioes=regioes, municipio=municipio,
         faixa_etaria=faixa_etaria, tipos_exame=tipos_exame,
     )
     for item in items:
@@ -183,7 +183,7 @@ async def listar_agendamentos(
             detail=f"estado deve ser um de: {ESTADOS_VALIDOS}",
         )
     _validar_periodo(data_inicio, data_fim)
-    rows = await provider.listar_agendamentos(estado, data_inicio, data_fim, busca=busca)
+    rows = await provider.listar_agendamentos(estado, data_inicio, data_fim)
 
     # aplicar pontuacao e ordenar
     items = []
@@ -216,7 +216,7 @@ async def listar_agendamentos(
     items = _aplicar_prioridade(items)
 
     items = aplicar_filtros(
-        items, regioes=regioes, municipio=municipio,
+        items, busca=busca, regioes=regioes, municipio=municipio,
         faixa_etaria=faixa_etaria, tipos_exame=tipos_exame,
     )
     for item in items:

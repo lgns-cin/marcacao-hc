@@ -104,7 +104,7 @@ async def listar_agendamentos(
     faixa_etaria: Optional[str] = None,
     tipos_exame: Optional[List[str]] = None,
 ) -> List[dict]:
-    rows = await provider.listar_pendentes(busca=busca)
+    rows = await provider.listar_pendentes()
 
     items = []
     for row in rows:
@@ -132,7 +132,7 @@ async def listar_agendamentos(
     items = _aplicar_prioridade(items)
 
     items = aplicar_filtros(
-        items, regioes=regioes, municipio=municipio,
+        items, busca=busca, regioes=regioes, municipio=municipio,
         faixa_etaria=faixa_etaria, tipos_exame=tipos_exame,
     )
     for item in items:
