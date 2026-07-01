@@ -10,14 +10,14 @@ import {
   Legend,
 } from 'chart.js';
 import { ClipboardDocumentListIcon } from '@heroicons/vue/24/outline';
-import type { GraficoMotivosDevolucao } from '../types';
+import type { GraficoBarrasVerticais } from '../types';
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Tooltip, Legend);
 
 const CORES_BARRAS = ['#168821', '#FFCD07', '#E52207', '#1351B4', '#FF8C00'];
 
 const props = defineProps<{
-  grafico: GraficoMotivosDevolucao;
+  grafico: GraficoBarrasVerticais;
 }>();
 
 const chartData = computed(() => ({

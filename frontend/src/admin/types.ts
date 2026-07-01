@@ -15,7 +15,7 @@ export type SerieBarrasEtapas = {
   total: number;
 };
 
-export type SerieMotivoDevolucao = {
+export type SerieMotivoReportarProblema = {
   motivo: string;
   quantidade: number;
 };
@@ -28,15 +28,15 @@ export type GraficoBarrasEtapas = {
   dados: SerieBarrasEtapas[];
 };
 
-export type GraficoMotivosDevolucao = {
+export type GraficoBarrasVerticais = {
   id: string;
   titulo: string;
-  subtitulo: string;
+  subtitulo?: string;
   tipo: 'barras_verticais';
-  dados: SerieMotivoDevolucao[];
+  dados: SerieMotivoReportarProblema[];
 };
 
-export type Grafico = GraficoBarrasEtapas | GraficoMotivosDevolucao;
+export type Grafico = GraficoBarrasEtapas | GraficoBarrasVerticais;
 
 export type VisaoGeral = {
   kpis: Kpi[];

@@ -2,7 +2,7 @@ import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
 import type { FiltrosFila } from '../funcionario/types';
 import { FILTROS_VAZIOS } from '../shared/utils/filtrarAgendamentos';
-import type { AgendamentoGerenciamento, AgendamentoRemovido, Funcionario, Kpi, PendenciaItem, VisaoGeral, SerieBarrasEtapas } from '../admin/types';
+import type { AgendamentoGerenciamento, AgendamentoRemovido, Funcionario, Kpi, PendenciaItem, VisaoGeral, SerieBarrasEtapas, SerieMotivoReportarProblema } from '../admin/types';
 import api from '../services/api';
 import { LIMITE_AGENDAMENTOS, TITULOS_KPIS } from '../shared/constants';
 
@@ -32,10 +32,11 @@ export const useAdminStore = defineStore('admin', () => {
   async function fetchVisaoGeral(opcoes: { silencioso?: boolean } = {}) {
     if (!opcoes.silencioso) isLoadingVisaoGeral.value = true;
     try {
-      const [resKpis, resRankingExames, resRankingMunicipios] = await Promise.all([
+      const [resKpis, resRankingExames, resRankingMunicipios, resMotivosReportarProblema] = await Promise.all([
         api.get<Kpi[]>(`/api/admin/visao-geral`),
         api.get<SerieBarrasEtapas[]>(`/api/admin/dashboard/ranking-exames`),
-        api.get<SerieBarrasEtapas[]>(`/api/admin/dashboard/ranking-municipios`)
+        api.get<SerieBarrasEtapas[]>(`/api/admin/dashboard/ranking-municipios`),
+        api.get<SerieMotivoReportarProblema[]>(`/api/admin/dashboard/motivos-reportar-problema`),
       ]);
 
       const kpis: Kpi[] = resKpis.data.map((kpi) => ({
@@ -50,6 +51,7 @@ export const useAdminStore = defineStore('admin', () => {
         graficos: [
           { id: 'ranking-exames', titulo: 'Top 10 - Distribuição por Tipo de Exame', tipo: 'barras_horizontais', dados: resRankingExames.data },
           { id: 'ranking-municipios', titulo: 'Top 10 - Distribuição por Município', tipo: 'barras_horizontais', dados: resRankingMunicipios.data },
+          { id: 'motivos-reportar-problema', titulo: 'Distribuição de Motivos de Reportar Problema', tipo: 'barras_verticais', dados: resMotivosReportarProblema.data },
         ]
       };
     } catch {

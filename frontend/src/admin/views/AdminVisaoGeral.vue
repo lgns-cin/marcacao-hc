@@ -5,7 +5,7 @@ import { useAdminStore } from '../../stores/admin';
 import { useAutoRefresh } from '../../composables/useAutoRefresh';
 import AdminKpiCard from '../components/AdminKpiCard.vue';
 import BarrasEtapasChart from '../components/BarrasEtapasChart.vue';
-import MotivosDevolucaoChart from '../components/MotivosDevolucaoChart.vue';
+import MotivosDevolucaoChart from '../components/ReporteProblemaChart.vue';
 
 const adminStore = useAdminStore();
 const toast = useToast();

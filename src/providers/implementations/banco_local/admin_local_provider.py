@@ -304,6 +304,15 @@ class AdminLocalProvider:
         data_inicio: Optional[date] = None,
         data_fim: Optional[date] = None,
     ) -> List[dict]:
+
+        # lista de motivos pré-definidos
+        MOTIVOS = [
+            "Paciente não respondeu",
+            "Dados inconsistentes",
+            "Erro cadastral",
+            "Duplicidade",
+        ]
+        
         temporal = _filtro_temporal(data_inicio, data_fim)
         result = await self.session.execute(
             select(
@@ -315,8 +324,19 @@ class AdminLocalProvider:
                 *temporal,
             ).group_by(ExameSolicitado.motivo)
         )
-        rows = result.all()
-        return [{"motivo": r.motivo or "Não informado", "quantidade": r.quantidade} for r in rows]
+
+        contagens = {
+            motivo: quantidade
+            for motivo, quantidade in result.all()
+        }
+
+        return [
+            {
+                "motivo": motivo,
+                "quantidade": contagens.get(motivo, 0),
+            }
+            for motivo in MOTIVOS
+        ]
 
 
 def _agregar_ranking(rows, chave: str, limit: int) -> List[dict]:
