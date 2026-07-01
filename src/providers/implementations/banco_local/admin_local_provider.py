@@ -246,13 +246,15 @@ class AdminLocalProvider:
         result = await self.session.execute(stmt)
         return result.scalars().all()
 
-    async def buscar_por_solicitacao(self, solicitacao_id: int, exame_codigo: str) -> List[ExameSolicitado]:
+    async def buscar_por_solicitacao(self, solicitacao_id: int, exame_codigo: Optional[str] = None) -> List[ExameSolicitado]:
+        conditions = [
+            ExameSolicitado.solicitacao == solicitacao_id,
+            ExameSolicitado.deleted_at == None,
+        ]
+        if exame_codigo is not None:
+            conditions.append(ExameSolicitado.exame == exame_codigo)
         result = await self.session.execute(
-            select(ExameSolicitado).where(
-                ExameSolicitado.solicitacao == solicitacao_id,
-                ExameSolicitado.deleted_at == None,
-                ExameSolicitado.exame == exame_codigo
-            )
+            select(ExameSolicitado).where(*conditions)
         )
         return result.scalars().all()
 
@@ -296,6 +298,25 @@ class AdminLocalProvider:
             select(Funcionario).where(Funcionario.deleted_at == None)
         )
         return result.scalars().all()
+
+    async def motivos_reportar_problema(
+        self,
+        data_inicio: Optional[date] = None,
+        data_fim: Optional[date] = None,
+    ) -> List[dict]:
+        temporal = _filtro_temporal(data_inicio, data_fim)
+        result = await self.session.execute(
+            select(
+                ExameSolicitado.motivo,
+                func.count(ExameSolicitado.id).label("quantidade"),
+            ).where(
+                ExameSolicitado.resultado == ResultadoAtribuicao.PROBLEMA_REPORTADO,
+                ExameSolicitado.deleted_at == None,
+                *temporal,
+            ).group_by(ExameSolicitado.motivo)
+        )
+        rows = result.all()
+        return [{"motivo": r.motivo or "Não informado", "quantidade": r.quantidade} for r in rows]
 
 
 def _agregar_ranking(rows, chave: str, limit: int) -> List[dict]:

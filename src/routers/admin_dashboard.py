@@ -49,6 +49,16 @@ async def ranking_exames(
     return await admin_controller.ranking_por_exame(provider, data_inicio, data_fim)
 
 
+@router.get("/dashboard/motivos-reportar-problema")
+async def motivos_reportar_problema(
+    data_inicio: Optional[date] = None,
+    data_fim: Optional[date] = None,
+    provider: AdminLocalProvider = Depends(get_admin_provider),
+    _: dict = Depends(verify_admin_group),
+):
+    return await admin_controller.motivos_reportar_problema(provider, data_inicio, data_fim)
+
+
 @router.get("/dashboard/ranking-municipios")
 async def ranking_municipios(
     data_inicio: Optional[date] = None,
