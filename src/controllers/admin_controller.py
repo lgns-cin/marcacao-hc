@@ -119,11 +119,7 @@ async def listar_pendencias(
     tipos_exame: Optional[List[str]] = None,
 ) -> List[dict]:
     _validar_periodo(data_inicio, data_fim)
-    rows = await provider.listar_pendencias(data_inicio, data_fim, busca=busca)
-    rows = aplicar_filtros(
-        rows, regioes=regioes, municipio=municipio,
-        faixa_etaria=faixa_etaria, tipos_exame=tipos_exame,
-    )
+    rows = await provider.listar_pendencias(data_inicio, data_fim)
 
     # aplicar pontuacao e ordenar
     items = []
@@ -146,10 +142,22 @@ async def listar_pendencias(
         item["resultado"] = row.resultado
         item["motivo"] = row.motivo
         item["detalhes"] = row.detalhes
+        item["_cidade"] = paciente.cidade if paciente else None
+        item["_data_nascimento"] = paciente.data_nascimento if paciente else None
+        item["_codigo_exame"] = row.exame
         items.append(item)
     
     items.sort(key=lambda x: x.pop("_pontuacao"), reverse=True)
     items = _aplicar_prioridade(items)
+
+    items = aplicar_filtros(
+        items, busca=busca, regioes=regioes, municipio=municipio,
+        faixa_etaria=faixa_etaria, tipos_exame=tipos_exame,
+    )
+    for item in items:
+        item.pop("_cidade", None)
+        item.pop("_data_nascimento", None)
+        item.pop("_codigo_exame", None)
 
     if limite is not None:
         items = items[:limite]
@@ -175,11 +183,7 @@ async def listar_agendamentos(
             detail=f"estado deve ser um de: {ESTADOS_VALIDOS}",
         )
     _validar_periodo(data_inicio, data_fim)
-    rows = await provider.listar_agendamentos(estado, data_inicio, data_fim, busca=busca)
-    rows = aplicar_filtros(
-        rows, regioes=regioes, municipio=municipio,
-        faixa_etaria=faixa_etaria, tipos_exame=tipos_exame,
-    )
+    rows = await provider.listar_agendamentos(estado, data_inicio, data_fim)
 
     # aplicar pontuacao e ordenar
     items = []
@@ -203,11 +207,23 @@ async def listar_agendamentos(
         item["motivo"] = row.motivo
         if estado == "excluidos":
             item["excluidoEm"] = row.deleted_at.isoformat() if row.deleted_at else None
+        item["_cidade"] = paciente.cidade if paciente else None
+        item["_data_nascimento"] = paciente.data_nascimento if paciente else None
+        item["_codigo_exame"] = row.exame
         items.append(item)
     
     items.sort(key=lambda x: x.pop("_pontuacao"), reverse=True)
     items = _aplicar_prioridade(items)
 
+    items = aplicar_filtros(
+        items, busca=busca, regioes=regioes, municipio=municipio,
+        faixa_etaria=faixa_etaria, tipos_exame=tipos_exame,
+    )
+    for item in items:
+        item.pop("_cidade", None)
+        item.pop("_data_nascimento", None)
+        item.pop("_codigo_exame", None)
+        
     if limite is not None:
         items = items[:limite]
     
