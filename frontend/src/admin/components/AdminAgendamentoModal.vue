@@ -1,25 +1,24 @@
 <script setup lang="ts">
 import { ref, watch } from 'vue';
 import {
-  ClockIcon,
-  CheckIcon,
-  XMarkIcon,
-  ExclamationCircleIcon,
+  ArrowUturnLeftIcon,
+  ArrowsRightLeftIcon,
 } from '@heroicons/vue/24/outline';
 import { UserGroupIcon } from '@heroicons/vue/24/solid';
 import Modal from '../../shared/components/Modal.vue';
 import BaseModalDetails from '../../shared/components/BaseModalDetails.vue';
-import SeletorMotivo from '../../funcionario/components/SeletorMotivo.vue';
-import SeletorFuncionario from './SeletorFuncionario.vue';
-import { MOTIVOS_DEVOLUCAO } from '../../funcionario/types';
+import SeletorMotivo from '../../shared/components/SeletorMotivo.vue';
+import SeletorFuncionario from '../../shared/components/SeletorFuncionario.vue';
+import { MOTIVOS_DEVOLUCAO } from '../../shared/constants';
 import type { AgendamentoItem } from '../../funcionario/types';
 import type { Funcionario } from '../types';
 import Button from '../../shared/components/Button.vue';
 
 type ItemModal = AgendamentoItem & {
-  responsavel: string;
-  problema_motivo?: string | null;
-  problema_detalhes?: string | null;
+  funcionarioAtribuido: string;
+  resultado?: 'CONFIRMADO' | 'PROBLEMA_REPORTADO';
+  motivo?: string | null;
+  detalhes?: string | null;
 };
 
 type Painel = 'nenhum' | 'devolver' | 'reatribuir';
@@ -94,41 +93,36 @@ function handleResolver() {
 
     <div v-if="item" class="space-y-4">
       <BaseModalDetails :item="item">
-
-        <div v-if="item.problema_motivo" class="space-y-2 pt-2">
+        <div v-if="item.motivo && item.resultado == 'PROBLEMA_REPORTADO'" class="space-y-2 pt-2">
           <p class="font-semibold text-govbr-text">Informações sobre o Reporte do Problema:</p>
           <ul class="list-disc space-y-1 pl-5 text-[16px]">
-            <li><span class="font-semibold text-govbr-text">Motivo</span>: <span class="text-govbr-text-secondary">{{ item.problema_motivo }}</span></li>
-            <li v-if="item.problema_detalhes"><span class="font-semibold text-govbr-text">Detalhes</span>: <span class="text-govbr-text-secondary">{{ item.problema_detalhes }}</span></li>
+            <li><span class="font-semibold text-govbr-text">Motivo</span>: <span class="text-govbr-text-secondary">{{ item.motivo }}</span></li>
+            <li v-if="item.detalhes"><span class="font-semibold text-govbr-text">Detalhes</span>: <span class="text-govbr-text-secondary">{{ item.detalhes }}</span></li>
           </ul>
         </div>
 
-        <div v-if="painel === 'devolver'" class="space-y-2 rounded border border-govbr-border bg-govbr-bg p-4 mt-4">
-          <label class="mb-1 block text-sm font-semibold text-govbr-text">Motivo*</label>
+        <div v-if="painel === 'devolver'" class="space-y-3 rounded border border-govbr-border bg-govbr-bg p-4 mt-4">
+          <label class="block text-sm font-semibold text-govbr-text">Motivo*</label>
+          <SeletorMotivo v-model="motivoDevolucao" :opcoes="MOTIVOS_DEVOLUCAO" />
           <div class="flex items-center gap-2">
-            <div class="flex-1">
-              <SeletorMotivo v-model="motivoDevolucao" :opcoes="MOTIVOS_DEVOLUCAO" />
-            </div>
-            <Button variant="secondary" class="rounded-full! p-2!" @click="fecharPainel">
-              <XMarkIcon class="h-5 w-5" />
+            <Button variant="secondary" @click="fecharPainel">
+              Cancelar
             </Button>
-            <Button variant="primary" class="rounded-full! p-2!" :disabled="!motivoDevolucao" @click="confirmarDevolucao">
-              <CheckIcon class="h-5 w-5" />
+            <Button variant="primary" :disabled="!motivoDevolucao" @click="confirmarDevolucao">
+              Confirmar
             </Button>
           </div>
         </div>
 
-        <div v-else-if="painel === 'reatribuir'" class="space-y-2 rounded border border-govbr-border bg-govbr-bg p-4 mt-4">
-          <label class="mb-1 block text-sm font-semibold text-govbr-text">Selecionar Funcionário</label>
+        <div v-else-if="painel === 'reatribuir'" class="space-y-3 rounded border border-govbr-border bg-govbr-bg p-4 mt-4">
+          <label class="block text-sm font-semibold text-govbr-text">Selecionar Funcionário</label>
+          <SeletorFuncionario v-model="funcionarioSelecionado" :opcoes="funcionarios" />
           <div class="flex items-center gap-2">
-            <div class="flex-1">
-              <SeletorFuncionario v-model="funcionarioSelecionado" :opcoes="funcionarios" />
-            </div>
-            <Button variant="secondary" class="rounded-full! p-2!" @click="fecharPainel">
-              <XMarkIcon class="h-5 w-5" />
+            <Button variant="secondary" @click="fecharPainel">
+              Cancelar
             </Button>
-            <Button variant="primary" class="rounded-full! p-2!" :disabled="!funcionarioSelecionado" @click="confirmarReatribuicao">
-              <CheckIcon class="h-5 w-5" />
+            <Button variant="primary" :disabled="!funcionarioSelecionado" @click="confirmarReatribuicao">
+              Confirmar
             </Button>
           </div>
         </div>
@@ -136,24 +130,24 @@ function handleResolver() {
     </div>
 
     <template #footer>
-      <template v-if="item?.problema_motivo">
+      <template v-if="permitirAcoes === false">
+        <Button variant="primary" @click="fechar">Fechar</Button>
+      </template>
+      <template v-else-if="item?.motivo">
         <Button variant="tertiary" @click="abrirPainel('devolver')">
           Devolver à fila
         </Button>
         <Button variant="secondary" @click="handleResolver">
-          Remover da fila
+          Remover
         </Button>
-      </template>
-      <template v-else-if="permitirAcoes === false">
-        <Button variant="primary" @click="fechar">Fechar</Button>
       </template>
       <template v-else>
         <Button variant="secondary" @click="abrirPainel('devolver')">
-          <ClockIcon class="h-4 w-4" />
+          <ArrowUturnLeftIcon class="h-4 w-4" />
           Devolver à fila
         </Button>
         <Button variant="secondary" @click="abrirPainel('reatribuir')">
-          <ExclamationCircleIcon class="h-4 w-4" />
+          <ArrowsRightLeftIcon class="h-4 w-4" />
           Reatribuir
         </Button>
         <Button variant="primary" @click="fechar">Fechar</Button>

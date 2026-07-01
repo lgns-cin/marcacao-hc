@@ -1,12 +1,13 @@
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from 'vue';
+import { ref, onMounted } from 'vue';
 import { useToast } from 'vue-toastification';
 import { MagnifyingGlassIcon } from '@heroicons/vue/24/outline';
 import { FunnelIcon } from '@heroicons/vue/24/solid';
+import { useAutoRefresh } from '../../composables/useAutoRefresh';
 import { useAdminStore } from '../../stores/admin';
 import PendenciaCard from '../components/PendenciaCard.vue';
 import AdminAgendamentoModal from '../components/AdminAgendamentoModal.vue';
-import FilaFiltros from '../../funcionario/components/FilaFiltros.vue';
+import FilaFiltros from '../../shared/components/FilaFiltros.vue';
 import type { PendenciaItem } from '../types';
 import Button from '../../shared/components/Button.vue';
 
@@ -30,7 +31,7 @@ async function carregarPendencias() {
   try {
     await adminStore.fetchPendencias();
   } catch (error) {
-    toast.error('Não foi possível carregar as pendências.');
+    toast.error('Não foi possível carregar os exames com problemas.');
   }
 }
 
@@ -42,59 +43,51 @@ async function carregarFuncionarios() {
   }
 }
 
-async function resolverPendencia(id: number) {
+async function removerProblema(id: number) {
   try {
-    await adminStore.resolverPendencia(id);
-    toast.success('Pendência resolvida com sucesso.');
+    await adminStore.removerProblema(id);
+    toast.success('Exame removido com sucesso.');
     modalAberto.value = false;
   } catch (error) {
-    toast.error('Não foi possível resolver esta pendência.');
+    toast.error('Não foi possível remover este exame.');
   }
 }
 
 async function devolverAFila(id: number, motivo: string) {
   try {
     await adminStore.devolverAFilaAdmin(id, motivo);
-    toast.success('Solicitação devolvida à fila com sucesso.');
+    toast.success('Exame devolvido à fila com sucesso.');
     modalAberto.value = false;
-    await carregarPendencias();
   } catch (error) {
-    toast.error('Não foi possível devolver esta solicitação à fila.');
+    toast.error('Não foi possível devolver este exame à fila.');
   }
 }
 
 async function reatribuir(id: number, funcionario: string) {
   try {
     await adminStore.reatribuirAgendamento(id, funcionario);
-    toast.success('Solicitação reatribuída com sucesso.');
+    toast.success('Exame reatribuído com sucesso.');
     modalAberto.value = false;
-    await carregarPendencias();
   } catch (error) {
-    toast.error('Não foi possível reatribuir esta solicitação.');
+    toast.error('Não foi possível reatribuir este exame.');
   }
 }
-
-const INTERVALO_ATUALIZACAO_MS = 10000;
-let intervaloAtualizacao: ReturnType<typeof setInterval> | undefined;
 
 onMounted(() => {
   carregarPendencias();
   carregarFuncionarios();
-  intervaloAtualizacao = setInterval(() => {
-    if (!modalAberto.value) adminStore.fetchPendencias({ silencioso: true });
-  }, INTERVALO_ATUALIZACAO_MS);
 });
 
-// importante colocar o clearInterval, caso contrário, quando o usuário sair da página,
-// vai continuar executando e gerando requests indesejadas
-onUnmounted(() => {
-  clearInterval(intervaloAtualizacao);
-});
+useAutoRefresh(
+  () => adminStore.fetchPendencias({ silencioso: true }),
+  10000,
+  modalAberto,
+);
 </script>
 
 <template>
   <div>
-    <h1 class="text-[2.4rem] text-govbr-text">Gestão de Pendências</h1>
+    <h1 class="text-[2.4rem] text-govbr-text">Gestão de Problemas</h1>
     <p class="text-[1.6rem] text-govbr-text-secondary">Acompanhe casos que exigem intervenção para evitar atrasos no atendimento</p>
 
     <div class="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -125,17 +118,21 @@ onUnmounted(() => {
       @limpar="adminStore.limparFiltrosPendencias"
     />
 
-    <p v-if="adminStore.isLoadingPendencias" class="mt-8 text-govbr-text-secondary">Carregando pendências...</p>
+    <p v-if="adminStore.isLoadingPendencias" class="mt-8 text-govbr-text-secondary">Carregando exames com problemas...</p>
 
     <p v-else-if="adminStore.pendenciasFiltradas.length === 0" class="mt-8 text-govbr-text-secondary">
-      Nenhuma pendência encontrada para os filtros selecionados.
+      Nenhum problema encontrado para os filtros selecionados.
     </p>
 
-    <div v-else class="mt-6 grid gap-4 sm:grid-cols-2">
+    <div v-else class="mt-6 grid items-start gap-4 sm:grid-cols-2">
       <PendenciaCard
         v-for="pendencia in adminStore.pendenciasFiltradas"
         :key="pendencia.id"
         :pendencia="pendencia"
+        :funcionarios="adminStore.funcionarios"
+        @remover="removerProblema"
+        @devolver="devolverAFila"
+        @reatribuir="reatribuir"
         @ver-mais="abrirDetalhes"
       />
     </div>
@@ -145,7 +142,7 @@ onUnmounted(() => {
       :item="pendenciaSelecionada"
       :funcionarios="adminStore.funcionarios"
       @close="fecharDetalhes"
-      @resolver="resolverPendencia"
+      @resolver="removerProblema"
       @devolver="devolverAFila"
       @reatribuir="reatribuir"
     />

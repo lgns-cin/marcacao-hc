@@ -1,28 +1,29 @@
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from 'vue';
+import { ref, onMounted } from 'vue';
 import { useToast } from 'vue-toastification';
 import { MagnifyingGlassIcon, ClockIcon, CheckCircleIcon, ArrowUturnLeftIcon } from '@heroicons/vue/24/outline';
 import { FunnelIcon } from '@heroicons/vue/20/solid';
 import { useAdminStore } from '../../stores/admin';
+import { useAutoRefresh } from '../../composables/useAutoRefresh';
 import GerenciamentoCard from '../components/GerenciamentoCard.vue';
 import RemovidoCard from '../components/RemovidoCard.vue';
 import AdminAgendamentoModal from '../components/AdminAgendamentoModal.vue';
-import FilaFiltros from '../../funcionario/components/FilaFiltros.vue';
+import FilaFiltros from '../../shared/components/FilaFiltros.vue';
 import type { AgendamentoItem } from '../../funcionario/types';
 
 import Button from '../../shared/components/Button.vue';
 
 type ItemComResponsavel = AgendamentoItem & {
-  responsavel: string;
+  funcionarioAtribuido: string;
   estado?: string;
-  problema_motivo?: string | null;
-  problema_detalhes?: string | null;
+  motivo?: string | null;
+  detalhes?: string | null;
 };
 
 const adminStore = useAdminStore();
 const toast = useToast();
 
-const abaAtiva = ref<'emAndamento' | 'concluido' | 'removido'>('emAndamento');
+const abaAtiva = ref<'emAndamento' | 'finalizado' | 'removido'>('emAndamento');
 const filtrosExpandidos = ref(false);
 const modalAberto = ref(false);
 const itemSelecionado = ref<ItemComResponsavel | null>(null);
@@ -74,27 +75,23 @@ async function reatribuir(id: number, funcionario: string) {
   }
 }
 
-const INTERVALO_ATUALIZACAO_MS = 10000;
-let intervaloAtualizacao: ReturnType<typeof setInterval> | undefined;
-
 onMounted(() => {
   carregarAgendamentos();
   carregarFuncionarios();
-  intervaloAtualizacao = setInterval(() => {
-    if (!modalAberto.value) adminStore.fetchAgendamentosGerenciamento({ silencioso: true });
-  }, INTERVALO_ATUALIZACAO_MS);
 });
 
-onUnmounted(() => {
-  clearInterval(intervaloAtualizacao);
-});
+useAutoRefresh(
+  () => adminStore.fetchAgendamentosGerenciamento({ silencioso: true }),
+  10000,
+  modalAberto,
+);
 </script>
 
 <template>
   <div>
-    <h1 class="text-[2.4rem] text-govbr-text">Gerenciamento de Agendamentos</h1>
+    <h1 class="text-[2.4rem] text-govbr-text">Gestão de Agendamentos</h1>
     <p class="text-[1.6rem] text-govbr-text-secondary">
-      Visualize os exames em andamento, concluídos e devolvidos à fila, acompanhando os responsáveis por cada etapa.
+      Visualize os exames em andamento, finalizados e removidos da fila, acompanhando os responsáveis por cada etapa.
     </p>
 
     <div class="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -128,7 +125,7 @@ onUnmounted(() => {
 
     <div class="mt-6 flex items-center gap-6 border-b border-govbr-border">
       <button
-        class="flex items-center gap-2 border-b-2 px-1 pb-3 text-sm font-bold"
+        class="flex items-center gap-2 border-b-2 px-1 pb-3 text-sm font-bold cursor-pointer"
         :class="abaAtiva === 'emAndamento' ? 'border-govbr-primary text-govbr-primary' : 'border-transparent text-govbr-text-secondary'"
         @click="abaAtiva = 'emAndamento'"
       >
@@ -136,15 +133,15 @@ onUnmounted(() => {
         Em andamento
       </button>
       <button
-        class="flex items-center gap-2 border-b-2 px-1 pb-3 text-sm font-bold"
-        :class="abaAtiva === 'concluido' ? 'border-govbr-primary text-govbr-primary' : 'border-transparent text-govbr-text-secondary'"
-        @click="abaAtiva = 'concluido'"
+        class="flex items-center gap-2 border-b-2 px-1 pb-3 text-sm font-bold cursor-pointer"
+        :class="abaAtiva === 'finalizado' ? 'border-govbr-primary text-govbr-primary' : 'border-transparent text-govbr-text-secondary'"
+        @click="abaAtiva = 'finalizado'"
       >
         <CheckCircleIcon class="h-5 w-5" />
-        Concluído
+        Finalizados
       </button>
       <button
-        class="flex items-center gap-2 border-b-2 px-1 pb-3 text-sm font-bold"
+        class="flex items-center gap-2 border-b-2 px-1 pb-3 text-sm font-bold cursor-pointer"
         :class="abaAtiva === 'removido' ? 'border-govbr-primary text-govbr-primary' : 'border-transparent text-govbr-text-secondary'"
         @click="abaAtiva = 'removido'"
       >
@@ -169,9 +166,9 @@ onUnmounted(() => {
       </div>
     </template>
 
-    <template v-else-if="abaAtiva === 'concluido'">
+    <template v-else-if="abaAtiva === 'finalizado'">
       <p v-if="adminStore.agendamentosConcluidosFiltrados.length === 0" class="mt-8 text-govbr-text-secondary">
-        Nenhum agendamento concluído encontrado.
+        Nenhum agendamento finalizado encontrado.
       </p>
       <div v-else class="mt-6 grid gap-4 sm:grid-cols-2">
         <GerenciamentoCard
@@ -185,7 +182,7 @@ onUnmounted(() => {
 
     <template v-else-if="abaAtiva === 'removido'">
       <p v-if="adminStore.agendamentosRemovidosFiltrados.length === 0" class="mt-8 text-govbr-text-secondary">
-        Nenhuma solicitação devolvida à fila encontrada.
+        Nenhuma solicitação removido à fila encontrada.
       </p>
       <div v-else class="mt-6 grid gap-4 sm:grid-cols-2">
         <RemovidoCard

@@ -1,24 +1,21 @@
 import type { AgendamentoItem, EstadoMinhaArea } from '../funcionario/types';
 
-export type CategoriaIndicador = 'principal' | 'extra';
-
 export type Kpi = {
   id: string;
-  label: string;
-  valor: number;
-  sufixo?: string;
-  tendencia?: number;
-  categoria: CategoriaIndicador;
+  titulo: string;
+  valor: string;
+  formato: string;
 };
 
 export type SerieBarrasEtapas = {
   categoria: string;
-  agendados: number;
-  emAndamento: number;
-  aAgendar: number;
+  pendentes: number;
+  emAgendamento: number;
+  concluidos: number;
+  total: number;
 };
 
-export type SerieMotivoDevolucao = {
+export type SerieMotivoReportarProblema = {
   motivo: string;
   quantidade: number;
 };
@@ -26,53 +23,50 @@ export type SerieMotivoDevolucao = {
 export type GraficoBarrasEtapas = {
   id: string;
   titulo: string;
-  subtitulo: string;
+  subtitulo?: string;
   tipo: 'barras_horizontais';
-  categoria: CategoriaIndicador;
   dados: SerieBarrasEtapas[];
 };
 
-export type GraficoMotivosDevolucao = {
+export type GraficoBarrasVerticais = {
   id: string;
   titulo: string;
-  subtitulo: string;
+  subtitulo?: string;
   tipo: 'barras_verticais';
-  categoria: CategoriaIndicador;
-  dados: SerieMotivoDevolucao[];
+  dados: SerieMotivoReportarProblema[];
 };
 
-export type Grafico = GraficoBarrasEtapas | GraficoMotivosDevolucao;
+export type Grafico = GraficoBarrasEtapas | GraficoBarrasVerticais;
 
 export type VisaoGeral = {
   kpis: Kpi[];
   graficos: Grafico[];
 };
 
-export type SituacaoPendencia = 'BLOQUEADO' | 'PARADO';
+//export type SituacaoPendencia = 'BLOQUEADO' | 'PARADO';
 
 export type PendenciaItem = AgendamentoItem & {
-  situacao: SituacaoPendencia;
-  responsavel: string;
-  problema_motivo?: string | null;
-  problema_detalhes?: string | null;
+  //situacao: SituacaoPendencia;
+  funcionarioAtribuido: string;
+  motivo: string;
+  detalhes?: string | null;
 };
 
 export type AgendamentoGerenciamento = AgendamentoItem & {
-  estado: EstadoMinhaArea;
-  responsavel: string;
-  problema_motivo?: string | null;
-  problema_detalhes?: string | null;
+  estadoAtribuicao: EstadoMinhaArea;
+  resultado: 'PROBLEMA_REPORTADO'| 'CONCLUIDO';
+  funcionarioAtribuido: string;
+  motivo?: string | null;
+  detalhes?: string | null;
 };
 
 export type AgendamentoRemovido = AgendamentoItem & {
-  responsavel: string;
-  problema_motivo: string;
-  problema_detalhes?: string | null;
+  funcionarioAtribuido: string;
+  motivo: string;
+  detalhes?: string | null;
 };
 
 export type Funcionario = {
   username: string;
   nome: string;
 };
-
-export const PREFERENCIAS_VISAO_GERAL_KEY = 'admin-visao-geral-preferencias';

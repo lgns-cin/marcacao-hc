@@ -1,12 +1,13 @@
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from 'vue';
+import { ref, onMounted } from 'vue';
 import { useToast } from 'vue-toastification';
 import { MagnifyingGlassIcon } from '@heroicons/vue/24/outline';
 import { FunnelIcon } from '@heroicons/vue/20/solid';
 import { useFuncionarioStore } from '../../stores/funcionario';
+import { useAutoRefresh } from '../../composables/useAutoRefresh';
 import PatientQueueCard from '../components/PatientQueueCard.vue';
 import PatientDetailModal from '../components/PatientDetailModal.vue';
-import FilaFiltros from '../components/FilaFiltros.vue';
+import FilaFiltros from '../../shared/components/FilaFiltros.vue';
 import type { AgendamentoItem } from '../types';
 import Button from '../../shared/components/Button.vue';
 
@@ -29,60 +30,36 @@ function fecharDetalhes() {
   modalAberto.value = false; // Fecha a janela do modal
 }
 
-// Chamadas a API
 async function puxarAgendamento(id: number) {
-  try {
-    // Tenta vincular o paciente ao atendente logado
-    await funcionarioStore.puxarAgendamento(id);
+  const statusCode = await funcionarioStore.puxarAgendamento(id);
+
+  if (statusCode == 200) {
     toast.success('Paciente puxado para agendamento com sucesso.');
-    modalAberto.value = false; // Fecha o modal caso a ação tenha partido de dentro dele
-  } catch (error: any) {
-    // Tratamento de concorrência: Se outra pessoa puxou o paciente ao mesmo tempo (status 409)
-    if (error?.response?.status === 409) {
-      toast.error('Este paciente já foi atribuído a outro atendente.');
-      modalAberto.value = false;
-      await carregarAgendamentos(); // Atualiza a lista imediatamente para refletir a mudança
-    } else {
-      toast.error('Não foi possível puxar este agendamento.');
-    }
+  } else if (statusCode == 409) {
+    toast.error('Este paciente já foi atribuído a outro atendente.');
+  } else {
+    toast.error('Não foi possível puxar este agendamento.');
   }
+
+  modalAberto.value = false;
+  await carregarAgendamentos();
 }
 
 async function carregarAgendamentos() {
-  try {
-    // Faz a busca inicial ou recarregamento completo dos agendamentos
-    await funcionarioStore.fetchAgendamentos();
-  } catch (error) {
+  const successful = await funcionarioStore.fetchAgendamentos();
+  
+  if (!successful) {
     toast.error('Não foi possível carregar a fila de agendamento.');
   }
 }
 
-// Atualização em segundo plano
-const INTERVALO_ATUALIZACAO_MS = 10000;
-let intervaloAtualizacao: ReturnType<typeof setInterval> | undefined;
+onMounted(() => carregarAgendamentos());
 
-async function atualizarEmSegundoPlano() {
-  // Se o usuário estiver trabalhando com o modal aberto, não atualiza para não sumir com o dado na tela dele
-  if (modalAberto.value) return;
-  try {
-    // Executa a busca em modo silencioso (sem disparar telas de loading/espinners pesados)
-    await funcionarioStore.fetchAgendamentos({ silencioso: true });
-  } catch (error) {
-    // Falha silenciosa: a próxima rodada de polling tenta novamente automaticamente.
-  }
-}
-
-// Ciclo de vida do componente
-onMounted(() => {
-  carregarAgendamentos(); // Busca os dados assim que o componente entra na tela
-  // Inicia o contador cíclico para atualizações automatizadas
-  intervaloAtualizacao = setInterval(atualizarEmSegundoPlano, INTERVALO_ATUALIZACAO_MS);
-});
-
-onUnmounted(() => {
-  // Limpa o temporizador da memória quando o usuário muda de página, evitando vazamento de memória (memory leaks)
-  clearInterval(intervaloAtualizacao);
-});
+useAutoRefresh(
+  () => funcionarioStore.fetchAgendamentos({ silencioso: true }),
+  10000,
+  modalAberto,
+);
 </script>
 
 <template>

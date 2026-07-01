@@ -69,8 +69,10 @@ else:
 
 # Placeholder para incluir os roteadores da API
 from .routers import auth, admin, aih, bpa, material, forms, funcionario
+from .routers.admin_dashboard import router as admin_dashboard_router
 app.include_router(auth.router)
 app.include_router(admin.router)
+app.include_router(admin_dashboard_router)
 app.include_router(aih.router)
 app.include_router(bpa.router)
 app.include_router(material.router)

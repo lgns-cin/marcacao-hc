@@ -15,10 +15,10 @@ const emit = defineEmits<{
 <template>
   <BaseCard :item="item">
 
-    <div class="flex flex-col w-full gap-4">
+    <div class="flex flex-col w-full gap-2">
       <p class="text-sm -mt-2 mb-2">
         <span class="font-semibold text-govbr-text">Responsável</span>:
-        <span class="text-govbr-text-secondary">{{ item.responsavel }}</span>
+        <span class="text-govbr-text-secondary">{{ item.funcionarioAtribuido }}</span>
       </p>
 
       <div class="flex items-center gap-6">

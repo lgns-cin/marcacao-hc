@@ -74,7 +74,8 @@ const items = [
     {
         name: 'telefone',
         type: 'number',
-        placeholder: '(11) 9 1234-5678'
+        placeholder: '(11) 9 1234-5678',
+        default: formStore.telefone
     }
 ];
 
@@ -90,6 +91,12 @@ onMounted(async () => {
     const arr = await getEstados();
     estados.value = arr.map(pair => pair.nome);
     idsEstado.value = arr.map(pair => pair.id);
+
+    local.value.estado = formStore.local?.estado;
+    if (local.value.estado) {
+        updateMunicipios(local.value.estado);
+        local.value.cidade = formStore.local?.cidade;
+    }
 });
 
 const cidades = ref<string[]>([]);
@@ -149,7 +156,7 @@ const updateMunicipios = async (e: string) => {
                         text-2xl placeholder-dark-blue-transparent font-semibold text-white
                         outline-2 outline-dark-blue rounded-xl bg-dark-blue-transparent
                     "
-                    validate-on-input
+                    validate-on-input validate-on-change
                     @update:model-value="updateMunicipios"
                 >
                     <datalist id="estados">
@@ -175,7 +182,7 @@ const updateMunicipios = async (e: string) => {
                         text-2xl placeholder-dark-blue-transparent font-semibold text-white
                         outline-2 outline-dark-blue rounded-xl bg-dark-blue-transparent
                     "
-                    validate-on-input
+                    validate-on-input validate-on-change
                     :disabled="!local.estado"
                     :class="{ 'cursor-not-allowed': !local.estado }"
                 >

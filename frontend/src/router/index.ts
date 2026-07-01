@@ -1,20 +1,30 @@
 import { createRouter, createWebHistory, NavigationGuardNext, RouteRecordRaw } from 'vue-router';
 import { useAuthStore } from '../stores/auth';
+import type { Component } from 'vue';
+
+declare module 'vue-router' {
+  interface RouteMeta {
+    layout?: Component;
+    requiresAuth?: boolean;
+    requiresAdmin?: boolean;
+  }
+}
 import FormLayout from '../shared/layouts/FormLayout.vue';
 import FuncionarioLayout from '../shared/layouts/FuncionarioLayout.vue';
 import LoginLayout from '../shared/layouts/LoginLayout.vue';
 import AdminLayout from '../shared/layouts/AdminLayout.vue';
-import FormInicio from '../form/FormInicio.vue';
-import FormProntuario from '../form/FormProntuario.vue';
-import FormSolicitacao from '../form/FormSolicitacao.vue';
-import FormContato from '../form/FormContato.vue';
-import FormSubmit from '../form/FormSubmit.vue';
 import FilaAgendamento from '../funcionario/views/FilaAgendamento.vue';
 import MinhaArea from '../funcionario/views/MinhaArea.vue';
 import LoginView from '../auth/views/LoginView.vue';
-import AdminVisaoGeral from '../admin/views/AdminVisaoGeral.vue';
-import AdminPendencias from '../admin/views/AdminPendencias.vue';
-import AdminAgendamentos from '../admin/views/AdminAgendamentos.vue';
+
+const FormInicio = () => import('../form/FormInicio.vue');
+const FormProntuario = () => import('../form/FormProntuario.vue');
+const FormSolicitacao = () => import('../form/FormSolicitacao.vue');
+const FormContato = () => import('../form/FormContato.vue');
+const FormSubmit = () => import('../form/FormSubmit.vue');
+const AdminVisaoGeral = () => import('../admin/views/AdminVisaoGeral.vue');
+const AdminPendencias = () => import('../admin/views/AdminPendencias.vue');
+const AdminAgendamentos = () => import('../admin/views/AdminAgendamentos.vue');
 
 const routes: RouteRecordRaw[] = [
   {

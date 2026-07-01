@@ -18,16 +18,17 @@ const emit = defineEmits<{
     <div class="flex flex-col w-full gap-4">
       <p class="text-sm -mt-2 mb-2">
         <span class="font-semibold text-govbr-text">Responsável</span>:
-        <span class="text-govbr-text-secondary">{{ item.responsavel }}</span>
+        <span v-if="item.funcionarioAtribuido" class="text-govbr-text-secondary">{{ item.funcionarioAtribuido }}</span>
+        <span v-else class="text-govbr-text-secondary">Não atribuído</span>
       </p>
 
       <div class="space-y-1 rounded bg-govbr-bg px-3 py-2 text-sm text-govbr-text-secondary">
         <div class="flex items-center gap-2">
           <ExclamationTriangleIcon class="h-4 w-4 shrink-0" />
-          <span><span class="font-semibold text-govbr-text">Motivo:</span> {{ item.problema_motivo }}</span>
+          <span><span class="font-semibold text-govbr-text">Motivo:</span> {{ item.motivo }}</span>
         </div>
-        <p v-if="item.problema_detalhes" class="pl-6">
-          <span class="font-semibold text-govbr-text">Detalhes:</span> {{ item.problema_detalhes }}
+        <p v-if="item.detalhes" class="pl-6">
+          <span class="font-semibold text-govbr-text">Detalhes:</span> {{ item.detalhes }}
         </p>
       </div>
 

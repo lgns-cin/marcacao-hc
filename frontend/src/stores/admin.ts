@@ -1,34 +1,15 @@
 import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
-import type { AgendamentoItem, FiltrosFila } from '../funcionario/types';
-import { filtrarAgendamentos, FILTROS_VAZIOS } from '../shared/utils/filtrarAgendamentos';
-import type { AgendamentoGerenciamento, AgendamentoRemovido, Funcionario, Kpi, PendenciaItem, VisaoGeral } from '../admin/types';
-import { PREFERENCIAS_VISAO_GERAL_KEY } from '../admin/types';
-import {
-  MOCK_FUNCIONARIOS,
-  MOCK_VISAO_GERAL,
-  MOCK_PENDENCIAS,
-  MOCK_GERENCIAMENTO_ANDAMENTO,
-  MOCK_GERENCIAMENTO_CONCLUIDO,
-  MOCK_REMOVIDOS,
-  MOCK_FILA_ADMIN,
-} from '../admin/mockData';
-
-// isso é só pra funcionar por enquanto ...
-function carregarPreferenciasIniciais(): string[] | null {
-  try {
-    const salvas = localStorage.getItem(PREFERENCIAS_VISAO_GERAL_KEY);
-    return salvas ? JSON.parse(salvas) : null;
-  } catch {
-    return null;
-  }
-}
+import type { FiltrosFila } from '../funcionario/types';
+import { FILTROS_VAZIOS } from '../shared/utils/filtrarAgendamentos';
+import type { AgendamentoGerenciamento, AgendamentoRemovido, Funcionario, Kpi, PendenciaItem, VisaoGeral, SerieBarrasEtapas, SerieMotivoReportarProblema } from '../admin/types';
+import api from '../services/api';
+import { LIMITE_AGENDAMENTOS, TITULOS_KPIS } from '../shared/constants';
 
 export const useAdminStore = defineStore('admin', () => {
   // Estados
   const visaoGeral = ref<VisaoGeral | null>(null);
   const isLoadingVisaoGeral = ref(false);
-  const indicadoresVisiveis = ref<string[] | null>(carregarPreferenciasIniciais());
 
   const pendencias = ref<PendenciaItem[]>([]);
   const isLoadingPendencias = ref(false);
@@ -40,229 +21,236 @@ export const useAdminStore = defineStore('admin', () => {
   const isLoadingAgendamentos = ref(false);
   const filtrosAgendamentos = ref<FiltrosFila>({ ...FILTROS_VAZIOS });
 
-  const fila = ref<AgendamentoItem[]>([]);
-  const isLoadingFila = ref(false);
-  const filtrosFila = ref<FiltrosFila>({ ...FILTROS_VAZIOS });
-
   const funcionarios = ref<Funcionario[]>([]);
 
-  // Computed
-  const kpisVisiveis = computed(() => {
-    if (!visaoGeral.value) return [];
-    if (!indicadoresVisiveis.value) return visaoGeral.value.kpis;
-    return visaoGeral.value.kpis.filter((kpi) => indicadoresVisiveis.value!.includes(kpi.id));
-  });
-
-  const graficosVisiveis = computed(() => {
-    if (!visaoGeral.value) return [];
-    if (!indicadoresVisiveis.value) return visaoGeral.value.graficos;
-    return visaoGeral.value.graficos.filter((g) => indicadoresVisiveis.value!.includes(g.id));
-  });
-
-  const todosIndicadores = computed(() => {
-    if (!visaoGeral.value) return [];
-    return [
-      ...visaoGeral.value.kpis.map((k) => ({ id: k.id, label: k.label })),
-      ...visaoGeral.value.graficos.map((g) => ({ id: g.id, label: g.titulo })),
-    ];
-  });
-
-  const pendenciasFiltradas = computed(() => filtrarAgendamentos(pendencias.value, filtrosPendencias.value));
-  const agendamentosEmAndamentoFiltrados = computed(() =>
-    filtrarAgendamentos(agendamentosEmAndamento.value, filtrosAgendamentos.value)
-  );
-  const agendamentosConcluidosFiltrados = computed(() =>
-    filtrarAgendamentos(agendamentosConcluidos.value, filtrosAgendamentos.value)
-  );
-  const agendamentosRemovidosFiltrados = computed(() =>
-    filtrarAgendamentos(agendamentosRemovidos.value, filtrosAgendamentos.value)
-  );
-  const filaFiltrada = computed(() => filtrarAgendamentos(fila.value, filtrosFila.value));
-
-  //Ações
+  const pendenciasFiltradas = computed(() => pendencias.value);
+  const agendamentosEmAndamentoFiltrados = computed(() => agendamentosEmAndamento.value);
+  const agendamentosConcluidosFiltrados = computed(() => agendamentosConcluidos.value);
+  const agendamentosRemovidosFiltrados = computed(() => agendamentosRemovidos.value);
 
   // Visão Geral
-  function calcularKpis(): Kpi[] {
-    const totalCards = MOCK_FILA_ADMIN.length
-      + MOCK_GERENCIAMENTO_ANDAMENTO.length
-      + MOCK_GERENCIAMENTO_CONCLUIDO.length
-      + MOCK_PENDENCIAS.length;
-
-    const totalFuncionarios = MOCK_FUNCIONARIOS.length;
-
-    const mediaCardFuncionario = totalFuncionarios > 0
-      ? +(totalCards / totalFuncionarios).toFixed(1)
-      : 0;
-
-    const percentProblematicas = totalCards > 0
-      ? +((MOCK_PENDENCIAS.length / totalCards) * 100).toFixed(1)
-      : 0;
-
-    const percentConcluidas = totalCards > 0
-      ? +((MOCK_GERENCIAMENTO_CONCLUIDO.length / totalCards) * 100).toFixed(1)
-      : 0;
-
-    const todosItens = [
-      ...MOCK_FILA_ADMIN,
-      ...MOCK_GERENCIAMENTO_ANDAMENTO,
-      ...MOCK_GERENCIAMENTO_CONCLUIDO,
-      ...MOCK_PENDENCIAS,
-    ];
-    const tempoMedio = todosItens.length > 0
-      ? +(todosItens.reduce((acc, i) => acc + i.diasNaFila, 0) / todosItens.length).toFixed(1)
-      : 0;
-
-    return [
-      { id: 'media_card_funcionario', label: 'Média de Card por Funcionário', valor: mediaCardFuncionario, categoria: 'principal' },
-      { id: 'percent_problematicas', label: 'Solicitações problemáticas', valor: percentProblematicas, sufixo: '%', categoria: 'principal' },
-      { id: 'percent_concluidas', label: 'Solicitações concluídas', valor: percentConcluidas, sufixo: '%', categoria: 'principal' },
-      { id: 'tempo_medio_atendimento', label: 'Tempo médio de atendimento', valor: tempoMedio, sufixo: 'dias', categoria: 'principal' },
-    ];
-  }
-
   async function fetchVisaoGeral(opcoes: { silencioso?: boolean } = {}) {
     if (!opcoes.silencioso) isLoadingVisaoGeral.value = true;
-    await new Promise((r) => setTimeout(r, 300));
-    visaoGeral.value = { kpis: calcularKpis(), graficos: MOCK_VISAO_GERAL.graficos };
-    if (!opcoes.silencioso) isLoadingVisaoGeral.value = false;
-  }
+    try {
+      const [resKpis, resRankingExames, resRankingMunicipios, resMotivosReportarProblema] = await Promise.all([
+        api.get<Kpi[]>(`/api/admin/visao-geral`),
+        api.get<SerieBarrasEtapas[]>(`/api/admin/dashboard/ranking-exames`),
+        api.get<SerieBarrasEtapas[]>(`/api/admin/dashboard/ranking-municipios`),
+        api.get<SerieMotivoReportarProblema[]>(`/api/admin/dashboard/motivos-reportar-problema`),
+      ]);
 
-  function definirIndicadoresVisiveis(ids: string[]) {
-    indicadoresVisiveis.value = ids;
-    localStorage.setItem(PREFERENCIAS_VISAO_GERAL_KEY, JSON.stringify(ids));
+      const kpis: Kpi[] = resKpis.data.map((kpi) => ({
+        id: kpi.id,
+        titulo: TITULOS_KPIS[kpi.id] ?? kpi,
+        valor: kpi.valor,
+        formato: kpi.formato,
+      }));
+
+      visaoGeral.value = {
+        kpis,
+        graficos: [
+          { id: 'ranking-exames', titulo: 'Top 10 - Distribuição por Tipo de Exame', tipo: 'barras_horizontais', dados: resRankingExames.data },
+          { id: 'ranking-municipios', titulo: 'Top 10 - Distribuição por Município', tipo: 'barras_horizontais', dados: resRankingMunicipios.data },
+          { id: 'motivos-reportar-problema', titulo: 'Distribuição de Motivos de Reportar Problema', tipo: 'barras_verticais', dados: resMotivosReportarProblema.data },
+        ]
+      };
+    } catch {
+        visaoGeral.value = null;
+    } finally {
+      if (!opcoes.silencioso) isLoadingVisaoGeral.value = false;
+    }
   }
 
   // Pendências
   async function fetchPendencias(opcoes: { silencioso?: boolean } = {}) {
     if (!opcoes.silencioso) isLoadingPendencias.value = true;
-    await new Promise((r) => setTimeout(r, 300));
-    pendencias.value = MOCK_PENDENCIAS;
-    if (!opcoes.silencioso) isLoadingPendencias.value = false;
-  }
+    try {
+      const params = new URLSearchParams();
+      params.append('limit', String(LIMITE_AGENDAMENTOS));
+      if (filtrosPendencias.value.busca) params.append('busca', filtrosPendencias.value.busca);
+      if (filtrosPendencias.value.regioes.length > 0) params.append('regioes', filtrosPendencias.value.regioes.join(','));
+      if (filtrosPendencias.value.municipio) params.append('municipio', filtrosPendencias.value.municipio);
+      if (filtrosPendencias.value.tiposExame.length > 0) params.append('tipos_exame', filtrosPendencias.value.tiposExame.join(','));
+      if (filtrosPendencias.value.faixaEtaria && filtrosPendencias.value.faixaEtaria !== 'Todas') {
+        let faixa = '';
+        if (filtrosPendencias.value.faixaEtaria === '0-17') faixa = 'menor_idade';
+        else if (filtrosPendencias.value.faixaEtaria === '18-59') faixa = 'adulto';
+        else if (filtrosPendencias.value.faixaEtaria === '60+') faixa = 'idoso';
+        if (faixa) params.append('faixa_etaria', faixa);
+      }
 
-  async function resolverPendencia(id: number) {
-    await new Promise((r) => setTimeout(r, 200));
-    const item = pendencias.value.find((i) => i.id === id);
-    if (item) {
-      agendamentosRemovidos.value = [
-        ...agendamentosRemovidos.value,
-        {
-          ...item,
-          problema_motivo: item.problema_motivo ?? '',
-          problema_detalhes: item.problema_detalhes,
-        },
-      ];
+      const response = await api.get<PendenciaItem[]>(`/api/admin/pendencias?${params.toString()}`);
+      pendencias.value = response.data.map((value) => { value.status = ''; return value; });
+    } catch {
+      pendencias.value = [];
+    } finally {
+      if (!opcoes.silencioso) isLoadingPendencias.value = false;
     }
-    pendencias.value = pendencias.value.filter((i) => i.id !== id);
   }
 
+  // Filtros Pendencias
   function setBuscaPendencias(busca: string) {
     filtrosPendencias.value.busca = busca;
+    fetchPendencias({ silencioso: true });
   }
 
   function aplicarFiltrosPendencias(novosFiltros: Partial<FiltrosFila>) {
     filtrosPendencias.value = { ...filtrosPendencias.value, ...novosFiltros };
+    fetchPendencias();
   }
 
   function limparFiltrosPendencias() {
     const buscaAtual = filtrosPendencias.value.busca;
     filtrosPendencias.value = { ...FILTROS_VAZIOS, busca: buscaAtual };
+    fetchPendencias();
   }
 
   // Gerenciamento de Agendamentos
   async function fetchAgendamentosGerenciamento(opcoes: { silencioso?: boolean } = {}) {
     if (!opcoes.silencioso) isLoadingAgendamentos.value = true;
-    await new Promise((r) => setTimeout(r, 300));
-    agendamentosEmAndamento.value = [...MOCK_GERENCIAMENTO_ANDAMENTO];
-    agendamentosConcluidos.value = [...MOCK_GERENCIAMENTO_CONCLUIDO];
-    agendamentosRemovidos.value = [...MOCK_REMOVIDOS];
-    if (!opcoes.silencioso) isLoadingAgendamentos.value = false;
-  }
+    try {
+      const params = new URLSearchParams();
+      params.append('limit', String(LIMITE_AGENDAMENTOS));
+      if (filtrosAgendamentos.value.busca) params.append('busca', filtrosAgendamentos.value.busca);
+      if (filtrosAgendamentos.value.regioes.length > 0) params.append('regioes', filtrosAgendamentos.value.regioes.join(','));
+      if (filtrosAgendamentos.value.municipio) params.append('municipio', filtrosAgendamentos.value.municipio);
+      if (filtrosAgendamentos.value.tiposExame.length > 0) params.append('tipos_exame', filtrosAgendamentos.value.tiposExame.join(','));
+      if (filtrosAgendamentos.value.faixaEtaria && filtrosAgendamentos.value.faixaEtaria !== 'Todas') {
+        let faixa = '';
+        if (filtrosAgendamentos.value.faixaEtaria === '0-17') faixa = 'menor_idade';
+        else if (filtrosAgendamentos.value.faixaEtaria === '18-59') faixa = 'adulto';
+        else if (filtrosAgendamentos.value.faixaEtaria === '60+') faixa = 'idoso';
+        if (faixa) params.append('faixa_etaria', faixa);
+      }
 
-  async function reatribuirAgendamento(id: number, funcionarioUsername: string) {
-    await new Promise((r) => setTimeout(r, 200));
-    const item = agendamentosEmAndamento.value.find((i) => i.id === id);
-    if (item) {
-      item.responsavel = funcionarioUsername;
+      const q = params.toString();
+      const suffix = q ? `&${q}` : '';
+
+      const [resEmAndamento, resConcluidos, resRemovidos] = await Promise.all([
+        api.get<AgendamentoGerenciamento[]>(`/api/admin/agendamentos?estado=em_andamento${suffix}`),
+        api.get<AgendamentoGerenciamento[]>(`/api/admin/agendamentos?estado=concluidos${suffix}`),
+        api.get<AgendamentoRemovido[]>(`/api/admin/agendamentos?estado=excluidos${suffix}`),
+      ]);
+      agendamentosEmAndamento.value = resEmAndamento.data.map((value) => { value.status = ''; return value; });
+      agendamentosConcluidos.value = resConcluidos.data.map((value) => { value.status = ''; return value; });
+      agendamentosRemovidos.value = resRemovidos.data.map((value) => { value.status = ''; return value; });
+    } catch {
+      agendamentosEmAndamento.value = [];
+      agendamentosConcluidos.value = [];
+      agendamentosRemovidos.value = [];
+    } finally {
+      if (!opcoes.silencioso) isLoadingAgendamentos.value = false;
     }
   }
 
-  async function devolverAFilaAdmin(id: number, _motivo: string) {
-    await new Promise((r) => setTimeout(r, 200));
-    agendamentosEmAndamento.value = agendamentosEmAndamento.value.filter((i) => i.id !== id);
-    agendamentosConcluidos.value = agendamentosConcluidos.value.filter((i) => i.id !== id);
-    pendencias.value = pendencias.value.filter((i) => i.id !== id);
+  async function reatribuirAgendamento(id: number, funcionarioUsername: string) {
+    try {
+      const item = agendamentosEmAndamento.value.find((i) => i.id === id) ??
+        pendencias.value.find((i) => i.id === id);
+      if (!item) return;
+
+      await api.post(`/api/admin/agendamentos/${item.solicitacao}/${item.exameCodigo}/reatribuir`, { 
+        funcionario: funcionarioUsername
+      });
+
+      // atualiza o estado local reativamente após o sucesso da API
+      if (agendamentosEmAndamento.value.some(i => i.id === id)) {
+        // Se estava em andamento, apenas troca o responsável na tela
+        const emAndamento = agendamentosEmAndamento.value.find((i) => i.id === id);
+        if (emAndamento) emAndamento.funcionarioAtribuido = funcionarioUsername;
+      } else {
+        // Se era uma pendência, ela foi resolvida/reatribuída, então removemos da lista de travados
+        pendencias.value = pendencias.value.filter((i) => i.id !== id);
+      }    
+    } catch (error) {
+      console.error('Erro ao reatribuir agendamento',error);
+      throw error;
+    } 
   }
 
-  async function devolverRemovidoAFila(id: number) {
-    await new Promise((r) => setTimeout(r, 200));
-    agendamentosRemovidos.value = agendamentosRemovidos.value.filter((i) => i.id !== id);
+  async function devolverAFilaAdmin(id: number, motivo: string) {
+    try {
+      // localiza o item em qualquer uma das listas locais para obter a propriedade 'solicitacao'
+      const item =
+        agendamentosEmAndamento.value.find((i) => i.id === id) ??
+        agendamentosConcluidos.value.find((i) => i.id === id) ??
+        pendencias.value.find((i) => i.id === id);
+        
+      if (!item) return;
+
+      await api.post(`/api/admin/agendamentos/${item.solicitacao}/${item.exameCodigo}/devolver`, { 
+        motivo: motivo 
+      });
+
+      // depois do sucesso da API, remove o item localmente das listas do front-end
+      agendamentosEmAndamento.value = agendamentosEmAndamento.value.filter((i) => i.id !== id);
+      agendamentosConcluidos.value = agendamentosConcluidos.value.filter((i) => i.id !== id);
+      pendencias.value = pendencias.value.filter((i) => i.id !== id);    } catch {
+    }
   }
 
-  async function removerDaFila(id: number) {
-    await new Promise((r) => setTimeout(r, 200));
-    agendamentosRemovidos.value = agendamentosRemovidos.value.filter((i) => i.id !== id);
+  async function removerProblema(id: number) {
+    try {
+      // localiza o item em qualquer uma das listas locais para obter a propriedade 'solicitacao'
+      const item =
+        agendamentosEmAndamento.value.find((i) => i.id === id) ??
+        agendamentosConcluidos.value.find((i) => i.id === id) ??
+        pendencias.value.find((i) => i.id === id);
+        
+      if (!item) return;
+
+      await api.delete(`/api/admin/agendamentos/${item.solicitacao}/${item.exameCodigo}`);
+
+      // depois do sucesso da API, remove o item localmente das listas do front-end
+      agendamentosEmAndamento.value = agendamentosEmAndamento.value.filter((i) => i.id !== id);
+      agendamentosConcluidos.value = agendamentosConcluidos.value.filter((i) => i.id !== id);
+      pendencias.value = pendencias.value.filter((i) => i.id !== id);    
+    } catch {
+      //
+    }
   }
 
+  // Filtros Agendamentos
   function setBuscaAgendamentos(busca: string) {
     filtrosAgendamentos.value.busca = busca;
+    fetchAgendamentosGerenciamento({ silencioso: true });
   }
 
   function aplicarFiltrosAgendamentos(novosFiltros: Partial<FiltrosFila>) {
     filtrosAgendamentos.value = { ...filtrosAgendamentos.value, ...novosFiltros };
+    fetchAgendamentosGerenciamento();
   }
 
   function limparFiltrosAgendamentos() {
     const buscaAtual = filtrosAgendamentos.value.busca;
     filtrosAgendamentos.value = { ...FILTROS_VAZIOS, busca: buscaAtual };
-  }
-
-  // Fila Pública (Visão Admin)
-  async function fetchFila(opcoes: { silencioso?: boolean } = {}) {
-    if (!opcoes.silencioso) isLoadingFila.value = true;
-    await new Promise((r) => setTimeout(r, 300));
-    fila.value = MOCK_FILA_ADMIN;
-    if (!opcoes.silencioso) isLoadingFila.value = false;
-  }
-
-  function setBuscaFila(busca: string) {
-    filtrosFila.value.busca = busca;
-  }
-
-  function aplicarFiltrosFila(novosFiltros: Partial<FiltrosFila>) {
-    filtrosFila.value = { ...filtrosFila.value, ...novosFiltros };
-  }
-
-  function limparFiltrosFila() {
-    const buscaAtual = filtrosFila.value.busca;
-    filtrosFila.value = { ...FILTROS_VAZIOS, busca: buscaAtual };
+    fetchAgendamentosGerenciamento();
   }
 
   // Funcionários
   async function fetchFuncionarios() {
-    await new Promise((r) => setTimeout(r, 100));
-    funcionarios.value = MOCK_FUNCIONARIOS;
-  }
+    try {
+      const response = await api.get<Funcionario[]>('/api/admin/funcionarios');
+      funcionarios.value = response.data;
+    } catch (error) {
+      console.error('Erro ao buscar funcionários', error);
+    }
+  } 
 
   return {
     visaoGeral,
     isLoadingVisaoGeral,
-    indicadoresVisiveis,
-    kpisVisiveis,
-    graficosVisiveis,
-    todosIndicadores,
     fetchVisaoGeral,
-    definirIndicadoresVisiveis,
 
     pendencias,
     isLoadingPendencias,
     filtrosPendencias,
     pendenciasFiltradas,
     fetchPendencias,
-    resolverPendencia,
     setBuscaPendencias,
     aplicarFiltrosPendencias,
     limparFiltrosPendencias,
+    removerProblema,
 
     agendamentosEmAndamento,
     agendamentosConcluidos,
@@ -275,20 +263,9 @@ export const useAdminStore = defineStore('admin', () => {
     fetchAgendamentosGerenciamento,
     reatribuirAgendamento,
     devolverAFilaAdmin,
-    devolverRemovidoAFila,
-    removerDaFila,
     setBuscaAgendamentos,
     aplicarFiltrosAgendamentos,
     limparFiltrosAgendamentos,
-
-    fila,
-    isLoadingFila,
-    filtrosFila,
-    filaFiltrada,
-    fetchFila,
-    setBuscaFila,
-    aplicarFiltrosFila,
-    limparFiltrosFila,
 
     funcionarios,
     fetchFuncionarios,

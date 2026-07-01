@@ -8,7 +8,7 @@ import {
 import { UserGroupIcon } from '@heroicons/vue/20/solid';
 import Modal from '../../shared/components/Modal.vue';
 import BaseModalDetails from '../../shared/components/BaseModalDetails.vue';
-import SeletorMotivo from './SeletorMotivo.vue';
+import SeletorMotivo from '../../shared/components/SeletorMotivo.vue';
 import { MOTIVOS_DEVOLUCAO, MOTIVOS_PROBLEMA } from '../types';
 import type { MinhaAreaItem } from '../types';
 import Button from '../../shared/components/Button.vue';

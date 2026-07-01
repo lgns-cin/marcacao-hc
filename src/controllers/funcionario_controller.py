@@ -1,30 +1,41 @@
 from datetime import date
-from typing import List, Optional
+from typing import List, Optional, Literal
 
 from fastapi import HTTPException, status
 
 from ..enums import StatusAtribuicao, ResultadoAtribuicao
-from ..providers.implementations.funcionario_local_provider import FuncionarioLocalProvider
+from ..providers.implementations.banco_local.funcionario_local_provider import FuncionarioLocalProvider
 from ..services.pontuacao import calcular_pontuacao
+from ..helpers.filtros import aplicar_filtros
 
-# Palavras-chave usadas para classificar a prioridade pela unidade solicitante
-URGENCIA_ALTA = {"UTI", "OBSTETRICO", "EMERGENCIA", "MATERNIDADE", "ONCOLOGIA"}
-URGENCIA_MEDIA = {"NEFROLOGIA", "CARDIOLOGIA", "PNEUMOLOGIA", "NEUROLOGIA"}
+STATUSES = ["ALTA", "MÉDIA", "BAIXA"]
+
+def _status(idx: int, total: int) -> Literal["ALTA", "MÉDIA", "BAIXA"]:
+    """Retorna o status do item da fila de agendamento de índice `idx` dado que a fila tem `total` posições."""
+
+    if total < 4: # lista muito pequena
+        return STATUSES[idx]
+    
+    if idx in range(0, total // 4): # 0 a 25% da lista
+        return STATUSES[0]
+    if idx in range(total // 4, 3 * total // 4): # 25% a 75% da lista
+        return STATUSES[1]
+    if idx in range(3 * total // 4, total): # 75% a 100% da lista
+        return STATUSES[2]
+
+def _aplicar_prioridade(items: list[dict]) -> list[dict]:
+    """Atribui o status de cada item da fila de agendamento com base na sua posição."""
+
+    total = len(items)
+
+    for i in range(0, total):
+        items[i]["status"] = _status(i, total)
+
+    return items
 
 
-# Classifica a unidade solicitante em alta/media/baixa para exibição visual no card (campo "status" do AgendamentoItem).
-# NÃO define a ordem da fila — a ordenação é feita pelo calcular_pontuacao() em src/services/pontuacao.py.
-def _prioridade(unidade: str) -> str:
-    u = (unidade or "").upper()
-    if any(k in u for k in URGENCIA_ALTA):
-        return "alta"
-    if any(k in u for k in URGENCIA_MEDIA):
-        return "media"
-    return "baixa"
-
-
-# Agrupa os registros de ExameSolicitado pelo código da solicitação,
-# pois uma solicitação pode ter múltiplos exames e precisa aparecer como um card só
+# Agrupa os registros de ExameSolicitado pelo código da solicitação
+# Usado em minha-area onde todos os exames de uma solicitação formam um card
 def _agrupar_por_solicitacao(rows) -> dict:
     grupos: dict = {}
     for row in rows:
@@ -32,38 +43,50 @@ def _agrupar_por_solicitacao(rows) -> dict:
     return grupos
 
 
-# Monta o dicionário AgendamentoItem a partir de um grupo de exames da mesma solicitação
-def _build_item(rows: list) -> dict:
-    first = rows[0]
-    paciente = first.paciente
-    sol = first.solicitacao_rel
+# Monta um AgendamentoItem a partir de um único registro de ExameSolicitado
+# Cada exame é um card separado na fila
+def _build_item(row) -> dict:
+    paciente = row.paciente
+    sol = row.solicitacao_rel
 
-    # Dias na fila: diferença entre hoje e a data de entrada mais antiga do grupo
-    datas = [r.data_solicitacao for r in rows if r.data_solicitacao]
-    dias_na_fila = (date.today() - min(datas)).days if datas else 0
+    dias_na_fila = (date.today() - row.data_solicitacao).days if row.data_solicitacao else 0
 
-    # Lista de nomes dos exames do grupo
-    exames = [r.exame_rel.nome if r.exame_rel else r.exame for r in rows]
+    # Um exame por card
+    exame_nome = row.exame_rel.nome if row.exame_rel else row.exame
 
     localizacao = None
     if paciente and paciente.cidade:
         localizacao = f"{paciente.cidade}, {paciente.estado}" if paciente.estado else paciente.cidade
 
-    # Idade calculada a partir de data_nascimento; None se não disponível
-    idade = None
+    # Idade como string; "Não informado" se data_nascimento não estiver disponível
+    idade = "Não informado"
     if paciente and paciente.data_nascimento:
         hoje = date.today()
-        idade = hoje.year - paciente.data_nascimento.year - (
+        anos = hoje.year - paciente.data_nascimento.year - (
             (hoje.month, hoje.day) < (paciente.data_nascimento.month, paciente.data_nascimento.day)
         )
+        idade = f"{anos} anos"
+
+    # nome do paciente vem do AGHU; usa prontuário como fallback
+    prontuario = str(row.paciente_solicitante)
+    nome = paciente.nome if paciente and paciente.nome else f"Paciente #{prontuario}"
+
+    # consulta e formatação do telefone
+    telefone = "Não informado"
+    if paciente and paciente.telefone:
+        telefone = str(paciente.telefone)
+        ddd = telefone[0:2]
+        telefone = f"({ddd}) {telefone[2:7]}-{telefone[7:]}"
 
     return {
-        "id": first.solicitacao,
-        "prontuario": str(first.paciente_solicitante),
-        "nome": None,  # nome do paciente vem do AGHU, não disponível localmente
-        "exames": exames,
+        "id": row.id,
+        "solicitacao": row.solicitacao,
+        "prontuario": prontuario,
+        "nome": nome,
+        "telefone": telefone,
+        "exame": exame_nome,
+        "exameCodigo": row.exame,
         "diasNaFila": dias_na_fila,
-        "status": _prioridade(sol.unidade_solicitante if sol else ""),
         "unidadeSolicitante": sol.unidade_solicitante if sol else None,
         "dataRetorno": sol.data_retorno.isoformat() if sol and sol.data_retorno else None,
         "localizacao": localizacao,
@@ -71,35 +94,69 @@ def _build_item(rows: list) -> dict:
     }
 
 
-# Retorna a fila geral: todos os agendamentos com status PENDENTE, ordenados pelo algoritmo de pontuação
-async def listar_agendamentos(provider: FuncionarioLocalProvider) -> List[dict]:
+# Retorna a fila geral: um card por exame, ordenados pelo algoritmo de pontuação
+async def listar_agendamentos(
+    provider: FuncionarioLocalProvider,
+    limit: Optional[int] = None,
+    busca: Optional[str] = None,
+    regioes: Optional[List[str]] = None,
+    municipio: Optional[str] = None,
+    faixa_etaria: Optional[str] = None,
+    tipos_exame: Optional[List[str]] = None,
+) -> List[dict]:
     rows = await provider.listar_pendentes()
-    grupos = _agrupar_por_solicitacao(rows)
+
     items = []
-    for grupo_rows in grupos.values():
-        item = _build_item(grupo_rows)
-        first = grupo_rows[0]
-        sol = first.solicitacao_rel
-        paciente = first.paciente
-        # Calcula pontuação usando o serviço da Mirela para ordenar a fila
+    for row in rows:
+        item = _build_item(row)
+        sol = row.solicitacao_rel
+        paciente = row.paciente
         item["_pontuacao"] = calcular_pontuacao(
-            {"cidade": paciente.cidade if paciente else ""},
+            {
+                "cidade": paciente.cidade if paciente else "",
+                "data_nascimento": paciente.data_nascimento.isoformat() if paciente and paciente.data_nascimento else "",
+            },
             {
                 "data_retorno": sol.data_retorno.isoformat() if sol and sol.data_retorno else "",
                 "unidade_solicitante": sol.unidade_solicitante if sol else "",
-                "data_solicitacao": first.data_solicitacao.isoformat() if first.data_solicitacao else "",
+                "data_solicitacao": row.data_solicitacao.isoformat() if row.data_solicitacao else "",
             }
         )
+
+        item["_cidade"] = paciente.cidade if paciente else None
+        item["_data_nascimento"] = paciente.data_nascimento if paciente else None
+        item["_codigo_exame"] = row.exame
         items.append(item)
+
     items.sort(key=lambda x: x.pop("_pontuacao"), reverse=True)
+    items = _aplicar_prioridade(items)
+
+    items = aplicar_filtros(
+        items, busca=busca, regioes=regioes, municipio=municipio,
+        faixa_etaria=faixa_etaria, tipos_exame=tipos_exame,
+    )
+    for item in items:
+        item.pop("_cidade", None)
+        item.pop("_data_nascimento", None)
+        item.pop("_codigo_exame", None)
+
+    if limit is not None:
+        items = items[:limit]
+        
     return items
 
 
 # Atribui um agendamento PENDENTE ao funcionário logado, mudando o status para EM_ANDAMENTO
-async def puxar_agendamento(solicitacao_id: int, provider: FuncionarioLocalProvider, username: str, nome: Optional[str] = None) -> dict:
+async def puxar_agendamento(
+        solicitacao_id: int,
+        exame_codigo: str,
+        provider: FuncionarioLocalProvider,
+        username: str,
+        nome: Optional[str] = None
+    ) -> dict:
     funcionario = await provider.get_or_create_funcionario(username, nome)
     rows = await provider.buscar_por_solicitacao(
-        solicitacao_id, funcionario_id=None, status=StatusAtribuicao.PENDENTE
+        solicitacao_id, funcionario_id=None, status=StatusAtribuicao.PENDENTE, exame=exame_codigo
     )
     if not rows:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Agendamento não encontrado ou já atribuído")
@@ -108,26 +165,55 @@ async def puxar_agendamento(solicitacao_id: int, provider: FuncionarioLocalProvi
 
 
 # Retorna os agendamentos do funcionário logado em qualquer estado (EM_ANDAMENTO, AGUARDANDO_CONFIRMACAO, FINALIZADO)
-async def listar_minha_area(provider: FuncionarioLocalProvider, username: str, nome: Optional[str] = None) -> List[dict]:
+async def listar_minha_area(
+    provider: FuncionarioLocalProvider,
+    username: str,
+    nome: Optional[str] = None,
+    regioes: Optional[List[str]] = None,
+    municipio: Optional[str] = None,
+    faixa_etaria: Optional[str] = None,
+    tipos_exame: Optional[List[str]] = None,
+) -> List[dict]:
+
     funcionario = await provider.get_or_create_funcionario(username, nome)
     rows = await provider.listar_por_funcionario(funcionario.id)
     grupos = _agrupar_por_solicitacao(rows)
     items = []
     for grupo_rows in grupos.values():
-        item = _build_item(grupo_rows)
-        primeiro = grupo_rows[0]
-        # Adiciona os campos extras do MinhaAreaItem: estado atual e resultado (se finalizado)
-        item["estado"] = primeiro.status_atribuicao
-        item["resultado"] = primeiro.resultado
-        items.append(item)
+        for exame_solicitado in grupo_rows:
+            item = _build_item(exame_solicitado)
+            # Adiciona os campos extras do MinhaAreaItem: estado atual e resultado (se finalizado)
+            item["estado"] = exame_solicitado.status_atribuicao
+            item["resultado"] = exame_solicitado.resultado
+            paciente = exame_solicitado.paciente
+            item["_cidade"] = paciente.cidade if paciente else None
+            item["_data_nascimento"] = paciente.data_nascimento if paciente else None
+            item["_codigo_exame"] = exame_solicitado.exame
+            items.append(item)
+
+    items = aplicar_filtros(
+        items, regioes=regioes, municipio=municipio,
+        faixa_etaria=faixa_etaria, tipos_exame=tipos_exame,
+    )
+    for item in items:
+        item.pop("_cidade", None)
+        item.pop("_data_nascimento", None)
+        item.pop("_codigo_exame", None)
+        
     return items
 
 
 # Avança o agendamento de EM_ANDAMENTO para AGUARDANDO_CONFIRMACAO
-async def aguardar_confirmacao(solicitacao_id: int, provider: FuncionarioLocalProvider, username: str, nome: Optional[str] = None) -> dict:
+async def aguardar_confirmacao(
+        solicitacao_id: int,
+        exame_codigo: str,
+        provider: FuncionarioLocalProvider,
+        username: str,
+        nome: Optional[str] = None
+    ) -> dict:
     funcionario = await provider.get_or_create_funcionario(username, nome)
     # Só permite a transição se o agendamento estiver em EM_ANDAMENTO
-    rows = await provider.buscar_por_solicitacao(solicitacao_id, funcionario.id, StatusAtribuicao.EM_ANDAMENTO)
+    rows = await provider.buscar_por_solicitacao(solicitacao_id, funcionario.id, StatusAtribuicao.EM_ANDAMENTO, exame_codigo)
     if not rows:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Agendamento não encontrado em EM_ANDAMENTO")
     await provider.transicionar_status(rows, StatusAtribuicao.AGUARDANDO_CONFIRMACAO)
@@ -135,9 +221,16 @@ async def aguardar_confirmacao(solicitacao_id: int, provider: FuncionarioLocalPr
 
 
 # Remove o agendamento da área do funcionário e o devolve para a fila geral com status PENDENTE
-async def devolver(solicitacao_id: int, motivo: str, provider: FuncionarioLocalProvider, username: str, nome: Optional[str] = None) -> dict:
+async def devolver(
+        solicitacao_id: int,
+        exame_codigo: str,
+        motivo: str,
+        provider: FuncionarioLocalProvider,
+        username: str,
+        nome: Optional[str] = None
+    ) -> dict:
     funcionario = await provider.get_or_create_funcionario(username, nome)
-    rows = await provider.buscar_por_solicitacao(solicitacao_id, funcionario.id)
+    rows = await provider.buscar_por_solicitacao(solicitacao_id, funcionario.id, exame=exame_codigo)
     if not rows:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Agendamento não encontrado na sua área")
     await provider.devolver(rows, motivo)
@@ -145,9 +238,17 @@ async def devolver(solicitacao_id: int, motivo: str, provider: FuncionarioLocalP
 
 
 # Finaliza o agendamento com PROBLEMA_REPORTADO, registrando motivo e detalhes para o administrador
-async def reportar_problema(solicitacao_id: int, motivo: str, detalhes: Optional[str], provider: FuncionarioLocalProvider, username: str, nome: Optional[str] = None) -> dict:
+async def reportar_problema(
+        solicitacao_id: int,
+        exame_codigo: str,
+        motivo: str,
+        detalhes: Optional[str],
+        provider: FuncionarioLocalProvider,
+        username: str,
+        nome: Optional[str] = None
+    ) -> dict:
     funcionario = await provider.get_or_create_funcionario(username, nome)
-    rows = await provider.buscar_por_solicitacao(solicitacao_id, funcionario.id)
+    rows = await provider.buscar_por_solicitacao(solicitacao_id, funcionario.id, exame=exame_codigo)
     if not rows:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Agendamento não encontrado na sua área")
     await provider.transicionar_status(
@@ -159,7 +260,14 @@ async def reportar_problema(solicitacao_id: int, motivo: str, detalhes: Optional
 
 
 # Encerra o ciclo do atendimento com resultado CONFIRMADO ou PROBLEMA_REPORTADO
-async def finalizar(solicitacao_id: int, resultado: str, provider: FuncionarioLocalProvider, username: str, nome: Optional[str] = None) -> dict:
+async def finalizar(
+        solicitacao_id: int,
+        exame_codigo: str,
+        resultado: str,
+        provider: FuncionarioLocalProvider,
+        username: str,
+        nome: Optional[str] = None
+    ) -> dict:
     # Valida se o resultado enviado é um dos valores permitidos pelo enum
     if resultado not in ResultadoAtribuicao._value2member_map_:
         raise HTTPException(
@@ -167,7 +275,7 @@ async def finalizar(solicitacao_id: int, resultado: str, provider: FuncionarioLo
             detail=f"resultado deve ser um de: {[r.value for r in ResultadoAtribuicao]}",
         )
     funcionario = await provider.get_or_create_funcionario(username, nome)
-    rows = await provider.buscar_por_solicitacao(solicitacao_id, funcionario.id)
+    rows = await provider.buscar_por_solicitacao(solicitacao_id, funcionario.id, exame=exame_codigo)
     if not rows:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Agendamento não encontrado na sua área")
     await provider.transicionar_status(rows, StatusAtribuicao.FINALIZADO, resultado=ResultadoAtribuicao(resultado))

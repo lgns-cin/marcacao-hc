@@ -1,38 +1,26 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { UserGroupIcon, ClockIcon } from '@heroicons/vue/24/solid';
-import { nomeDoCodigo } from '../utils/catalogoExames';
+import { categoriaDoCodigo } from '../utils/catalogoExames';
+import { getStatusClasses } from '../utils/statusFormatting';
 
 const props = defineProps<{
   item: {
     nome: string;
     prontuario: string;
-    numeroSolicitacao: string;
+    solicitacao: string;
     status: string;
     diasNaFila: number;
     exame: string;
-    estado?: string;
+    funcionarioAtribuido?: string;
+    estadoAtribuicao?: string;
+    resultado?: string;
   };
 }>();
 
-const finalizado = computed(() =>
-  props.item.estado === 'CONFIRMADO' || props.item.estado === 'PROBLEMA_REPORTADO'
-);
-
-const estadoLabel = computed(() => {
-  if (props.item.estado === 'CONFIRMADO') return 'Confirmado';
-  if (props.item.estado === 'PROBLEMA_REPORTADO') return 'Encerrado';
-  return '';
-});
-
-const statusClasses = computed(() => {
-  const cores = {
-    ALTA: 'bg-govbr-error-bg text-govbr-error',
-    MÉDIA: 'bg-amber-100 text-amber-800',
-    BAIXA: 'bg-green-100 text-green-800'
-  };
-  return cores[props.item.status as keyof typeof cores] || 'bg-gray-100 text-gray-800';
-});
+const finalizado = computed(() => props.item.estadoAtribuicao === 'FINALIZADO');
+const resultadoLabel = computed(() => props.item.resultado === 'CONFIRMADO' ? 'Confirmado' : 'Problema Reportado' );
+const statusClasses = computed(() => getStatusClasses(props.item.status));
 </script>
 
 <template>
@@ -46,35 +34,36 @@ const statusClasses = computed(() => {
       </div>
 
       <div class="flex shrink-0 items-center gap-2 whitespace-nowrap">
-        <template v-if="!finalizado">
+        <template v-if="!finalizado || resultadoLabel == 'Problema Reportado'">
           <span class="flex items-center gap-1 text-sm text-govbr-text-secondary">
             <ClockIcon class="h-4 w-4" />
             há {{ item.diasNaFila }}d
           </span>
-          <span :class="['rounded-full px-2.5 py-1.5 text-xs font-bold', statusClasses]">
-            {{ item.status }}
-          </span>
+          <template v-if="item.status">
+            <span :class="['rounded-full px-2.5 py-1.5 text-xs font-bold', statusClasses]">
+              {{ item.status }}
+            </span>
+          </template>
         </template>
 
         <span
-          v-else
+          v-if="finalizado"
           class="rounded-full border border-govbr-border px-2.5 py-0.5 text-xs font-bold text-govbr-text-secondary"
         >
-          {{ estadoLabel }}
+          {{ resultadoLabel }}
         </span>
       </div>
     </div>
 
     <p class="mt-1 text-[16px] text-govbr-text-secondary">Prontuário: {{ item.prontuario }}</p>
-    <p class="text-[16px] text-govbr-text-secondary">Solicitação: {{ item.numeroSolicitacao }}</p>
-
+    <p class="text-[16px] text-govbr-text-secondary">Solicitação: {{ item.solicitacao }}</p>
     <div class="mt-3">
       <span class="rounded border border-govbr-border px-3 py-1 text-sm font-semibold text-govbr-text">
-        {{ nomeDoCodigo(item.exame) }}
+        {{ categoriaDoCodigo(item.exame) ?? item.exame }}
       </span>
     </div>
 
-    <div class="mt-4 flex items-center gap-6">
+    <div class="mt-4 flex items-center gap-2">
       <slot :isFinalizado="finalizado"></slot>
     </div>
 

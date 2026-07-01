@@ -84,7 +84,10 @@ const onSubmit = async () => {
                 <p>Sua <span class="underline">solicitação</span> se refere aos seguintes <span class="underline">exames</span>:</p>
                 
                 <template v-for="exame in exames">
-                    <div class="flex flex-row gap-2" v-if="exame.status_vaga != 'DUPLICADO'">
+                    <div
+                        class="grid grid-cols-none grid-flow-col auto-cols-auto gap-2 justify-start text-start text-xl"
+                        v-if="exame.status_vaga != 'DUPLICADO'"
+                    >
                         <template v-if="exame.status_vaga == 'DISPONÍVEL'">
                             <CheckCircleIcon #icon class="w-8 h-8 stroke-dark-green" />
                             <p class="text-dark-green">{{ exame.nome_exame }}</p>
@@ -106,8 +109,22 @@ const onSubmit = async () => {
                     <XMarkIcon #icon class="stroke-dark-blue w-32 h-32"/>
                 </div>
                 <h1 class="font-bold text-3xl text-center">Não será possível marcar agora.</h1>
-                <p class="text-center">Devido à falta de vagas, todos os exames da sua solicitação estão <span class="text-light-red underline">indisponíveis</span>.</p>
-                <p class="text-center">Por favor, aguarde a liberação de vagas.</p>
+                <div class="flex flex-col align-items justify-center-safe text-center" v-if="exames.filter(v => v.status_vaga == 'DUPLICADO').length > 0">
+                    <p>Exames já enviados:</p>
+                    <ul class="px-8 flex flex-col justify-center align-middle">
+                        <template v-for="exame in exames">
+                            <li 
+                                class="grid grid-cols-none grid-flow-col auto-cols-auto gap-2 justify-start text-start text-xl"
+                                v-if="exame.status_vaga == 'DUPLICADO'"
+                            >
+                                <CheckCircleIcon #icon class="w-8 h-8 stroke-dark-blue" />
+                                <p class="font-semibold text-xl">{{ exame.nome_exame }}</p>
+                            </li>
+                        </template>
+                    </ul>
+                </div>
+                <p class="text-center">{{ `Devido à falta de vagas, os ${exames.filter(v => v.status_vaga != 'DUPLICADO').length > 0 ? "outros" : ""} exames da sua solicitação estão ` }}<span class="text-light-red underline">indisponíveis</span>.</p>
+                <p class="text-center">Por favor, aguarde a liberação de vagas ou procure a <span class="underline">Unidade Básica de Saúde</span> mais próxima.</p>
             </template>
 
             <template v-else-if="state == 'DUPLICADO'">
@@ -115,8 +132,8 @@ const onSubmit = async () => {
                     <XMarkIcon #icon class="stroke-dark-blue w-32 h-32"/>
                 </div>
                 <h1 class="font-bold text-3xl text-center">Solicitação inválida.</h1>
-                <p class="text-center">Nenhum <span class="underline">exame de imagem</span> foi solicitado ou seus exames já estão <span class="underline">marcados</span>.</p>
-                <p class="text-center">Se você já preencheu este formulário, por favor, aguarde contato via <span class="underline">WhatsApp</span>.</p>
+                <p class="text-center">Seus exames de imagem já foram <span class="underline">enviados</span>.</p>
+                <p class="text-center">Por favor, aguarde contato via <span class="underline">WhatsApp</span>.</p>
             </template>
 
             <template v-else-if="state == 'SUBMETIDO'">
