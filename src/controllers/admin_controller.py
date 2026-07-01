@@ -268,6 +268,15 @@ async def listar_funcionarios(provider: AdminLocalProvider) -> List[dict]:
     return [{"username": f.username, "nome": f.nome} for f in funcionarios if f.username is not None]
 
 
+async def motivos_reportar_problema(
+    provider: AdminLocalProvider,
+    data_inicio: Optional[date] = None,
+    data_fim: Optional[date] = None,
+) -> List[dict]:
+    _validar_periodo(data_inicio, data_fim)
+    return await provider.motivos_reportar_problema(data_inicio, data_fim)
+
+
 async def resolver_pendencia(solicitacao_id: int, observacao: Optional[str], provider: AdminLocalProvider) -> dict:
     rows = await provider.buscar_por_solicitacao(solicitacao_id)
     if not rows:

@@ -7,7 +7,6 @@ MUNICIPIO_PARA_REGIAO: dict[str, str] = {
     # Região Metropolitana 
     "recife": "Região Metropolitana",
     "olinda": "Região Metropolitana",
-    "caruaru": "Região Metropolitana",   # Grande Recife expandido pelo IBGE
     "jaboatao dos guararapes": "Região Metropolitana",
     "paulista": "Região Metropolitana",
     "camarajibe": "Região Metropolitana",
@@ -47,7 +46,6 @@ MUNICIPIO_PARA_REGIAO: dict[str, str] = {
     "bom conselho": "Zona da Mata",
     "canhotinho": "Zona da Mata",
     "paranatama": "Zona da Mata",
-    "sao joao": "Zona da Mata",
     "terezinha": "Zona da Mata",
     "vicencia": "Zona da Mata",
     "limoeiro": "Zona da Mata",
@@ -169,7 +167,6 @@ MUNICIPIO_PARA_REGIAO: dict[str, str] = {
     "custodia": "Sertão",
     "sertania": "Sertão",
     "arcoverde": "Sertão",
-    "paraopeba": "Sertão",
     "manari": "Sertão",
     "iguaraci": "Sertão",
     "itapetim": "Sertão",
