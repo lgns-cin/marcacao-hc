@@ -182,7 +182,7 @@ useAutoRefresh(
 
     <template v-else-if="abaAtiva === 'removido'">
       <p v-if="adminStore.agendamentosRemovidosFiltrados.length === 0" class="mt-8 text-govbr-text-secondary">
-        Nenhuma solicitação devolvida à fila encontrada.
+        Nenhuma solicitação removido à fila encontrada.
       </p>
       <div v-else class="mt-6 grid gap-4 sm:grid-cols-2">
         <RemovidoCard
