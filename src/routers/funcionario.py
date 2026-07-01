@@ -74,6 +74,7 @@ async def puxar_agendamento(
 # Retorna todos os agendamentos sob responsabilidade do funcionário logado, em qualquer estado
 @router.get("/minha-area")
 async def listar_minha_area(
+    busca: Optional[str] = Query(default=None),
     regioes: Optional[str] = Query(default=None, description="Ex: Agreste,Sertão"),
     municipio: Optional[str] = Query(default=None),
     faixa_etaria: Optional[str] = Query(default=None, description="menor_idade | adulto | idoso"),
@@ -84,6 +85,7 @@ async def listar_minha_area(
     nome = _extrair_nome(current_user)
     return await funcionario_controller.listar_minha_area(
         provider, current_user.get("sub"), nome,
+        busca=busca or None,
         regioes=regioes.split(",") if regioes else None,
         municipio=municipio or None,
         faixa_etaria=faixa_etaria or None,
